@@ -1,0 +1,36 @@
+<nav class="  navbar-page navbar  navbar-expand-lg sticky-top nav-underline" ;>
+    <div class="container-fluid container-nav">
+        <a class="navbar-brand text-white" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav nav-underline">
+                {{#if isHome}}
+                <li class="nav-item px-4 active"><a href="/">Main</a></li>
+                {{else}}
+                <li class="nav-item px-4"><a href="/">Main</a></li>
+                {{/if}}
+
+                {{#if isCourses}}
+                <li class="nav-item px-4 active"><a href="/courses">Course</a></li>
+                {{else}}
+                <li class="nav-item px-4"><a href="/courses">Course</a></li>
+                {{/if}}
+
+                {{#if isAdd}}
+                <li class="nav-item px-4 active"><a href="/add">Add a course</a></li>
+                {{else}}
+                <li class="nav-item px-4"><a href="/add">Add a course</a></li>
+                {{/if}}
+
+                {{#if isCard}}
+                <li class="nav-item px-4 active "><a href="/card">Card</a></li>
+                {{else}}
+                <li class="nav-item px-4" ><a href="/card">Card</a></li>
+                {{/if}}
+            </ul>
+        </div>
+    </div>
+</nav>
