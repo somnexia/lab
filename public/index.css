@@ -1,0 +1,182 @@
+h1{
+  font-weight: 700;
+  font-size: 70px;
+  line-height: 85px;
+  transition: 0.6s;
+  transform-style: preserve-3d;
+}
+
+.price{
+    font-size: 2rem;
+}
+.container-page-first{
+  height: 850px;
+  background-color: #262344;
+}
+.navbar-page{
+  background-color: #262344;
+  height: inherit;
+}
+.container-page{
+ height: 2000px;
+ 
+
+}
+.page-center{
+  
+
+}
+
+.course{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.course h1{
+    margin-bottom: 2rem;
+}
+.course img{
+    max-width: 600px;
+    height: auto;
+}
+.course .price.big{
+    font-size: 2.5rem;
+}
+.card-action.actions{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.container-second-logo {
+  font-family: 'muli', sans-serif;
+  position:relative;
+    width: 100%;
+    height: 100%;
+    display: block;
+ 
+}
+.container-bottle{  
+    position: relative;
+
+    align-items:flex-end;
+    justify-content: center;
+     width: 100px;
+     height: 150px;
+     display:flex;
+}
+
+
+.bottle {
+  position: absolute;
+  display: block;
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  background: #2c337a;
+}
+
+.bottle::before {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 50px;
+  position: absolute;
+  top: -41px;
+  left: 28px;
+  background: #2c337a;
+}
+
+.bottleGap {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: white;
+}
+
+.bottleGap::before {
+  content: "";
+  display: block;
+  width: 14px;
+  height: 50px;
+  position: absolute;
+  top: -41px;
+  left: 28px;
+  background: white;
+}
+
+.bottleLiquid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: linear-gradient(145deg, #ffc69d, #ff6a8c);
+  width: 66px;
+  height: 35px;
+  margin: 33px 0 0 2px;
+  border-radius: 0 0 33px 33px;
+}
+
+@keyframes expolode {
+  28% {
+    opacity: 1;
+  }
+  32% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.bubble1 {
+  position: absolute;
+  top: 8%;
+  left:40%;
+  width: 7%;
+  height: 5%;
+  border-radius: 100%;
+  border: 1px solid #ffab77;
+  opacity: 0;
+  animation: expolode 0.4s infinite;
+}
+
+.bubble2 {
+  position: absolute;
+  top:15%;
+  left:50%;
+  width: 7%;
+  height: 5%;
+  border-radius: 50%;
+  border: 1px solid #ffab77;
+  opacity: 0;
+  animation: expolode 0.8s infinite;
+}
+
+.bubble3 {
+  position: absolute;
+  top:10%;
+  left:60%;
+  width: 7%;
+  height: 5%;
+  border-radius: 50%;
+  border: 1px solid #ffab77;
+  opacity: 0;
+  animation: expolode .7s infinite;
+}
+.blue-lighting{
+  position: absolute;
+  width:500px;
+  transform: rotate(200deg);
+  left: -1.5%;
+  top:500px
+
+}
+.lighting{
+  position: absolute;
+  width:500px;
+  transform: rotate(90deg);
+  right: 0;
+}
+
