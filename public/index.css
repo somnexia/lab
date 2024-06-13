@@ -1,6 +1,7 @@
 .slide{
   display:inline;
-  margin-left:3%
+  margin-left:3%;
+  
 }
 p{
   color: white;
@@ -12,9 +13,11 @@ p{
   opacity: 0;
   transition:  0.4s cubic-bezier(0.79,0.14,0.15,0.86);
   transform: rotateX(90deg);
+  background: linear-gradient(to top,  #BBFFFF, #00FFFF, #00BFFF, #0000FF, #00008B,#000062);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .caption-slide.active{
-  background-color:#cf1616;
 
   opacity: 1;
   transform: rotateX(0deg);
@@ -152,12 +155,9 @@ h1 {
 
 .container-bottle {
   position: relative;
-
-  align-items: flex-end;
-  justify-content: center;
+  display: flex;
   width: 100px;
   height: 150px;
-  display: flex;
 }
 
 
