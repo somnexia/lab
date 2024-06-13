@@ -1,3 +1,37 @@
+.slide{
+  display:inline;
+  margin-left:3%
+}
+p{
+  color: white;
+}
+.carousel .caption-slide{
+  width: auto;
+  height: auto;
+  visibility:unset !important; 
+  opacity: 0;
+  transition:  0.4s cubic-bezier(0.79,0.14,0.15,0.86);
+  transform: rotateX(90deg);
+}
+.caption-slide.active{
+  background-color:#cf1616;
+
+  opacity: 1;
+  transform: rotateX(0deg);
+}
+.mw500{
+  max-width: 500px;
+}
+.color-second{
+  color: #cecece
+}
+.bi{
+  width: 1em;
+  height: 1em;
+  vertical-align: -.125em;
+  fill: currentcolor;
+}
+
 .sidebar {
   background-color: inherit;
 }
@@ -63,9 +97,11 @@ h1 {
 
 }
 
-.page-center {
-  position: relative;
+.page-near-center {
+  margin-left: 5%;
+  position: absolute;
   z-index: 2;
+
 
 }
 
@@ -73,6 +109,7 @@ h1 {
   background-color: #005bff;
   height: 50px;
   border-radius: 10px;
+  margin: 2rem 0.5rem;
 
 }
 
