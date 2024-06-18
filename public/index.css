@@ -50,6 +50,12 @@ padding: 0% 15%
 .option-a:hover{
   background-color: rgba(84, 35, 182, 0.5);
 }
+.card-lab{
+  background-color: #262344;
+}
+.card-body-lab{
+  background-color: #221e3c;
+}
 
 
 .sidebar-nav{
@@ -72,13 +78,17 @@ h1 {
   transition: 0.6s;
   transform-style: preserve-3d;
 }
+h2{
+  font-weight: 600;
+  font-size: 40px;
+}
 
 .price {
   font-size: 2rem;
 }
 
 .container-page-first {
-  height: 850px;
+  height: 650px;
   background-color: #262344;
   z-index: 2;
 }
@@ -99,11 +109,15 @@ h1 {
 
 
 }
+.page-center{
+  margin: auto;
+  margin-left: 0;
+}
 
 .page-near-center {
-  margin-left: 5%;
   position: absolute;
   z-index: 2;
+  
 
 
 }
