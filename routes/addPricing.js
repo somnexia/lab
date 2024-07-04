@@ -17,3 +17,4 @@ router.post("/", async(req,res)=>{
     res.redirect("/addPricing")
 })
 module.exports= router
+"hello OBJECT"
