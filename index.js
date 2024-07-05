@@ -5,7 +5,7 @@ const homeRoutes = require("./routes/home")
 const cardRoutes =require("./routes/card")
 const addRoutes = require("./routes/add")
 const coursesRoutes = require("./routes/courses")
-const pricingRoutes = require("./routes/pricing")
+const pricingRoutes = require("./routes/pricings")
 const addPricingRoutes = require("./routes/addPricing")
 const db = require("./data/db")
 
@@ -14,7 +14,7 @@ const db = require("./data/db")
 const app = express()
 
 const hbs = exphbs.create({
-    defaultLayout: "main",
+    defaultLayout: "page",
     extname:"hbs"
 })
 
@@ -29,7 +29,7 @@ app.use("/",homeRoutes)
 app.use("/add",addRoutes)
 app.use("/courses",coursesRoutes)
 app.use("/card",cardRoutes)
-app.use("/pricing",pricingRoutes)
+app.use("/pricings",pricingRoutes)
 app.use("/addPricing",addPricingRoutes)
 
 

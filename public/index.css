@@ -3,6 +3,17 @@
   margin-left: 3%;
 
 }
+footer{
+  background-color: #262344;
+}
+footer a{
+  color: #ffffff;
+
+}
+.pricing-img{
+  height: 100%;
+  
+}
 
 .svg {
   fill: #621f65
@@ -61,7 +72,8 @@ p,
 
 .sidebar {
   display: block;
-  background-color: #262344;
+  background-color: #2623441a;
+  
   position: sticky;
   top: 5rem;
   height: calc(100vh - 6rem);
@@ -103,6 +115,9 @@ p,
   display: grid;
   grid-template-areas: "sidebar main";
   grid-template-columns: 13% 87%;
+
+  background-color: #262344f7;
+  height: 100%;
 }
 
 h1,
@@ -155,6 +170,7 @@ h3 {
   margin-right: auto;
   margin-left: 0;
   margin-bottom: 5%;
+  background-color: #262344;
 }
 
 .page-near-center {

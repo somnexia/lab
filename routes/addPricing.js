@@ -14,7 +14,6 @@ router.post("/", async(req,res)=>{
 
     await pricing.save()
 
-    res.redirect("/addPricing")
+    res.redirect("/pricings")
 })
 module.exports= router
-"hello OBJECT"

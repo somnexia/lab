@@ -1,33 +1,35 @@
-<h1>Card</h1>
+<main class="main">
+    <h1>Card</h1>
 
 
-<div id="card">
-    {{#if courses.length}}
-    <table class="responsive-table highlight">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Quantity</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+    <div id="card">
+        {{#if courses.length}}
+        <table class="responsive-table highlight">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
 
-        <tbody>
-            {{#each courses}}
-            <tr>
-                <td>{{title}}</td>
-                <td>{{count}}</td>
-                <td>
-                    <button class="btn btn-small js-remove" data-id="{{id}}">Delete</button>
-                </td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
+            <tbody>
+                {{#each courses}}
+                <tr>
+                    <td>{{title}}</td>
+                    <td>{{count}}</td>
+                    <td>
+                        <button class="btn btn-small js-remove" data-id="{{id}}">Delete</button>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
 
 
-    <p><strong>Price:</strong><span class="price">{{price}}</span></p>
-    {{else}}
-    <p>The cart is empty</p>
-    {{/if}}
-</div>
+        <p><strong>Price:</strong><span class="price">{{price}}</span></p>
+        {{else}}
+        <p>The cart is empty</p>
+        {{/if}}
+    </div>
+</main>
