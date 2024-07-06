@@ -1,5 +1,5 @@
 <main class="main">
-    <h1>Pricings</h1>
+    <h1 class="mx-5">Pricings</h1>
 
     <div class="container page-center">
         <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
@@ -9,41 +9,31 @@
             <div class="col">
                 <div class="card mb-4 rounded-3 shadow-sm">
                     <img src="{{img}}" class="img-fluid pricing-img" alt="{{title}}">
-                        <div class="card-img-overlay pricing">
+                    <div class="card-img-overlay pricing">
                         <div class="card-header py-3">
-                            <h4 class="my-0 fw-normal">
+                            <h4 class="my-0 fw-normal text-black">
                                 <font style="vertical-align: inherit;">
                                     <font style="vertical-align: inherit;">{{title}}</font>
                                 </font>
                             </h4>
                         </div>
                         <div class="card-body">
-                            <h1 class="card-title pricing-card-title">
-                                <font style="vertical-align: inherit;">
-                                    <font style="vertical-align: inherit;">{{price}}</font>
-                                </font><small class="text-body-secondary fw-light">
-                                    <font style="vertical-align: inherit;">
-                                        <font style="vertical-align: inherit;">/мес.</font>
-                                    </font>
-                                </small>
-                            </h1>
-                            <div>
-                                <font style="vertical-align: inherit;">
-                                    <font style="vertical-align: inherit;">Включено 10 пользователей</font>
-                                </font>
-                            </div>
-                            <button type="button" class="w-100 btn btn-lg btn-outline-primary">
-                                <font style="vertical-align: inherit;">
-                                    <font style="vertical-align: inherit;">Бесплатно зарегестрироваться</font>
-                                </font>
-                            </button>
+                            <h2 class="text-black pricing-card-title">{{price}}$<small
+                                    class="text-body-secondary fw-light">/mo</small></h2>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>10 users included</li>
+                                <li>2 GB of storage</li>
+                                <li>Email support</li>
+                                <li>Help center access</li>
+                            </ul>
+                            <button type="button" class="w-100 btn btn-start btn-lg">Get started</button>
                         </div>
-                        <div class="card-action actions">
+                        <div class="card-action actions actions-lab">
                             <a href="/pricings/{{id}}" target="_blank">Open a course</a>
                             <a href="/pricings/{{id}}/edit?allow=true">Edit</a>
                             <form action="/card/add" method="POST">
                                 <input type="hidden" name="id" value="{{id}}">
-                                <button type="submit" class="btn btn-primary">Buy</button>
+                                <button type="submit" class="btn btn-start">Buy</button>
                             </form>
                         </div>
                     </div>
