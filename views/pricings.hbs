@@ -1,48 +1,113 @@
 <main class="main">
-    <h1 class="mx-5">Pricings</h1>
+    <section>
+        <div class="container-fluid container-page-first">
+            <div class="page-near-center container">
+                
+                <div class="row">
+                    <h4 class="mx-3 mt-4">Add a new course</h4>
+                    <div class="col-xl-11 col-3">
+                        <h1 class="text-white">Thunder-Driven Innovation in Lab Management, Boosting Your
+                            Inventory
+                            <div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel"
+                                data-bs-interval="2000">
 
-    <div class="container page-center">
-        <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
-            {{#if pricings.length}}
-            {{#each pricings}}
+                                <span class=" caption-slide carousel-item active "
+                                    data-bs-interval="">Productivity</span>
+                                <span class=" caption-slide carousel-item" data-bs-interval="">Accuracy</span>
+                                <span class=" caption-slide carousel-item" data-bs-interval="">Reliability</span>
+                                <span class=" caption-slide carousel-item" data-bs-interval="">Efficiency</span>
+                                <span class=" caption-slide carousel-item" data-bs-interval="">Transparency</span>
 
-            <div class="col">
-                <div class="card mb-4 rounded-3 shadow-sm">
-                    <img src="{{img}}" class="img-fluid pricing-img" alt="{{title}}">
-                    <div class="card-img-overlay pricing">
-                        <div class="card-header py-3">
-                            <h4 class="my-0 fw-normal text-black">
-                                <font style="vertical-align: inherit;">
-                                    <font style="vertical-align: inherit;">{{title}}</font>
-                                </font>
-                            </h4>
+
+
+                            </div>
+                        </h1>
+
+                        <h5 class="color-second mw500">Streamline lab with precision inventory control And
+                            optimizing your laboratory workflow</h5>
+                        <div class="row align-items-start justify-content-between">
+                            <div class="gap-3 col-5 d-flex flex-column">
+                                <button class="btn btn-start btn-lg" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false"
+                                    aria-label="Toggle navigation">
+                                    Get started
+                                </button>
+
+                            </div>
+                            <div class="col-5">
+                                <div class="container-bottle d-flex mt-2">
+
+                                    <div class="bottle">
+                                        <div class="bottleGap">
+                                            <div class="bottleLiquid"></div>
+                                        </div>
+
+                                    </div>
+                                    <div class="bubble1"></div>
+                                    <div class="bubble2"></div>
+                                    <div class="bubble3"></div>
+
+                                </div>
+                            </div>
+
                         </div>
-                        <div class="card-body">
-                            <h2 class="text-black pricing-card-title">{{price}}$<small
-                                    class="text-body-secondary fw-light">/mo</small></h2>
-                            <ul class="list-unstyled mt-3 mb-4">
-                                <li>10 users included</li>
-                                <li>2 GB of storage</li>
-                                <li>Email support</li>
-                                <li>Help center access</li>
-                            </ul>
-                            <button type="button" class="w-100 btn btn-start btn-lg">Get started</button>
-                        </div>
-                        <div class="card-action actions actions-lab">
-                            <a href="/pricings/{{id}}" target="_blank">Open a course</a>
-                            <a href="/pricings/{{id}}/edit?allow=true">Edit</a>
-                            <form action="/card/add" method="POST">
-                                <input type="hidden" name="id" value="{{id}}">
-                                <button type="submit" class="btn btn-start">Buy</button>
-                            </form>
+
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+
+    </section>
+    <section>
+        <div class="container page-center">
+            <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+                {{#if pricings.length}}
+                {{#each pricings}}
+
+                <div class="col">
+                    <div class="card mb-4 rounded-3 shadow-sm">
+                        <img src="{{img}}" class="img-fluid pricing-img" alt="{{title}}">
+                        <div class="card-img-overlay pricing">
+                            <div class="card-header py-3">
+                                <h4 class="my-0 fw-normal text-black">
+                                    <font style="vertical-align: inherit;">
+                                        <font style="vertical-align: inherit;">{{title}}</font>
+                                    </font>
+                                </h4>
+                            </div>
+                            <div class="card-body">
+                                <h2 class="text-black pricing-card-title">{{price}}$<small
+                                        class="text-body-secondary fw-light">/mo</small></h2>
+                                <ul class="list-unstyled mt-3 mb-4">
+                                    <li>10 users included</li>
+                                    <li>2 GB of storage</li>
+                                    <li>Email support</li>
+                                    <li>Help center access</li>
+                                </ul>
+                                <button type="button" class="w-100 btn btn-start btn-lg">Get started</button>
+                            </div>
+                            <div class="card-action actions actions-lab">
+                                <a href="/pricings/{{id}}" target="_blank">Open a course</a>
+                                <a href="/pricings/{{id}}/edit?allow=true">Edit</a>
+                                <form action="/card/add" method="POST">
+                                    <input type="hidden" name="id" value="{{id}}">
+                                    <button type="submit" class="btn btn-start">Buy</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {{/each}}
+                {{/each}}
+            </div>
         </div>
-    </div>
+    </section>
+
+    <section>
+
+    </section>
     {{else}}
     <p>courses are not yet available</p>
     {{/if}}
