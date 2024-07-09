@@ -2,7 +2,7 @@
     <section>
         <div class="container-fluid container-page-first">
             <div class="page-near-center container">
-                
+
                 <div class="row">
                     <h4 class="mx-3 mt-4">Add a new course</h4>
                     <div class="col-xl-11 col-3">
@@ -77,24 +77,41 @@
                                     </font>
                                 </h4>
                             </div>
-                            <div class="card-body">
-                                <h2 class="text-black pricing-card-title">{{price}}$<small
-                                        class="text-body-secondary fw-light">/mo</small></h2>
-                                <ul class="list-unstyled mt-3 mb-4">
-                                    <li>10 users included</li>
-                                    <li>2 GB of storage</li>
-                                    <li>Email support</li>
-                                    <li>Help center access</li>
-                                </ul>
-                                <button type="button" class="w-100 btn btn-start btn-lg">Get started</button>
+                            <div class="card-body ">
+                                <div class="card-price">
+                                    <h2 class="text-black pricing-card-title">{{price}}$<small
+                                            class="text-body-secondary fw-light">/mo</small></h2>
+                                </div>
+                                <div class="features">
+
+                                    <ul class="list-unstyled pt-3 pb-4 ">
+                                        <li>10 users included</li>
+                                        <li>2 GB of storage</li>
+                                        <li>Email support</li>
+                                        <li>Help center access</li>
+                                    </ul>
+                                </div>
+                                <div class="optional">
+                                    <p>Optional:</p>
+                                    <ul>
+                                        <li><i class="fa fa-check"></i><strong> ELN</strong> – Electronic Lab Notebook
+                                            Add-On</li>
+                                        <li><i class="fa fa-check"></i> Limited pages &amp; experiments ≤ 500</li>
+                                    </ul>
+                                </div>
+                                <div class="pricing-btn">
+                                    <button type="button" class="w-100 btn btn-start btn-lg">Get started</button>
+                                </div>
                             </div>
-                            <div class="card-action actions actions-lab">
-                                <a href="/pricings/{{id}}" target="_blank">Open a course</a>
-                                <a href="/pricings/{{id}}/edit?allow=true">Edit</a>
-                                <form action="/card/add" method="POST">
-                                    <input type="hidden" name="id" value="{{id}}">
-                                    <button type="submit" class="btn btn-start">Buy</button>
-                                </form>
+                            <div class="card-footer p-0 border-success">Footer
+                                <div class="card-action actions actions-lab">
+                                    <a href="/pricings/{{id}}" target="_blank">Open a course</a>
+                                    <a href="/pricings/{{id}}/edit?allow=true">Edit</a>
+                                    <form action="/card/add" method="POST">
+                                        <input type="hidden" name="id" value="{{id}}">
+                                        <button type="submit" class="btn btn-start">Buy</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>

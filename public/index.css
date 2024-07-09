@@ -112,6 +112,10 @@ p,
 .option-a:hover {
   background-color: rgba(84, 35, 182, 0.5);
 }
+.optional{
+  
+  background-color: #00000012;
+}
 
 .card-lab {
   background-color: #262344;
@@ -210,15 +214,14 @@ h3 {
   background-color:#621f65;
   height: 50px;
   border-radius: 10px;
-  margin: 2rem 0.5rem;
-
+  margin: 2rem auto;
 }
+
 .btn-start:hover{
 background-color:#611f65c0;
 }
 
 
-.offcanvas-navbar {}
 
 .course {
   width: 100%;
