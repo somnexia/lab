@@ -1,3 +1,16 @@
+.card-review.first{
+  background-color: #922f97;
+}
+.card-review.second{
+  background-color: #621f65;
+}
+.aside-svg{
+    width: 1em;
+    height: 1em;
+    vertical-align: -.125em;
+    fill: currentcolor;
+}
+
 .carousel-caption-lab .caption-item{
   float: none;
 }
@@ -29,7 +42,6 @@ footer a{
   height: 100%;
   position: absolute;
   display: flex;
-  
   
   
 }
@@ -71,7 +83,7 @@ p,
 .slide .caption-slide {
   width: auto;
   visibility: unset !important;
-  /* transition: 0.4s cubic-bezier(0.79, 0.14, 0.15, 0.86); */
+  transition: 0.4s cubic-bezier(0.79, 0.14, 0.15, 0.86);
   opacity: 0;
   transform: rotateX(90deg);
   background: linear-gradient(to top, #BBFFFF, #00FFFF, #00BFFF, #0000FF, #00008B, #000062);
@@ -93,12 +105,7 @@ p,
   max-width: 500px;
 }
 
-.bi {
-  width: 1em;
-  height: 1em;
-  vertical-align: -.125em;
-  fill: currentcolor;
-}
+
 
 .sidebar {
   display: block;
