@@ -3,12 +3,12 @@ const Pricing = require("../models/pricing")
 const router = Router()
 
 router.get("/", async(req,res)=> {
-    const pricing = await Pricing.getAll()
+    const pricings = await Pricing.getAll()
 
-    res.render("pricing",{
-        title: "Pricing",
-        isPricing: true,
-        pricing
+    res.render("pricings",{
+        title: "Pricings",
+        isPricings: true,
+        pricings
     })
 })  
 
@@ -24,7 +24,7 @@ router.get("/:id/edit", async(req,res)=>{
 })
 router.post("/edit",async(req,res)=>{
     await Pricing.update(req.body)
-    res.redirect("/pricing")
+    res.redirect("/pricings")
 })
 
 router.get("/:id",async(req,res)=>{

@@ -16,7 +16,7 @@ class Pricing {
 
     // Асинхронный метод для сохранения курса в базе данных.
     async save() {
-        const sql = 'INSERT INTO pricing (id, title, price, img) VALUES (?, ?, ?, ?)'; // SQL запрос для вставки курса в базу данных.
+        const sql = 'INSERT INTO pricings (id, title, price, img) VALUES (?, ?, ?, ?)'; // SQL запрос для вставки курса в базу данных.
         const values = [this.id, this.title, this.price, this.img]; // Параметры для SQL запроса.
 
         try {
@@ -28,7 +28,7 @@ class Pricing {
 
     // Статический асинхронный метод для обновления информации о курсе в базе данных.
     static async update(pricing) {
-        const sql = 'UPDATE pricing SET title = ?, price = ?, img = ? WHERE id = ?'; // SQL запрос для обновления информации о курсе в базе данных.
+        const sql = 'UPDATE pricings SET title = ?, price = ?, img = ? WHERE id = ?'; // SQL запрос для обновления информации о курсе в базе данных.
         const values = [pricing.title, pricing.price, pricing.img, pricing.id]; // Параметры для SQL запроса.
 
         try {
@@ -40,7 +40,7 @@ class Pricing {
 
     // Статический асинхронный метод для получения всех курсов из базы данных.
     static async getAll() {
-        const sql = 'SELECT * FROM pricing'; // SQL запрос для выборки всех курсов из базы данных.
+        const sql = 'SELECT * FROM pricings'; // SQL запрос для выборки всех курсов из базы данных.
 
         try { // Метод await используется для ожидания завершения выполнения асинхронного запроса к базе данных.
             const [rows, fields] = await db.execute(sql); // Выполняем SQL запрос к базе данных для получения всех курсов.
@@ -52,7 +52,7 @@ class Pricing {
 
     // Статический асинхронный метод для получения курса по его идентификатору из базы данных.
     static async getById(id) {
-        const sql = 'SELECT * FROM pricing WHERE id = ?'; // SQL запрос для выборки курса по его идентификатору из базы данных.
+        const sql = 'SELECT * FROM pricings WHERE id = ?'; // SQL запрос для выборки курса по его идентификатору из базы данных.
         const values = [id]; // Параметры для SQL запроса.
 
         try {                 //Метод await используется для ожидания завершения выполнения асинхронного запроса к базе данных.
