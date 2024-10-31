@@ -4,7 +4,7 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
     static associate(models) {
-      // Определите здесь ассоциации, если есть
+      Order.belongsToMany(models.OrderDetails, { through: 'OrderDetails', foreignKey: 'order_number' });
     }
   }
 
@@ -37,8 +37,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     last_updated: {
-      type: DataTypes.TIMESTAMP,
-      defaultValue: DataTypes.NOW
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
+      onUpdate: sequelize.literal('CURRENT_TIMESTAMP')
     },
     status: {
       type: DataTypes.ENUM('active', 'completed', 'canceled'),
