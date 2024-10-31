@@ -33,8 +33,9 @@ module.exports = {
       },
       last_updated: {
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
         allowNull: false,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+        onUpdate: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       status: {
         type: Sequelize.ENUM('active', 'completed', 'canceled'),
