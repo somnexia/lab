@@ -40,11 +40,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       defaultValue: null
     },
-    storage_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: null
-    },
     material: {
       type: DataTypes.STRING(50),
       allowNull: true,

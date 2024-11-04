@@ -1,15 +1,12 @@
+// models/ResearchReport.js
 
 'use strict';
-const { Model } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   class ResearchReport extends Model {
     static associate(models) {
-      // Связь с таблицей Research
       ResearchReport.belongsTo(models.Research, { foreignKey: 'research_id', as: 'research' });
-      
-      // Опционально: ассоциация с опубликованными статьями
-      ResearchReport.hasMany(models.Publication, { foreignKey: 'researchreport_id', as: 'publications' });
     }
   }
 
@@ -23,53 +20,26 @@ module.exports = (sequelize, DataTypes) => {
     research_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: 'researches',
-        key: 'id'
-      },
+      references: { model: 'researches', key: 'id' },
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE'
     },
-    summary: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      defaultValue: null
-    },
-    total_experiments: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0
-    },
-    aggregate_results: {
-      type: DataTypes.JSON, // Или TEXT, если JSON недоступен
-      allowNull: true,
-      defaultValue: null
-    },
-    total_cost: {
-      type: DataTypes.DECIMAL(15, 2),
-      allowNull: true,
-      defaultValue: null
-    },
-    conclusions: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      defaultValue: null
-    },
-    recommendations: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      defaultValue: null
-    },
-    publication_ready: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
+    summary: DataTypes.TEXT,
+    total_experiments: { type: DataTypes.INTEGER, defaultValue: 0 },
+    aggregate_results: DataTypes.JSON,
+    aggregate_expenses: DataTypes.JSON, // Новое поле для хранения расходов
+    conclusions: DataTypes.TEXT,
+    recommendations: DataTypes.TEXT,
+    publication_ready: { type: DataTypes.BOOLEAN, defaultValue: false },
+    status: {
+      type: DataTypes.ENUM('Draft', 'Under Review', 'Published'), // Новое поле для статуса
+      defaultValue: 'Draft'
     }
   }, {
     sequelize,
     modelName: 'ResearchReport',
     tableName: 'researchreports',
-    timestamps: true // для автоматического добавления полей createdAt и updatedAt
+    timestamps: true
   });
 
   return ResearchReport;

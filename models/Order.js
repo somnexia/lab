@@ -4,7 +4,11 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
     static associate(models) {
-      Order.belongsToMany(models.OrderDetails, { through: 'OrderDetails', foreignKey: 'order_number' });
+      Order.belongsToMany(models.OrderDetails, {
+        through: 'Order_OrderDetails',  // Уникальное название промежуточной таблицы
+        foreignKey: 'order_number',
+        as: 'orderDetails'  // Псевдоним для связи
+      });
     }
   }
 
