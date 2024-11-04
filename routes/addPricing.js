@@ -1,5 +1,5 @@
 const {Router} = require("express")
-const Pricing =require("../models/pricing")
+const Pricing =require("../services/Pricing")
 const router = Router()
 
 router.get("/",(req,res)=> {
