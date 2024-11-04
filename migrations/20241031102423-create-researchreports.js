@@ -35,11 +35,6 @@ module.exports = {
         allowNull: true,
         defaultValue: null
       },
-      total_cost: {
-        type: Sequelize.DECIMAL(15, 2),
-        allowNull: true,
-        defaultValue: null
-      },
       conclusions: {
         type: Sequelize.TEXT,
         allowNull: true,
