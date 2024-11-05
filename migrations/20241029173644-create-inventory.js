@@ -34,7 +34,7 @@ module.exports = {
         allowNull: true,
         defaultValue: null,
       },
-      measurement_unit: {
+      unit_measure: {
         type: Sequelize.STRING(50),
         allowNull: true,
         defaultValue: null,

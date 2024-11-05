@@ -4,7 +4,7 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Inventory extends Model {
     static associate(models) {
-      // Определите здесь ассоциации, если есть
+      Inventory.belongsTo(models.ChemStorage, { foreignKey: 'storage_id', as: 'storage' });
     }
   }
 
@@ -39,15 +39,20 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       defaultValue: null
     },
-    measurement_unit: {
+    unit_measure: {
       type: DataTypes.STRING(50),
       allowNull: true,
       defaultValue: null
     },
     storage_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: null
+      allowNull: false,
+      references: {
+        model: 'chemstorages', // Должно совпадать с названием таблицы Laboratory
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE'
     },
     receipt_date: {
       type: DataTypes.DATE,
