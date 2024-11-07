@@ -4,8 +4,8 @@
  *   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  *   '
  *   scss\custom.scss 2:9  root stylesheet */
-
-body::before {
+ 
+/* body::before {
   font-family: "Source Code Pro", "SF Mono", Monaco, Inconsolata, "Fira Mono",
       "Droid Sans Mono", monospace, monospace;
   white-space: pre;
@@ -14,4 +14,4 @@ body::before {
   margin-bottom: 1em;
   border-bottom: 2px solid black;
   content: "Error: Can't find stylesheet to import.\a   \2577 \a 2 \2502  @import \"../node_modules/bootstrap/scss/functions\";\d\a   \2502          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\a   \2575 \a   scss\\custom.scss 2:9  root stylesheet";
-}
+} */

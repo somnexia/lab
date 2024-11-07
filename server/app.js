@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const routes = require('./routes'); // Импортируем основной файл маршрутов
 const path = require("path")
 const exphbs = require("express-handlebars")
-const db = require("./data/db")
+const db = require("../server/data/db")
 const morgan = require('morgan');
 
 const app = express();

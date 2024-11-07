@@ -41,7 +41,7 @@
   },
   "scripts": {
     "server": "nodemon app.js",
-    "client": "cd client && set PORT=3001 && webpack serve",
+    "client": "cd ..&& cd client && set PORT=3001 && webpack serve",
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "author": "",
