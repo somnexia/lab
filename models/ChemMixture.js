@@ -5,7 +5,20 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ChemMixture extends Model {
     static associate(models) {
-      // Определите здесь ассоциации, если они есть
+      ChemMixture.hasMany(models.Inventory, {
+        foreignKey: 'reference_id',
+        constraints: false,
+        scope: { item_type: 'mixture' },
+        as: 'inventories'
+    });
+      ChemMixture.belongsTo(models.ChemMixture, {
+        foreignKey: 'parent_id',
+        as: 'parent',
+      });
+      ChemMixture.hasMany(models.ChemMixture, {
+        foreignKey: 'parent_id',
+        as: 'children',
+      });
     }
   }
 
@@ -20,6 +33,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(50),
       unique: true,
       allowNull: false
+    },
+    parent_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'chemmixtures',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
     },
     name: {
       type: DataTypes.STRING(255),

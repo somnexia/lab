@@ -5,12 +5,18 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class StorageUnit extends Model {
     static associate(models) {
+      StorageUnit.belongsToMany(models.Inventory, {
+        through: 'InventoryStorageUnit',
+        foreignKey: 'storageunit_id',
+        otherKey: 'inventory_id',
+        as: 'inventories'
+      });
       // Привязка к основной зоне хранения
       StorageUnit.belongsTo(models.ChemStorage, { foreignKey: 'storage_id' });
 
       // Рекурсивная связь: один StorageUnit может содержать другие StorageUnits
       StorageUnit.belongsTo(models.StorageUnit, { as: 'parent', foreignKey: 'parent_id' });
-      StorageUnit.hasMany(models.StorageUnit, { as: 'sub_units', foreignKey: 'parent_id' });
+      StorageUnit.hasMany(models.StorageUnit, { as: 'children', foreignKey: 'parent_id' });
 
       // Связь с реагентами, которые хранятся в этом StorageUnit
       StorageUnit.hasMany(models.Inventory, { foreignKey: 'storage_id' });
@@ -25,7 +31,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     storage_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
+      defaultValue: null,
       references: {
         model: 'chemstorages',
         key: 'id'
@@ -37,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'StorageUnits',
+        model: 'storageunits',
         key: 'id'
       },
       onUpdate: 'CASCADE',
@@ -119,7 +126,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'StorageUnit',
-    tableName: 'storage_units',  // Указываем название таблицы в БД
+    tableName: 'storageunits',  // Указываем название таблицы в БД
     timestamps: false  // Отключаем автоматические поля createdAt и updatedAt
   });
 

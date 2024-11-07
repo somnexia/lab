@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // Связь с таблицей Inventory, если она существует
       OrderDetails.belongsTo(models.Inventory, { foreignKey: 'inventory_id' });
+      OrderDetails.belongsTo(models.Order, { foreignKey: 'order_id' });
       
     }
   }
@@ -17,6 +18,16 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true,
       allowNull: false
+    },
+    order_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'orders', // Название таблицы Inventory
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE'
     },
     inventory_id: {
       type: DataTypes.INTEGER,
@@ -57,11 +68,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
       onUpdate: sequelize.literal('CURRENT_TIMESTAMP')
     },
-    order_number: {
-      type: DataTypes.STRING(10),
-      allowNull: true,
-      defaultValue: null
-    }
+    
   }, {
     sequelize,
     modelName: 'OrderDetails',

@@ -5,7 +5,7 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Laboratory extends Model {
     static associate(models) {
-      // Определите здесь ассоциации, если есть
+      Laboratory.hasMany(models.ChemStorage, { foreignKey: 'laboratory_id', as: 'chemstorages', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
     }
   }
 

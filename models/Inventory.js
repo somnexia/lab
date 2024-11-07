@@ -4,7 +4,39 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Inventory extends Model {
     static associate(models) {
-      Inventory.belongsTo(models.ChemStorage, { foreignKey: 'storage_id', as: 'storage' });
+      Inventory.belongsToMany(models.StorageUnit, {
+        through: 'inventorystorageunits',  // Название промежуточной таблицы
+        foreignKey: 'inventory_id',
+        otherKey: 'storageunit_id',
+        as: 'storageUnits'
+      });
+      Inventory.hasMany(models.OrderDetails, {
+        foreignKey: 'inventory_id', // внешний ключ в OrderDetail
+        as: 'orderDetails'
+      });
+
+      // Связь с Order через OrderDetail (many-to-many)
+      Inventory.belongsToMany(models.Order, {
+        through: 'orderdetails', // промежуточная таблица
+        foreignKey: 'inventory_Id', // внешний ключ на Item в OrderDetail
+        otherKey: 'order_id', // внешний ключ на Order в OrderDetail
+        as: 'orders'
+      });
+      Inventory.belongsTo(models.ChemElement, {
+        foreignKey: 'reference_id',
+        constraints: false,
+        as: 'chemElement'
+      });
+      Inventory.belongsTo(models.ChemEquipment, {
+        foreignKey: 'reference_id',
+        constraints: false,
+        as: 'chemEquipment'
+      });
+      Inventory.belongsTo(models.ChemCompound, {
+        foreignKey: 'reference_id',
+        constraints: false,
+        as: 'chemCompound'
+      });
     }
   }
 
@@ -15,8 +47,8 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       allowNull: false
     },
-    unique_id: {
-      type: DataTypes.STRING(50),
+    reference_id: {
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     item_name: {
@@ -43,6 +75,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(50),
       allowNull: true,
       defaultValue: null
+    },
+    storageunit_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'storageunits', // Должно совпадать с названием таблицы Laboratory
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE'
     },
     storage_id: {
       type: DataTypes.INTEGER,

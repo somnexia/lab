@@ -4,11 +4,17 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
     static associate(models) {
-      Order.belongsToMany(models.OrderDetails, {
-        through: 'Order_OrderDetails',  // Уникальное название промежуточной таблицы
-        foreignKey: 'order_number',
+      Order.hasMany(models.OrderDetails, { // Уникальное название промежуточной таблицы
+        foreignKey: 'order_id',
         as: 'orderDetails'  // Псевдоним для связи
       });
+      // Связь с Item через OrderDetail (many-to-many)
+      Order.belongsToMany(models.Inventory, {
+        through: 'orderdetails', // промежуточная таблица
+        foreignKey: 'order_id', // внешний ключ на Order в OrderDetail
+        otherKey: 'inventory_id', // внешний ключ на Item в OrderDetail
+        as: 'inventories'
+    });
     }
   }
 
