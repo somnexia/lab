@@ -15,6 +15,16 @@ module.exports = {
         allowNull: false,
         unique: true
       },
+      parent_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'chemmixtures',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
+      },
       name: {
         type: Sequelize.STRING(255),
         allowNull: false

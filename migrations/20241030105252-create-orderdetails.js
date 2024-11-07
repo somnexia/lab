@@ -10,16 +10,27 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      inventory_id: {
+      order_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Inventories', // Название таблицы Inventory
+          model: 'orders', 
           key: 'id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
+      inventory_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'inventories',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+      
       unique_id: {
         type: Sequelize.STRING(50),
         allowNull: true,
@@ -49,11 +60,6 @@ module.exports = {
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
         onUpdate: Sequelize.literal('CURRENT_TIMESTAMP')
       },
-      order_number: {
-        type: Sequelize.STRING(10),
-        allowNull: true,
-        defaultValue: null
-      }
     });
   },
 

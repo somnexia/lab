@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.createTable('storage_units', {
+    await queryInterface.createTable('storageunits', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -12,7 +12,8 @@ module.exports = {
       },
       storage_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
+        defaultValue: null,
         references: {
           model: 'chemstorages',
           key: 'id'
@@ -24,7 +25,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-          model: 'storage_units',
+          model: 'storageunits',
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -107,6 +108,6 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.dropTable('storage_units');
+    await queryInterface.dropTable('storageunits');
   }
 };

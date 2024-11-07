@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('inventories', {
       id: {
         type: Sequelize.INTEGER,
@@ -10,9 +10,10 @@ module.exports = {
         autoIncrement: true,
         allowNull: false,
       },
-      unique_id: {
-        type: Sequelize.STRING(50),
+      reference_id: {
+        type: Sequelize.INTEGER,
         allowNull: false,
+        comment: "ID ссылки на запись в одной из связанных таблиц"
       },
       item_name: {
         type: Sequelize.STRING(100),
@@ -23,6 +24,7 @@ module.exports = {
         type: Sequelize.ENUM('element', 'compound', 'mixture', 'equipment'),
         allowNull: true,
         defaultValue: null,
+        comment: "Тип связанной записи('element','equipment','compound','mixture')"
       },
       quantity: {
         type: Sequelize.INTEGER,
@@ -43,6 +45,12 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
         defaultValue: null,
+        references: {
+          model: 'chemstorages',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       receipt_date: {
         type: Sequelize.DATE,
@@ -90,10 +98,12 @@ module.exports = {
       //   allowNull: false,
       //   defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
       // },
+
     });
+    await queryInterface.addIndex('Inventories', ['reference_id', 'item_type']);
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('inventories');
   }
 };
