@@ -7,6 +7,9 @@ const exphbs = require("express-handlebars")
 const db = require("../server/data/db")
 const morgan = require('morgan');
 
+
+
+
 const app = express();
 
 app.use(morgan('dev')); // Это будет логировать запросы в консоль
@@ -24,7 +27,9 @@ const hbs = exphbs.create({
   extname: "hbs"
 })
 app.use(morgan('dev'));
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3001'
+}));
 app.use(bodyParser.json());
 app.use(express.json());
 app.engine("hbs", hbs.engine)
@@ -36,6 +41,7 @@ app.use(express.urlencoded({ extended: true }))
 
 // Используем основной файл маршрутов
 app.use('/', routes);
+
 
 
 

@@ -1,0 +1,24 @@
+
+# GET http://localhost:3000/api/inventory-storage-unit/inventories-by-storageunit?storageunit_id=1
+# http://localhost:3000/api/inventories-by-storageunit/1
+# http://localhost:3000/api/inventory-storage-unit/inventories-by-storageunit/1/inventories`
+# GET http://localhost:3000/api/storageUnits/1/inventories
+    # GET http://localhost:3000/api/storageUnits/1/inventories
+# get http://localhost:3000/api/Chemequipments/equipments?category=general
+
+
+# GET http://localhost:3000/api/Chemequipments/equipments?category=general
+
+# GET http://localhost:3000/api/chemEquipments/groups?category=general
+
+
+
+
+# GET http://localhost:3000/api/Chemequipments/equipments?category=specialized&group=Stirring+Equipment
+
+
+# GET http://localhost:3000/api/ChemEquipments/equipments?category=specialized&group=Storage%20Equipment
+
+
+
+GET http://localhost:3000/api/inventoryStorageUnit/15/inventories-with-location
