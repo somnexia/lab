@@ -26,12 +26,12 @@ module.exports = {
         defaultValue: null,
         comment: "Тип связанной записи('element','equipment','compound','mixture')"
       },
-      quantity: {
+      total_quantity: {
         type: Sequelize.INTEGER,
         allowNull: true,
         defaultValue: null,
       },
-      substance_quantity: {
+      substance_amount: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: true,
         defaultValue: null,
@@ -41,10 +41,20 @@ module.exports = {
         allowNull: true,
         defaultValue: null,
       },
+      // storageunit_id: {
+      //   type: Sequelize.INTEGER,
+      //   allowNull: true,
+      //   defaultValue: null,
+      //   references: {
+      //     model: 'storageunits', // Должно совпадать с названием таблицы Laboratory
+      //     key: 'id'
+      //   },
+      //   onUpdate: 'CASCADE',
+      //   onDelete: 'CASCADE'
+      // },
       storage_id: {
         type: Sequelize.INTEGER,
-        allowNull: true,
-        defaultValue: null,
+        allowNull: false,
         references: {
           model: 'chemstorages',
           key: 'id'
@@ -88,16 +98,7 @@ module.exports = {
         allowNull: true,
         defaultValue: null,
       },
-      // createdAt: {
-      //   type: Sequelize.DATE,
-      //   allowNull: false,
-      //   defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
-      // },
-      // updatedAt: {
-      //   type: Sequelize.DATE,
-      //   allowNull: false,
-      //   defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
-      // },
+      
 
     });
     await queryInterface.addIndex('Inventories', ['reference_id', 'item_type']);

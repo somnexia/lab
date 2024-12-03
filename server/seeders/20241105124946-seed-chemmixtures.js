@@ -2,11 +2,11 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert('chemmixtures', [
       {
         id: 1,
-        unique_id: 'M0001',
+        cas_id: '7647-14-5',
         name: 'Water - Sodium Chloride Solution',
         composition: 'Water, Sodium Chloride',
         physical_properties: 'Clear liquid',
@@ -17,7 +17,7 @@ module.exports = {
       },
       {
         id: 2,
-        unique_id: 'M0002',
+        cas_id: '50-99-7',
         name: 'Glucose Solution',
         composition: 'Water, Glucose',
         physical_properties: 'Clear liquid',
@@ -28,7 +28,7 @@ module.exports = {
       },
       {
         id: 3,
-        unique_id: 'M0003',
+        cas_id: '7647-14-5', 
         name: 'Diluted Sodium Chloride Solution',
         composition: 'Water, Sodium Chloride',
         physical_properties: 'Clear liquid',
@@ -39,7 +39,7 @@ module.exports = {
       },
       {
         id: 4,
-        unique_id: 'M0004',
+        cas_id: '7664-41-7',
         name: 'Ammonia Solution',
         composition: 'Water, Ammonia',
         physical_properties: 'Clear liquid with a pungent smell',
@@ -50,7 +50,7 @@ module.exports = {
       },
       {
         id: 5,
-        unique_id: 'M0005',
+        cas_id: '630-08-0',
         name: 'Carbon Monoxide',
         composition: 'Carbon Monoxide',
         physical_properties: 'Gas',
@@ -59,23 +59,23 @@ module.exports = {
         aggregate_state: 'Gas',
         description: 'Used in various industrial processes.'
       },
-      // Add additional entries here for other mixtures
+
       {
         id: 20,
-        unique_id: 'M0020',
+        cas_id: '107-21-1',
         name: 'Ethylene Glycol and Nitric Acid Mixture',
         composition: 'Ethylene Glycol, Nitric Acid',
         physical_properties: 'Viscous liquid',
         chemical_properties: 'Corrosive and toxic',
         mixture_type: 'Heterogeneous',
         aggregate_state: 'Liquid',
-        description: 'Used as antifreeze and in industrial applications.'
+        description: 'CAS-2: 7697-37-2. Used as antifreeze and in industrial applications.'
       },
     ]);
   },
 
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete('chemmixtures', null, {});
   }
 };

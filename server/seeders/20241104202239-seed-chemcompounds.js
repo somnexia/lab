@@ -2,11 +2,11 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     return queryInterface.bulkInsert('chemcompounds', [
       {
         id: 1,
-        unique_id: 'C0001',
+        cas_id: '7732-18-5',
         name: 'Water',
         formula: 'H2O',
         molecular_weight: 18.0150,
@@ -15,7 +15,7 @@ module.exports = {
       },
       {
         id: 2,
-        unique_id: 'C0002',
+        cas_id: '124-38-9',
         name: 'Carbon Dioxide',
         formula: 'CO2',
         molecular_weight: 44.0100,
@@ -24,7 +24,7 @@ module.exports = {
       },
       {
         id: 3,
-        unique_id: 'C0003',
+        cas_id: '7647-14-5',
         name: 'Sodium Chloride',
         formula: 'NaCl',
         molecular_weight: 58.4400,
@@ -33,7 +33,7 @@ module.exports = {
       },
       {
         id: 4,
-        unique_id: 'C0004',
+        cas_id: '7664-41-7',
         name: 'Ammonia',
         formula: 'NH3',
         molecular_weight: 17.0310,
@@ -42,7 +42,7 @@ module.exports = {
       },
       {
         id: 5,
-        unique_id: 'C0005',
+        cas_id: '630-08-0',
         name: 'Carbon Monoxide',
         formula: 'CO',
         molecular_weight: 28.0100,
@@ -51,7 +51,7 @@ module.exports = {
       },
       {
         id: 6,
-        unique_id: 'C0006',
+        cas_id: '67-56-1',
         name: 'Methanol',
         formula: 'CH3OH',
         molecular_weight: 32.0400,
@@ -60,7 +60,7 @@ module.exports = {
       },
       {
         id: 7,
-        unique_id: 'C0007',
+        cas_id: '64-19-7',
         name: 'Acetic Acid',
         formula: 'CH3COOH',
         molecular_weight: 60.0520,
@@ -69,7 +69,7 @@ module.exports = {
       },
       {
         id: 8,
-        unique_id: 'C0008',
+        cas_id: '50-99-7',
         name: 'Glucose',
         formula: 'C6H12O6',
         molecular_weight: 180.1560,
@@ -78,7 +78,7 @@ module.exports = {
       },
       {
         id: 9,
-        unique_id: 'C0009',
+        cas_id: '7647-01-0',
         name: 'Hydrochloric Acid',
         formula: 'HCl',
         molecular_weight: 36.4610,
@@ -87,7 +87,7 @@ module.exports = {
       },
       {
         id: 10,
-        unique_id: 'C0010',
+        cas_id: '64-17-5',
         name: 'Ethanol',
         formula: 'C2H6O',
         molecular_weight: 46.0700,
@@ -96,7 +96,7 @@ module.exports = {
       },
       {
         id: 11,
-        unique_id: 'C0011',
+        cas_id: '7664-93-9',
         name: 'Sulfuric Acid',
         formula: 'H2SO4',
         molecular_weight: 98.0790,
@@ -105,7 +105,7 @@ module.exports = {
       },
       {
         id: 12,
-        unique_id: 'C0012',
+        cas_id: '7697-37-2',
         name: 'Nitric Acid',
         formula: 'HNO3',
         molecular_weight: 63.0120,
@@ -114,7 +114,7 @@ module.exports = {
       },
       {
         id: 13,
-        unique_id: 'C0013',
+        cas_id: '67-64-1',
         name: 'Acetone',
         formula: 'C3H6O',
         molecular_weight: 58.0800,
@@ -123,7 +123,7 @@ module.exports = {
       },
       {
         id: 14,
-        unique_id: 'C0014',
+        cas_id: '1336-21-6',
         name: 'Ammonium Hydroxide',
         formula: 'NH4OH',
         molecular_weight: 35.0500,
@@ -132,7 +132,7 @@ module.exports = {
       },
       {
         id: 15,
-        unique_id: 'C0015',
+        cas_id: '7664-38-2',
         name: 'Phosphoric Acid',
         formula: 'H3PO4',
         molecular_weight: 97.9940,
@@ -141,7 +141,7 @@ module.exports = {
       },
       {
         id: 16,
-        unique_id: 'C0016',
+        cas_id: '107-21-1',
         name: 'Ethylene Glycol',
         formula: 'C2H6O2',
         molecular_weight: 62.0700,
@@ -151,7 +151,7 @@ module.exports = {
     ]);
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     return queryInterface.bulkDelete('chemcompounds', null, {});
   }
 };

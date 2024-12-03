@@ -10,10 +10,10 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      unique_id: {
+      cas_id: {
         type: Sequelize.STRING(50),
         allowNull: false,
-        unique: true
+        unique: false
       },
       parent_id: {
         type: Sequelize.INTEGER,

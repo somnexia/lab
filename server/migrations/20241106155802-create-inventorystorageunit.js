@@ -20,7 +20,7 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      storage_unit_id: {
+      storageunit_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
