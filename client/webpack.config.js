@@ -1,12 +1,17 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
+    // plugins: [
+    //     new webpack.IgnorePlugin({ resourceRegExp: /^\.\/locale$/, contextRegExp: /moment$/ })
+    // ],
     entry: './src/index.js',
     output: {
-        path: path.resolve(__dirname,'dist'),
+        path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js',
         publicPath: '/',
     },
+
 
     stats: {
         all: false,
@@ -34,10 +39,18 @@ module.exports = {
                 test: /\.svg$/,
                 use: ['file-loader'],  // или замените на 'url-loader'
             },
+            {
+                test: /\.scss$/, // добавляем правило для SCSS файлов
+                use: [
+                    'style-loader',  // Встраивает CSS в DOM
+                    'css-loader',    // Преобразует CSS в CommonJS
+                    'sass-loader',   // Компилирует Sass в CSS
+                ],
+            },
         ],
     },
     resolve: {
-        extensions: ['.js', '.jsx'],
+        extensions: ['.js', '.jsx', '.json', '.css', '.scss'],
     },
     devServer: {
         static: {

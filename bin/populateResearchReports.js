@@ -1,8 +1,8 @@
 // populateResearchReports.js
 const fs = require('fs');
 const path = require('path');
-const { ResearchReport, Research, Experiment, ExperimentExpenses, ExperimentResults } = require('./models'); // Подключаем модели
-const sequelize = require('./models').sequelize;
+const { ResearchReport, Research, Experiment, ExperimentExpenses, ExperimentResults } = require('../server/models'); // Подключаем модели
+const sequelize = require('../server/models').sequelize;
 
 async function populateResearchReports() {
   try {
