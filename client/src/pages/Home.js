@@ -1,18 +1,18 @@
 import React, { Component } from 'react'
-import CreateProject from '../components/CreateProject'
+// import CreateProject from '../components/CreateProject'
 
 export class Home extends Component {
 	render() {
 		return (
 			<><aside className='vertical-nav col-2'>
 
-				<div className="d-flex flex-column flex-shrink-0 p-3 text-bg-dark">
+				{/* <div className="d-flex flex-column navbar-vertical navbar navbar-expand-lg p-3 bg-dark">
 					<a href="/" className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
 
 						<span className="fs-4 py-2">Search</span>
 					</a>
 					<hr></hr>
-					<h6 class="navbar-heading text-secondary">Pages</h6>
+					<h6 className="navbar-heading text-secondary">Pages</h6>
 
 					<div className="vertical-nav-scroll" data-bs-spy="scroll" data-bs-target="#navId">
 
@@ -98,7 +98,7 @@ export class Home extends Component {
 							</li>
 						</ul>
 						<hr></hr>
-						<h6 class="navbar-heading text-secondary">Documentation</h6>
+						<h6 className="navbar-heading text-secondary">Documentation</h6>
 
 						<ul className="nav nav-pills">
 
@@ -156,7 +156,7 @@ export class Home extends Component {
 							</div>
 						</ul>
 					</div>
-				</div>
+				</div> */}
 
 
 
@@ -164,69 +164,10 @@ export class Home extends Component {
 			</aside>
 
 				<main>
-					<nav className="navbar navbar-expand-lg navbar-dark p-3 flex-column">
-						<div className="container-fluid col-12 px-4">
-							<button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDarkDropdown" aria-controls="navbarNavDarkDropdown" aria-expanded="false" aria-label="Toggle navigation">
-								<span className="navbar-toggler-icon"></span>
-							</button>
-							<div class="col-2">
-								<span class="header-pretitle text-secondary ">Overview</span>
-								<h4 class="header-title">Dashboard</h4>
-							</div>
-							<div className="collapse navbar-collapse" id="navbarNavDarkDropdown">
-								<ul className="navbar-nav">
-									<li className="nav-item dropdown">
-										<button className="btn text-white dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-											Dashboards
-										</button>
-										<ul className="dropdown-menu dropdown-menu-dark">
-											<li><a className="dropdown-item" href="#">Action</a></li>
-											<li><a className="dropdown-item" href="#">Another action</a></li>
-											<li><a className="dropdown-item" href="#">Something else here</a></li>
-										</ul>
-									</li>
-									<li className="nav-item dropdown">
-										<button className="btn text-white dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-											Apps
-										</button>
-										<ul className="dropdown-menu dropdown-menu-dark">
-											<li><a className="dropdown-item" href="#">Action</a></li>
-											<li><a className="dropdown-item" href="#">Another action</a></li>
-											<li><a className="dropdown-item" href="#">Something else here</a></li>
-										</ul>
-									</li>
-									<li className="nav-item dropdown">
-										<button className="btn text-white dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-											Pages
-										</button>
-										<ul className="dropdown-menu dropdown-menu-dark">
-											<li><a className="dropdown-item" href="#">Action</a></li>
-											<li><a className="dropdown-item" href="#">Another action</a></li>
-											<li><a className="dropdown-item" href="#">Something else here</a></li>
-										</ul>
-									</li>
-									<li className="nav-item dropdown">
-										<button className="btn text-white dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-											Components
-										</button>
-										<ul className="dropdown-menu dropdown-menu-dark">
-											<li><a className="dropdown-item" href="#">Action</a></li>
-											<li><a className="dropdown-item" href="#">Another action</a></li>
-											<li><a className="dropdown-item" href="#">Something else here</a></li>
-										</ul>
-									</li>
-
-								</ul>
-							</div>
+					
 
 
-						</div>
-						<hr></hr>
-
-					</nav>
-
-
-					<CreateProject></CreateProject>
+					{/* <CreateProject></CreateProject> */}
 
 				</main></>
 
