@@ -34,6 +34,22 @@ const getInventoryItemById = async (req, res) => {
   }
 };
 
+const getInventoriesByStorageUnitId = async (req, res) => {
+  try {
+    const { storageunit_id } = req.query;
+    if (!storageunit_id) {
+      return res.status(400).json({ error: "storageunit_id is required" });
+    }
+
+    const inventories = await inventoryService.getInventoriesByStorageUnitId(storageunit_id);
+    res.status(200).json(inventories);
+  } catch (error) {
+    console.error("Ошибка при получении инвентаря:", error);
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+};
+
+
 // Обновление записи инвентаря по ID
 const updateInventoryItem = async (req, res) => {
   const { id } = req.params;
@@ -62,6 +78,7 @@ module.exports = {
   createInventoryItem,
   getAllInventoryItems,
   getInventoryItemById,
+  getInventoriesByStorageUnitId,
   updateInventoryItem,
   deleteInventoryItem
 };

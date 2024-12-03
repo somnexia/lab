@@ -34,6 +34,20 @@ const getChemEquipmentById = async (req, res) => {
   }
 };
 
+const getChemEquipmentByCategory = async (req, res) => {
+  const { category } = req.query; // Категория передается как query параметр
+  try {
+    if (!category) {
+      return res.status(400).json({ error: "Параметр 'category' обязателен" });
+    }
+    const equipments = await chemEquipmentService.getChemEquipmentByCategory(category);
+    return res.status(200).json(equipments);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 // Обновление информации об оборудовании по уникальному идентификатору
 const updateChemEquipment = async (req, res) => {
   const { id } = req.params;
@@ -58,10 +72,57 @@ const deleteChemEquipment = async (req, res) => {
   }
 };
 
+
+
+const getGroupsByCategory = async (req, res) => {
+  const { category } = req.query;
+    try {
+        
+
+        if (!category) {
+            return res.status(400).json({ message: "Категория не указана." });
+        }
+
+        // Вызов сервиса для получения групп
+        const groups = await chemEquipmentService.getGroupsByCategory(category);
+
+        res.status(200).json(groups); // Возвращаем массив групп
+    } catch (error) {
+        console.error("Ошибка в getGroupsByCategory контроллере:", error);
+        res.status(500).json({ message: "Ошибка сервера при получении групп." });
+    }
+};
+
+const getChemEquipmentByCategoryAndGroup = async (req, res) => {
+  const { category, group } = req.query;
+
+  try {
+    // Проверяем, что категория передана
+    if (!category) {
+      return res.status(400).json({ message: "Категория обязательна" });
+    }
+
+    // Получаем оборудование по категории и группе
+    const equipment = await chemEquipmentService.getChemEquipmentByCategoryAndGroup(category, group);
+    
+    // Возвращаем результаты
+    return res.json(equipment);
+  } catch (error) {
+    console.error("Ошибка при получении оборудования по категории и группе:", error);
+    return res.status(500).json({ message: "Ошибка сервера" });
+  }
+};
+
+
+
 module.exports = {
   createChemEquipment,
   getAllChemEquipments,
   getChemEquipmentById,
+  getChemEquipmentByCategory,
   updateChemEquipment,
-  deleteChemEquipment
+  deleteChemEquipment,
+  getGroupsByCategory,
+  getChemEquipmentByCategoryAndGroup,
+
 };
