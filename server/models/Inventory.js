@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
   class Inventory extends Model {
     static associate(models) {
       Inventory.belongsToMany(models.StorageUnit, {
-        through: 'inventorystorageunits',  // Название промежуточной таблицы
+        through: models.InventoryStorageUnit,  // Название промежуточной таблицы
         foreignKey: 'inventory_id',
         otherKey: 'storageunit_id',
         as: 'storageUnits'
@@ -37,6 +37,11 @@ module.exports = (sequelize, DataTypes) => {
         constraints: false,
         as: 'chemCompound'
       });
+      Inventory.belongsTo(models.ChemMixture, {
+        foreignKey: 'reference_id',
+        constraints: false,
+        as: 'chemMixture'
+      });
     }
   }
 
@@ -61,12 +66,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       defaultValue: null
     },
-    quantity: {
+    total_quantity: {
       type: DataTypes.INTEGER,
       allowNull: true,
       defaultValue: null
     },
-    substance_quantity: {
+    substance_amount: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: true,
       defaultValue: null
@@ -76,16 +81,16 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       defaultValue: null
     },
-    storageunit_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'storageunits', // Должно совпадать с названием таблицы Laboratory
-        key: 'id'
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE'
-    },
+    // storageunit_id: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    //   references: {
+    //     model: 'storageunits', // Должно совпадать с названием таблицы Laboratory
+    //     key: 'id'
+    //   },
+    //   onUpdate: 'CASCADE',
+    //   onDelete: 'CASCADE'
+    // },
     storage_id: {
       type: DataTypes.INTEGER,
       allowNull: false,

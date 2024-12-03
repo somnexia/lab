@@ -6,11 +6,12 @@ module.exports = (sequelize, DataTypes) => {
   class StorageUnit extends Model {
     static associate(models) {
       StorageUnit.belongsToMany(models.Inventory, {
-        through: 'InventoryStorageUnit',
+        through: models.InventoryStorageUnit,
         foreignKey: 'storageunit_id',
         otherKey: 'inventory_id',
         as: 'inventories'
       });
+      
       // Привязка к основной зоне хранения
       StorageUnit.belongsTo(models.ChemStorage, { foreignKey: 'storage_id' });
 

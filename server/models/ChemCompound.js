@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       allowNull: false
     },
-    unique_id: {
+    cas_id: {
       type: DataTypes.STRING(50),
       unique: true,
       allowNull: false

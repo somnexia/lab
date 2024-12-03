@@ -1,4 +1,3 @@
-
 'use strict';
 const { Model } = require('sequelize');
 
@@ -9,16 +8,16 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'reference_id',
         constraints: false,
         scope: { item_type: 'equipment' },
-        as: 'inventories'
-    });
-    ChemEquipment.belongsTo(models.ChemEquipment, {
-      foreignKey: 'parent_id',
-      as: 'parent',
-    });
-    ChemEquipment.hasMany(models.ChemEquipment, {
-      foreignKey: 'parent_id',
-      as: 'children',
-    });
+        as: 'inventories',
+      });
+      ChemEquipment.belongsTo(models.ChemEquipment, {
+        foreignKey: 'parent_id',
+        as: 'parent',
+      });
+      ChemEquipment.hasMany(models.ChemEquipment, {
+        foreignKey: 'parent_id',
+        as: 'children',
+      });
     }
   }
 
@@ -27,52 +26,67 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     unique_id: {
       type: DataTypes.STRING(50),
       unique: true,
-      allowNull: false
+      allowNull: false,
     },
     parent_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
         model: 'chemequipments',
-        key: 'id'
+        key: 'id',
       },
       onUpdate: 'CASCADE',
-      onDelete: 'SET NULL'
+      onDelete: 'SET NULL',
     },
     name: {
       type: DataTypes.STRING(50),
-      allowNull: false
+      allowNull: false,
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
-      defaultValue: null
+      defaultValue: null,
     },
     manufacturer: {
       type: DataTypes.STRING(50),
       allowNull: true,
-      defaultValue: null
+      defaultValue: null,
     },
     model: {
       type: DataTypes.STRING(50),
       allowNull: true,
-      defaultValue: null
+      defaultValue: null,
     },
     material: {
       type: DataTypes.STRING(50),
       allowNull: true,
-      defaultValue: null
-    }
+      defaultValue: null,
+    },
+    category: {
+      type: DataTypes.ENUM(
+        'general',
+        'specialized',
+        'measuring',
+        'analytical',
+        'testing'
+      ),
+      allowNull: false,
+    },
+    group: {
+      type: DataTypes.STRING(50), // Для подгрупп внутри категории
+      allowNull: true,
+    },
+
   }, {
     sequelize,
     modelName: 'ChemEquipment',
-    tableName: 'chemequipments',  // Название таблицы в БД
-    timestamps: false  // Отключаем автоматические поля createdAt и updatedAt
+    tableName: 'chemequipments', // Название таблицы в БД
+    timestamps: false, // Отключаем автоматические поля createdAt и updatedAt
   });
 
   return ChemEquipment;

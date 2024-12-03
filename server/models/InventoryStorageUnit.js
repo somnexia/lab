@@ -4,11 +4,18 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     class InventoryStorageUnit extends Model {
         static associate(models) {
-
+            InventoryStorageUnit.belongsTo(models.Inventory, { foreignKey: 'inventory_id', as: 'inventory' });
+            InventoryStorageUnit.belongsTo(models.StorageUnit, { foreignKey: 'storageunit_id', as: 'storageUnit' });
+           
         }
     }
 
     InventoryStorageUnit.init({
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
         inventory_id: {
             type: DataTypes.INTEGER,
             references: {
