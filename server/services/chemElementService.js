@@ -30,6 +30,8 @@ const getChemElementById = async (id) => {
   }
 };
 
+
+
 // Обновить элемент
 const updateChemElement = async (id, data) => {
   try {

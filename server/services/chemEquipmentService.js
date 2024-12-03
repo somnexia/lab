@@ -1,4 +1,5 @@
 const { ChemEquipment } = require('../models');
+const { Sequelize } = require("sequelize");
 
 // Создание нового оборудования
 const createChemEquipment = async (data) => {
@@ -35,6 +36,15 @@ const getChemEquipmentById = async (id) => {
   }
 };
 
+const getChemEquipmentByCategory = async (category) => {
+  try {
+    return await ChemEquipment.findAll({ where: { category } });
+  } catch (error) {
+    console.error('Ошибка при получении оборудования по категории:', error);
+    throw error;
+  }
+};
+
 // Обновление информации об оборудовании по уникальному идентификатору
 const updateChemEquipment = async (id, data) => {
   try {
@@ -65,10 +75,56 @@ const deleteChemEquipment = async (id) => {
   }
 };
 
+const getGroupsByCategory = async (category) => {
+  try {
+      // Проверяем, передана ли категория
+      if (!category) {
+          throw new Error("Категория не указана.");
+      }
+
+      // Получаем уникальные значения групп для указанной категории
+      const groups = await ChemEquipment.findAll({
+          attributes: [
+              [Sequelize.fn("DISTINCT", Sequelize.col("group")), "group"],
+          ],
+          where: { category },
+      });
+
+      return groups.map((g) => g.group); // Преобразуем результат в массив строк
+  } catch (error) {
+      console.error("Ошибка в getGroupsByCategory:", error);
+      throw new Error("Ошибка сервера при получении групп."); // Пробрасываем ошибку для обработки в контроллере
+  }
+};
+
+const getChemEquipmentByCategoryAndGroup = async (category, group) => {
+  try {
+    // Формируем условия поиска: фильтруем по категории и группе
+    const whereConditions = { category };
+
+    // Если передана группа, добавляем её в фильтр
+    if (group) {
+      whereConditions.group = group;
+    }
+
+    // Выполняем запрос с фильтрацией по категории и группе
+    const equipment = await ChemEquipment.findAll({ where: whereConditions });
+    return equipment;
+  } catch (error) {
+    console.error('Ошибка при получении оборудования по категории и группе:', error);
+    throw error;
+  }
+};
+
+
+
 module.exports = {
   createChemEquipment,
   getAllChemEquipments,
   getChemEquipmentById,
+  getChemEquipmentByCategory,
   updateChemEquipment,
-  deleteChemEquipment
+  deleteChemEquipment,
+  getGroupsByCategory,
+  getChemEquipmentByCategoryAndGroup,
 };

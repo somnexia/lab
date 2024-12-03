@@ -34,6 +34,22 @@ const getInventoryItemById = async (id) => {
     throw error;
   }
 };
+// const getInventoriesByStorageUnitId = async (storageunit_id) => {
+//   try {
+//     console.log(`Получение записей для StorageUnit ID: ${storageunit_id}`);
+//     const inventoryItems = await Inventory.findAll({
+//       where: { storageunit_id },
+//     });
+//     console.log('Найденные записи:', inventoryItems);
+//     if (!inventoryItems.length) {
+//       throw new Error(`Записи Inventory для StorageUnit с id ${storageunit_id} не найдены`);
+//     }
+//     return inventoryItems;
+//   } catch (error) {
+//     console.error('Ошибка при получении записей Inventory по StorageUnit ID:', error);
+//     throw error;
+//   }
+// };
 
 // Обновление записи Inventory по ID
 const updateInventoryItem = async (id, data) => {
