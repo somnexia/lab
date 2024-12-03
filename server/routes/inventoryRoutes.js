@@ -11,6 +11,8 @@ router.get('/', inventoryController.getAllInventoryItems);
 // Получение записи инвентаря по ID
 router.get('/:id', inventoryController.getInventoryItemById);
 
+router.get('/inventories', inventoryController.getInventoriesByStorageUnitId);
+
 // Обновление записи инвентаря по ID
 router.put('/:id', inventoryController.updateInventoryItem);
 

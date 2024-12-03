@@ -8,6 +8,10 @@ router.post('/', chemEquipmentController.createChemEquipment);
 // Получение всех единиц оборудования
 router.get('/', chemEquipmentController.getAllChemEquipments);
 
+router.get('/equipments', chemEquipmentController.getChemEquipmentByCategory);
+
+router.get("/groups", chemEquipmentController.getGroupsByCategory);
+
 // Получение оборудования по уникальному идентификатору
 router.get('/:id', chemEquipmentController.getChemEquipmentById);
 
@@ -16,5 +20,9 @@ router.put('/:id', chemEquipmentController.updateChemEquipment);
 
 // Удаление оборудования по уникальному идентификатору
 router.delete('/:id', chemEquipmentController.deleteChemEquipment);
+
+
+router.get('/equipments', chemEquipmentController.getChemEquipmentByCategoryAndGroup);
+
 
 module.exports = router;
