@@ -32,7 +32,8 @@ const StorageUnitList = () => {
         setLoadingInventory(true);
         try {
             const response = await axios.get(
-                `http://localhost:3000/api/storageUnits/${storageUnitId}/inventories`
+                `http://localhost:3000/api/inventoryStorageUnit/${storageUnitId}/inventories`
+                
             );
             setSelectedInventory(response.data);
         } catch (error) {

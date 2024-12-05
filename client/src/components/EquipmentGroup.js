@@ -22,7 +22,7 @@ class EquipmentGroup extends Component {
         return (
             <>
                 <div className="card-header pt-3 border-0">
-                    <h3 className="card-header-title">Storage Units</h3>
+                    <h3 className="card-header-title">Equipment List</h3>
                 </div>
 
                 <div className="form-group pt-3 border-0 px-3">

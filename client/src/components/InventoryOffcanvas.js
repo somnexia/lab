@@ -10,10 +10,6 @@ const InventoryOffcanvas = ({ isLoading, inventories, storageUnit, onClose }) =>
                     {/* <h5 className="offcanvas-title" id="offcanvasInventoryLabel">
                         <span>{storageUnit?.unit_name || 'Неизвестный блок'}</span>
                     </h5> */}
-
-
-
-
                     <button
                         type="button"
                         className="btn-close"
@@ -24,9 +20,9 @@ const InventoryOffcanvas = ({ isLoading, inventories, storageUnit, onClose }) =>
                 </div>
                 <div className="offcanvas-body">
                     {isLoading ? (
-                        <p>Загрузка...</p>
+                        <div>Loading...</div>
                     ) : inventories.length === 0 ? (
-                        <p>Инвентарь отсутствует</p>
+                        <h3>Currently no inventory in storage</h3>
                     ) : (
 
 
