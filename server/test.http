@@ -21,4 +21,10 @@
 
 
 
-GET http://localhost:3000/api/inventoryStorageUnit/15/inventories-with-location
+# GET http://localhost:3000/api/inventoryStorageUnit/15/inventories-with-location
+
+# GET http://localhost:3000/api/inventoryStorageUnit/15/inventories
+
+get http://localhost:3000/api/chemEquipments/2/locations
+
+    # GET http://localhost:3000/api/inventoryStorageUnit/1/inventories

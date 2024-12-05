@@ -1,4 +1,5 @@
-const { ChemEquipment } = require('../models');
+const { ChemEquipment, Inventory, StorageUnit } = require('../models');
+
 const { Sequelize } = require("sequelize");
 
 // Создание нового оборудования
@@ -115,6 +116,42 @@ const getChemEquipmentByCategoryAndGroup = async (category, group) => {
     throw error;
   }
 };
+const getLocationsForEquipment = async (equipmentId) => {
+  try {
+      const equipment = await ChemEquipment.findByPk(equipmentId, {
+          include: [
+              {
+                  model: Inventory,
+                  as: 'inventories',
+                  include: [
+                      {
+                          model: StorageUnit,
+                          as: 'storageUnits',
+                          include: [
+                              {
+                                  model: StorageUnit,
+                                  as: 'parent', // Загружаем родительские единицы
+                                  hierarchy: true, // Если используется иерархическая структура
+                              },
+                          ],
+                      },
+                  ],
+              },
+          ],
+      });
+
+      if (!equipment) {
+          throw new Error(`Оборудование с ID ${equipmentId} не найдено.`);
+      }
+
+      return equipment;
+  } catch (error) {
+      console.error('Ошибка при получении расположения оборудования:', error);
+      throw error;
+  }
+};
+
+
 
 
 
@@ -127,4 +164,5 @@ module.exports = {
   deleteChemEquipment,
   getGroupsByCategory,
   getChemEquipmentByCategoryAndGroup,
+  getLocationsForEquipment
 };

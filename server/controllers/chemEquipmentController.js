@@ -112,6 +112,24 @@ const getChemEquipmentByCategoryAndGroup = async (req, res) => {
     return res.status(500).json({ message: "Ошибка сервера" });
   }
 };
+const getLocationsForEquipment = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    if (!id) {
+      return res.status(400).json({ message: "ID оборудования обязателен" });
+    }
+
+    const equipmentWithLocation = await chemEquipmentService.getLocationsForEquipment(id);
+
+    return res.status(200).json(equipmentWithLocation);
+  } catch (error) {
+    console.error('Ошибка при получении расположения оборудования:', error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+
 
 
 
@@ -124,5 +142,5 @@ module.exports = {
   deleteChemEquipment,
   getGroupsByCategory,
   getChemEquipmentByCategoryAndGroup,
-
+  getLocationsForEquipment
 };

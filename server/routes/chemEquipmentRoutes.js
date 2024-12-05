@@ -24,5 +24,7 @@ router.delete('/:id', chemEquipmentController.deleteChemEquipment);
 
 router.get('/equipments', chemEquipmentController.getChemEquipmentByCategoryAndGroup);
 
+router.get('/:id/locations', chemEquipmentController.getLocationsForEquipment);
+
 
 module.exports = router;
