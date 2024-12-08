@@ -110,10 +110,11 @@ class EquipmentOffcanvas extends Component {
                                                 <th>description</th>
                                                 <th>Storage Unit ID</th>
                                                 <th>Unit Name</th>
+                                                <th>Location</th>
                                                 <th>Quantity In Unit</th>
                                                 <th>Storage ID</th>
                                                 <th>Status</th>
-                                                <th>Location</th>
+                                                
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -126,10 +127,11 @@ class EquipmentOffcanvas extends Component {
                                                     <td>{unit.description || "N/A"}</td>
                                                     <td>{unit.InventoryStorageUnit?.storageunit_id || "N/A"}</td>
                                                     <td>{unit.unit_name || "N/A"}</td>
+                                                    <td>{unit.location || "N/A"}</td>
                                                     <td>{unit.InventoryStorageUnit?.quantity || "N/A"}</td>
                                                     <td>{unit.storage_id}</td>
                                                     <td>{unit.status || "N/A"}</td>
-                                                    <td>{unit.location || "N/A"}</td>
+                                                    
                                                 </tr>
 
                                             ))}

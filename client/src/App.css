@@ -56,8 +56,24 @@
     width: 35rem;
     top: var(--lab-navbar-top-height);
     background-color: var(--lab-body-bg);
+    color: white;
 
 }
+.offcanvas.cart-offcanvas{
+    
+    width: 25rem;
+    top: var(--lab-navbar-top-height);
+    background-color: var(--lab-body-bg);
+    color: white;
+    max-height: 480px;
+    height:max-content;
+
+}
+
+.btn-close.btn-close-white {
+    filter: invert(1);
+}
+
 
 
 

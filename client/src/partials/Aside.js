@@ -20,13 +20,38 @@ import { IoSettingsOutline } from "react-icons/io5";
 import { RiGraduationCapLine } from "react-icons/ri";
 import { LuGraduationCap } from "react-icons/lu";
 import { Link } from "react-router-dom";
-import React  from "react";
+import React from "react";
 
 
 
 
 class Aside extends React.Component {
     state = {}
+
+    // handleOffcanvasSettingsOpen = () => {
+    //     const offcanvasElement = document.getElementById("offcanvasSettings");
+    //     if (offcanvasElement) {
+    //         const bootstrap = require("bootstrap");
+    //         const offcanvasInstance = new bootstrap.Offcanvas(offcanvasElement);
+    //         offcanvasInstance.show();
+    //     }
+    // };
+    // handleOffcanvasAccountOpen = () => {
+    //     const offcanvasElement = document.getElementById("offcanvasAccount");
+    //     if (offcanvasElement) {
+    //         const bootstrap = require("bootstrap");
+    //         const offcanvasInstance = new bootstrap.Offcanvas(offcanvasElement);
+    //         offcanvasInstance.show();
+    //     }
+    // };
+    handleOffcanvasOpen = (offcanvasId) => {
+        const offcanvasElement = document.getElementById(offcanvasId);
+        if (offcanvasElement) {
+            const bootstrap = require("bootstrap");
+            const offcanvasInstance = new bootstrap.Offcanvas(offcanvasElement);
+            offcanvasInstance.show();
+        }
+    };
     render() {
         return (
             <aside>
@@ -285,7 +310,8 @@ class Aside extends React.Component {
                                     <div className='mt-auto'></div>
                                     <ul className="nav nav-pills pt-3 pb-2">
                                         <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark collapsed" data-bs-toggle="offcanvas" data-bs-target="#offcanvasAccount">
+                                            <button className="btn btn-dark collapsed" role="button"
+                                                onClick={() => this.handleOffcanvasOpen("offcanvasSettings")}>
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
                                                         <FaRegUserCircle />
@@ -297,7 +323,8 @@ class Aside extends React.Component {
                                             </button>
                                         </li>
                                         <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark collapsed" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings">
+                                            <button className="btn btn-dark collapsed" role="button"
+                                                onClick={() => this.handleOffcanvasOpen("offcanvasAccount")}>
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
                                                         <IoSettingsOutline />
@@ -318,7 +345,7 @@ class Aside extends React.Component {
                         </div>
                     </div>
                     <div className="navbar-vertical-footer">
-                        <button  type="button" className="btn  navbar-vertical-toggle fw-semibold  white-space-nowrap d-flex align-items-center" typeof='button' data-bs-toggle="collapse" data-bs-target="#navbarToggler" aria-expanded="false" aria-controls="navbarToggler">
+                        <button type="button" className="btn  navbar-vertical-toggle fw-semibold  white-space-nowrap d-flex align-items-center" typeof='button' data-bs-toggle="collapse" data-bs-target="#navbarToggler" aria-expanded="false" aria-controls="navbarToggler">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="mb-1">
                                 <path d="M21,11H9.41l2.3-2.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0-.21.33,1,1,0,0,0,0,.76,1,1,0,0,0,.21.33l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42L9.41,13H21a1,1,0,0,0,0-2ZM3,3A1,1,0,0,0,2,4V20a1,1,0,0,0,2,0V4A1,1,0,0,0,3,3Z"></path>
                             </svg><span className="ms-2">Collapsed View</span>

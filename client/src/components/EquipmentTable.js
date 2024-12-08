@@ -61,12 +61,20 @@ class EquipmentTable extends Component {
     handleAddToCart = (equipment) => {
         this.props.onAddToCart(equipment); // Передаем оборудование в родительский компонент
     };
-    handleOpenOffcanvas = (equipment) => {
+    handleOffcanvasOpen = (offcanvasId,equipment) => {
+        const offcanvasElement = document.getElementById(offcanvasId);
+        if (offcanvasElement) {
+            const bootstrap = require("bootstrap");
+            const offcanvasInstance = new bootstrap.Offcanvas(offcanvasElement);
+            offcanvasInstance.show();
+        }
         this.setState({
             isOffcanvasOpen: true,
             selectedEquipment: equipment,
         });
     };
+
+
 
     handleCloseOffcanvas = () => {
         this.setState({
@@ -116,10 +124,8 @@ class EquipmentTable extends Component {
                                             <td>
                                                 <a
                                                     className="btn btn-link text-decoration-none text-light"
-                                                    data-bs-toggle="offcanvas"
-                                                    data-bs-target="#offcanvasEquipmentDetails"
-                                                    aria-controls="offcanvasEquipmentDetails"
-                                                    onClick={() => this.handleOpenOffcanvas(item)}>
+                                                    role="button"
+                                                    onClick={() => this.handleOffcanvasOpen("offcanvasEquipmentDetails",item)}>
                                                     {item.name}
                                                 </a>
                                             </td>

@@ -14,6 +14,8 @@ import Account from "./components/Account";
 import StorageUnitList from "./components/StorageUnitС";
 import Inventory from "./pages/Inventory";
 import StorageUnit from "./components/StorageUnit";
+import CartOffcanvas from "./components/CartOffcanvas";
+
 
 
 
@@ -30,8 +32,9 @@ function App() {
                 <Aside />
                 <Settings />
                 <Account />
+                <CartOffcanvas />
                 <Main />
-                
+
             </div>
         </Router>
 

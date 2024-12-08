@@ -2,7 +2,7 @@ import React from "react";
 
 const InventoryOffcanvas = ({ isLoading, inventories, storageUnit, onClose }) => {
     return (
-        <div className="offcanvas  inventory-offcanvas offcanvas-end " id="offcanvasInventory"
+        <div className="offcanvas inventory-offcanvas offcanvas-end " id="offcanvasInventory"
             tabIndex="-1" aria-labelledby="offcanvasInventoryLabel"
             style={{ visibility: storageUnit ? 'visible' : 'hidden' }}>
             <div className="p-2 ">
@@ -12,7 +12,7 @@ const InventoryOffcanvas = ({ isLoading, inventories, storageUnit, onClose }) =>
                     </h5> */}
                     <button
                         type="button"
-                        className="btn-close"
+                        className="btn-close btn-close-white"
                         onClick={onClose}
                         data-bs-dismiss="offcanvas"
                         aria-label="Close"

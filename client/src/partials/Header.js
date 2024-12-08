@@ -7,9 +7,24 @@ import { Link } from "react-router-dom";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { FaRegBell } from "react-icons/fa";
 import { FiShoppingCart } from "react-icons/fi";
+import "bootstrap/dist/js/bootstrap.bundle.min";
+
+
+
 
 
 class Header extends React.Component {
+    handleOffcanvasOpen = (offcanvasId) => {
+        const offcanvasElement = document.getElementById(offcanvasId);
+        if (offcanvasElement) {
+            const bootstrap = require("bootstrap");
+            const offcanvasInstance = new bootstrap.Offcanvas(offcanvasElement);
+            offcanvasInstance.show();
+        }
+    };
+    
+    
+    
 
     render() {
         return (
@@ -151,15 +166,15 @@ class Header extends React.Component {
 
                         </li>
                         <li className="nav-item">
-                            <Link to="/customer/cart" className="px-2 icon-indicator icon-indicator-primary nav-link">
+                            <a
+                                className="px-2 icon-indicator icon-indicator-primary nav-link"
+                                role="button"
+                                onClick={() => this.handleOffcanvasOpen("offcanvasAccount")}>
+
                                 <span className="nav-account-icon">
                                     <FiShoppingCart />
-
                                 </span>
-
-
-                            </Link>
-
+                            </a>
                         </li>
 
                     </ul>

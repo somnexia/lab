@@ -15,6 +15,7 @@ import Equipment from "../pages/Equipment";
 import EquipmentTable from "../components/EquipmentTable";
 import Cart from "../components/Cart";
 
+
 const Main = () => {
     return (
         <main>
@@ -44,9 +45,9 @@ const Main = () => {
                     </Route>
 
                     <Route path="/customer">
-                        <Route path="cart" element={<Cart/>} />
+                        <Route path="cart" element={<Cart />} />
                     </Route>
-                    
+
 
 
 
