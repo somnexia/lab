@@ -3,6 +3,12 @@ const researchService = require('../services/researchService'); // Путь к �
 // Создание нового исследования
 const createResearch = async (req, res) => {
   try {
+    if (Object.values(req.body).some(value => value === null || value === undefined || value === '')) {
+      console.log("привет")
+      
+      return res.status(400).json({ error: "Все поля обязательны" });
+      
+    }
     const newResearch = await researchService.createResearch(req.body);
     return res.status(201).json(newResearch);
   } catch (error) {
@@ -58,10 +64,26 @@ const deleteResearch = async (req, res) => {
   }
 };
 
+const addParticipantsToResearch = async (req, res) => {
+  try {
+    const { researchId, employeeIds } = req.body; // Получаем данные из тела запроса
+    if (!researchId || !employeeIds || !Array.isArray(employeeIds)) {
+      return res.status(400).json({ error: 'Invalid data' });
+    }
+
+    const response = await researchService.addResearchParticipants(researchId, employeeIds);
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createResearch,
   getAllResearches,
   getResearchById,
   updateResearch,
-  deleteResearch
+  deleteResearch,
+  addParticipantsToResearch,
 };

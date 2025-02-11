@@ -1,6 +1,8 @@
 // controllers/storageUnitController.js
 
 const storageUnitService = require('../services/storageUnitService');
+const { getInventoriesWithLocation } = require('../services/inventoryStorageUnitService');
+
 
 const createStorageUnit = async (req, res) => {
   try {
@@ -51,7 +53,7 @@ const deleteStorageUnit = async (req, res) => {
     res.status(500).json({ message: 'Ошибка при удалении блока хранения', error: error.message });
   }
 };
-const { getInventoriesWithLocation } = require('../services/inventoryStorageUnitService');
+
 
 const getInventoriesByStorageUnitId = async (req, res) => {
     try {
@@ -68,6 +70,31 @@ const getInventoriesByStorageUnitId = async (req, res) => {
     }
 };
 
+const { buildLocationChain } = require('../services/storageUnitService');
+
+const getLocationChain = async (req, res) => {
+    try {
+        const { id: storageUnitId } = req.params;
+
+        if (!storageUnitId) {
+            return res.status(400).json({ error: 'storageUnitId is required' });
+        }
+
+        const locationChain = await buildLocationChain(storageUnitId);
+
+        if (locationChain.length === 0) {
+            return res.status(404).json({ message: 'No storage units found in the chain' });
+        }
+
+        res.json(locationChain);
+    } catch (error) {
+        console.error('Error in getLocationChain controller:', error);
+        res.status(500).json({ error: 'Error while fetching location chain' });
+    }
+};
+
+
+
 
 module.exports = {
   createStorageUnit,
@@ -75,5 +102,6 @@ module.exports = {
   getStorageUnitById,
   updateStorageUnit,
   deleteStorageUnit,
-  getInventoriesByStorageUnitId
+  getInventoriesByStorageUnitId,
+  getLocationChain
 };
