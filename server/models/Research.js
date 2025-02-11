@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
+
   Research.init({
     id: {
       type: DataTypes.INTEGER,

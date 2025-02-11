@@ -80,7 +80,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'ChemMixture',
-    tableName: 'chemmmixtures',  // Название таблицы в БД
+    tableName: 'chemmixtures',  // Название таблицы в БД
     timestamps: false  // Отключаем автоматические поля createdAt и updatedAt
   });
 

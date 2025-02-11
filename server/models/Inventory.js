@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
         as: 'orderDetails'
       });
 
+      Inventory.hasMany(models.Cart, { foreignKey: 'item_id', as: 'carts',  });
+
+
+
       // Связь с Order через OrderDetail (many-to-many)
       Inventory.belongsToMany(models.Order, {
         through: 'orderdetails', // промежуточная таблица
@@ -123,7 +127,7 @@ module.exports = (sequelize, DataTypes) => {
       onUpdate: sequelize.literal('CURRENT_TIMESTAMP')
     },
     status: {
-      type: DataTypes.ENUM('available', 'reserved', 'used'),
+      type: DataTypes.ENUM('available', 'reserved', 'in use', 'out of stock'),
       allowNull: true,
       defaultValue: 'available'
     },

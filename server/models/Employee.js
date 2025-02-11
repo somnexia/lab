@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // Определяем связь с лабораторией, если она существует
       Employee.belongsTo(models.Laboratory, { foreignKey: 'lab_id', as: 'laboratory' });
+      Employee.hasOne(models.User, { foreignKey: 'employee_id', as: 'user' });
     }
   }
 
