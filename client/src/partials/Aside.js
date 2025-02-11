@@ -21,6 +21,8 @@ import { RiGraduationCapLine } from "react-icons/ri";
 import { LuGraduationCap } from "react-icons/lu";
 import { Link } from "react-router-dom";
 import React from "react";
+import { IoGameController } from "react-icons/io5";
+import { FaLock } from "react-icons/fa";
 
 
 
@@ -55,15 +57,15 @@ class Aside extends React.Component {
     render() {
         return (
             <aside>
-                <div className="navbar-vertical navbar navbar-expand-lg bg-dark navbar-dark" id='navId'>
+                <div className="navbar-vertical navbar navbar-expand-lg" id='navId'>
                     <div className="navbar-collapse collapse " id="navbarToggler">
                         <div className="navbar-vertical-content ">
                             <div className="vertical-nav-scroll py-3 pe-3" data-bs-spy="scroll" data-bs-target="#navId">
 
                                 <ul className="flex-column navbar-nav" id="navbarVerticalNav" >
                                     <ul className="nav nav-pills">
-                                        <li className="mb-1 lab-nav-item ">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#home-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item ">
+                                            <button className="btn dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#home-collapse" aria-expanded="false">
 
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
@@ -77,16 +79,57 @@ class Aside extends React.Component {
                                             </button>
                                             <div className="collapse" id="home-collapse">
                                                 <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Overview</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Updates</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Reports</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Updates</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Reports</a></li>
+                                                </ul>
+                                            </div>
+                                        </li>
+                                        <li className="mb-1 ps-2 lab-nav-item ">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#managment-collapse" aria-expanded="false">
+
+                                                <div className='d-flex align-items-center'>
+                                                    <span className="nav-link-icon">
+                                                        <IoGameController />
+
+                                                    </span>
+                                                    <span className="nav-link-text">
+                                                        Managment
+                                                    </span>
+                                                </div>
+                                            </button>
+                                            <div className="collapse" id="managment-collapse">
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li className="mb-1 lab-nav-item ">
+                                                        <a className="btn dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#authentication-collapse" aria-expanded="false">
+
+                                                            <div className='d-flex align-items-center'>
+                                                                <span className="nav-link-icon">
+                                                                    <FaLock />
+
+                                                                </span>
+                                                                <span className="nav-link-text">
+                                                                    Authentication
+                                                                </span>
+                                                            </div>
+                                                        </a>
+                                                        <div className="collapse" id="authentication-collapse">
+                                                            <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                                <li><Link to="/management/signin" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign In</Link></li>
+                                                                <li><Link to="/management/signup" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign Up</Link></li>
+                                                                <li><Link to="/management/signout" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign Out</Link></li>
+                                                            </ul>
+                                                        </div>
+                                                    </li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Updates</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Reports</a></li>
                                                 </ul>
                                             </div>
                                         </li>
                                         <hr></hr>
                                         <h6 className="navbar-heading text-secondary">Documentation</h6>
-                                        <li className="mb-1 lab-nav-item lab-nav-item">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="false">
 
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
@@ -100,16 +143,16 @@ class Aside extends React.Component {
 
                                             </button>
                                             <div className="collapse" id="dashboard-collapse">
-                                                <ul className="nav-tabs list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Overview</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Weekly</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Monthly</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Annually</a></li>
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Weekly</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Monthly</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Annually</a></li>
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#tests-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#tests-collapse" aria-expanded="false">
 
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
@@ -122,17 +165,17 @@ class Aside extends React.Component {
                                                 </div>
                                             </button>
                                             <div className="collapse" id="tests-collapse">
-                                                <ul className="nav-tabs list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">New</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Processed</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Shipped</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Returned</a></li>
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">New</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Processed</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Shipped</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Returned</a></li>
                                                 </ul>
                                             </div>
                                         </li>
 
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#projects-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#projects-collapse" aria-expanded="false">
 
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
@@ -146,16 +189,16 @@ class Aside extends React.Component {
                                                 </div>
                                             </button>
                                             <div className="collapse" id="projects-collapse">
-                                                <ul className="nav-tabs list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Overview</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Sign out</a></li>
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</a></li>
+                                                    <li><Link to="/projects/research-list" className="nav-link btn   d-inline-flex text-decoration-none rounded">Researches</Link></li>
+                                                    <li><Link to="/projects/research-create" className="nav-link btn   d-inline-flex text-decoration-none rounded">Create new</Link></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#inventory-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#inventory-collapse" aria-expanded="false">
 
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
@@ -168,16 +211,16 @@ class Aside extends React.Component {
                                                 </div>
                                             </button>
                                             <div className="collapse" id="inventory-collapse">
-                                                <ul className="nav-tabs list-unstyled fw-normal pb-1 small">
-                                                    <li><Link to="/inventory" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Overview</Link></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Sign out</a></li>
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li><Link to="/inventory" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</Link></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Profile</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Settings</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#equipment-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#equipment-collapse" aria-expanded="false">
 
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
@@ -190,16 +233,16 @@ class Aside extends React.Component {
                                                 </div>
                                             </button>
                                             <div className="collapse" id="equipment-collapse">
-                                                <ul className="nav-tabs list-unstyled fw-normal pb-1 small">
-                                                    <li><Link to="/equipment" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Overview</Link></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Sign out</a></li>
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li><Link to="/equipment" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</Link></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Profile</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Settings</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#orders-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#orders-collapse" aria-expanded="false">
 
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
@@ -211,16 +254,16 @@ class Aside extends React.Component {
                                                 </div>
                                             </button>
                                             <div className="collapse" id="orders-collapse">
-                                                <ul className="nav-tabs list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">New...</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Sign out</a></li>
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">New...</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Profile</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Settings</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#reports-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#reports-collapse" aria-expanded="false">
 
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
@@ -232,11 +275,11 @@ class Aside extends React.Component {
                                                 </div>
                                             </button>
                                             <div className="collapse" id="reports-collapse">
-                                                <ul className="nav-tabs list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">New...</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link btn btn-dark text-light d-inline-flex text-decoration-none rounded">Sign out</a></li>
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">New...</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Profile</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Settings</a></li>
+                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
                                                 </ul>
                                             </div>
                                         </li>
@@ -246,8 +289,8 @@ class Aside extends React.Component {
 
                                     <ul className="nav nav-bottom nav-pills">
 
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#activities-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#activities-collapse" aria-expanded="false">
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
                                                         <RxDashboard />
@@ -258,16 +301,16 @@ class Aside extends React.Component {
                                                 </div>
                                             </button>
                                             <div className="collapse" id="activities-collapse">
-                                                <ul className="nav-tabs list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">New...</a></li>
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">Sign out</a></li>
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">New...</a></li>
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Profile</a></li>
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Settings</a></li>
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Sign out</a></li>
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#teams-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#teams-collapse" aria-expanded="false">
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
                                                         <GrGroup />
@@ -278,16 +321,16 @@ class Aside extends React.Component {
                                                 </div>
                                             </button>
                                             <div className="collapse" id="teams-collapse">
-                                                <ul className="nav-tabs list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">New...</a></li>
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">Sign out</a></li>
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">New...</a></li>
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Profile</a></li>
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Settings</a></li>
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Sign out</a></li>
                                                 </ul>
                                             </div>
                                         </li>
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#tutorials-collapse" aria-expanded="false">
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#tutorials-collapse" aria-expanded="false">
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
                                                         <RiGraduationCapLine />
@@ -298,20 +341,20 @@ class Aside extends React.Component {
                                                 </div>
                                             </button>
                                             <div className="collapse" id="tutorials-collapse">
-                                                <ul className="nav-tabs list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">New...</a></li>
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link text-light d-inline-flex text-decoration-none rounded">Sign out</a></li>
+                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">New...</a></li>
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Profile</a></li>
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Settings</a></li>
+                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Sign out</a></li>
                                                 </ul>
                                             </div>
                                         </li>
                                     </ul>
                                     <div className='mt-auto'></div>
                                     <ul className="nav nav-pills pt-3 pb-2">
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark collapsed" role="button"
-                                                onClick={() => this.handleOffcanvasOpen("offcanvasSettings")}>
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  collapsed" role="button"
+                                                onClick={() => this.handleOffcanvasOpen("offcanvasAccount")}>
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
                                                         <FaRegUserCircle />
@@ -322,9 +365,9 @@ class Aside extends React.Component {
                                                 </div>
                                             </button>
                                         </li>
-                                        <li className="mb-1 lab-nav-item">
-                                            <button className="btn btn-dark collapsed" role="button"
-                                                onClick={() => this.handleOffcanvasOpen("offcanvasAccount")}>
+                                        <li className="mb-1 ps-2 lab-nav-item">
+                                            <button className="btn  collapsed" role="button"
+                                                onClick={() => this.handleOffcanvasOpen("offcanvasSettings")}>
                                                 <div className='d-flex align-items-center'>
                                                     <span className="nav-link-icon">
                                                         <IoSettingsOutline />

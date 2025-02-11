@@ -14,7 +14,10 @@ import EquipmentCategory from "../components/EquipmentCategory";
 import Equipment from "../pages/Equipment";
 import EquipmentTable from "../components/EquipmentTable";
 import Cart from "../components/Cart";
-
+import InventoryOverview from "../components/InventoryOverview";
+import Profile from "../components/Profile";
+import ResearchList from "../components/ResearchList";
+import AddResearch from "../components/AddResearch";
 
 const Main = () => {
     return (
@@ -28,17 +31,15 @@ const Main = () => {
 
                     {/* Инвентарь с вложенными маршрутами */}
                     <Route path="/inventory" element={<Inventory />}>
-
+                        <Route path="overview" element={<InventoryOverview />} />
                         <Route path="warehouses" element={<WarehouseList />} />
                         <Route path="storage-units" element={<StorageUnitList />} />
                         <Route path="ladder" element={<StorageUnitC />} />
                         <Route path="dropdown" element={< DropdownHierarchy />} />
-                    </Route>
-                    <Route path="/inventory">
-
                         <Route path="location" element={<ParentStorageUnits />} />
-
                     </Route>
+
+
 
                     <Route path="/equipment" element={<Equipment />}>
                         <Route path="table/:category" element={<EquipmentTable />} />
@@ -46,12 +47,14 @@ const Main = () => {
 
                     <Route path="/customer">
                         <Route path="cart" element={<Cart />} />
+                        <Route path="profile" element={<Profile />} />
+
                     </Route>
 
 
 
-
-                    {/* Любой другой маршрут */}
+                    <Route path="projects/research-list" element={<ResearchList />} />
+                    <Route path="projects/research-create" element={<AddResearch />} />
 
 
                 </Routes>
