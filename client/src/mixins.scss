@@ -1,0 +1,301 @@
+@use "sass:color";
+@use "sass:map";
+
+@mixin apply-theme($theme) {
+    body {
+        background-color: map.get($theme, body-bg);
+        color: map.get($theme, text-color);
+    }
+
+    .btn-primary {
+        background-color: map.get($theme, primary-color);
+        color: #fff;
+
+        &:hover {
+            background-color: color.adjust(map.get($theme, primary-color), $lightness: -5%);
+        }
+
+    }
+
+    .btn-secondary {
+        background-color: map.get($theme, secondary-color);
+        color: map.get($theme, text-color);
+        border-color: map.get($theme, secondary-border-color);
+
+        &:hover {
+            background-color: color.adjust(map.get($theme, secondary-color), $lightness: +5%);
+        }
+    }
+
+    input, select ,textarea {
+        background-color: map.get($theme, lab-input-bg);
+        color: map.get($theme, text-color);
+        border-color: map.get($theme, secondary-border-color);
+
+    }
+
+    input::placeholder {
+        color: map.get($theme, tertiary-color);
+
+    }
+
+    form label,
+    .form-floating label {
+        color: map.get($theme, tertiary-color);
+        
+    }
+
+    form label,
+    .form-floating :focus~label,
+    .react-datepicker__input-container :focus~label {
+        color: map.get($theme, tertiary-color);
+
+        border: 0;
+
+        &::after {
+            background-color: map.get($theme, lab-label-bg);
+
+
+        }
+
+
+    }
+
+    .search-box .form-control {
+        padding-top: .5rem;
+        padding-bottom: .5rem;
+
+
+    }
+
+    .form-floating .form-control {
+        padding-top: 1.625rem;
+        padding-bottom: .625rem;
+    }
+
+
+
+
+    .form-floating label.active {
+        transform: scale(.85) translateY(-.5rem) translateX(.15rem);
+    }
+
+
+    .form-label {
+        padding-left: 1rem;
+        line-height: 1.2;
+        text-transform: uppercase;
+        margin-bottom: 0;
+        font-size: 0.64rem;
+        font-weight: 700;
+        color: map.get($theme, secondary-color);
+
+    }
+
+    .form-control, .form-select {
+        background-color: map.get($theme, lab-input-bg);
+        color: map.get($theme, text-color);
+
+        
+        
+
+    }
+    // .form-floating>.form-control:not(:placeholder-shown)~label{
+    //     background-color: map.get($theme, lab;
+        
+    // }
+    .form-floating>.form-control:not(:placeholder-shown)~label::after, .form-floating>.form-select:not(:placeholder-shown)~label::after{
+        background-color: map.get($theme, lab-input-bg);
+        color: map.get($theme, tertiary-color);
+        
+    }
+    .form-floating>.form-control:not(:placeholder-shown)~label, .form-floating>.form-select:not(:placeholder-shown)~label{
+        
+        color: color.adjust(map.get($theme, tertiary-color), $lightness: -5%) !important;
+        
+    }
+    
+
+    .form-check-input:checked {
+        background-color: map.get($theme, primary-color);
+        border-color: map.get($theme, primary-color);
+
+    }
+
+    .btn-lab {
+        border-color: #727cf5;
+        background-color: #727cf5;
+        color: #e7e7e7 !important;
+    }
+
+    .btn-lab:hover {
+        background-color: transparent;
+        color: #727cf5 !important;
+
+    }
+
+    .text-body-tertiary {
+        color: map.get($theme, tertiary-color) !important;
+
+    }
+
+    .table {
+
+        --bs-table-bg: map.get($theme, table-bg);
+        border-color: map.get($theme, content-border-color);
+        color: map.get($theme, text-color) !important;
+        --bs-table-color: map.get($theme, text-color);
+        --bs-table-striped-color: map.get($theme, text-color);
+
+        &:hover {
+            color: color.adjust(map.get($theme, text-color), $lightness: 5%) !important;
+        }
+
+    }
+
+    .table.table-striped {
+        --bs-table-striped-bg: map.get($theme, table-striped-bg);
+
+    }
+
+    table>:not(caption)>*>* {
+        color: map.get($theme, text-color);
+
+        &:hover {
+            color: color.adjust(map.get($theme, text-color), $lightness: 5%) !important;
+        }
+
+    }
+
+    .table .btn-link {
+        color: map.get($theme, text-color);
+
+        &:hover {
+            color: map.get($theme, link-color);
+        }
+
+        &:active {
+            color: map.get($theme, primary-color);
+        }
+    }
+
+
+    .card,
+    .offcanvas,
+    .modal-content,
+    .accordion .accordion-item,
+    .accordion .accordion-button {
+        background-color: map.get($theme, card-bg);
+        border-color: map.get($theme, secondary-border-color);
+        color: map.get($theme, text-color);
+
+    }
+
+    hr {
+        color: map.get($theme, secondary-border-color);
+        opacity: 1
+    }
+
+    .divider-content-center {
+        background-color: map.get($theme, body-bg);
+        color: map.get($theme, body-color);
+
+    }
+
+    .content:before {
+        background-color: map.get($theme, content-bg);
+        color: map.get($theme, text-color);
+    }
+
+    a.nav-link.btn {
+        color: map.get($theme, body-color);
+
+        &:hover {
+            background-color: color.adjust(map.get($theme, card-bg), $lightness: 5%) !important;
+        }
+
+    }
+
+    .nav-link {
+        color: map.get($theme, body-color);
+
+        &:hover {
+            color: color.adjust(map.get($theme, body-color), $lightness: 5%) !important;
+        }
+
+        &:active {
+            color: map.get($theme, link-color);
+
+        }
+    }
+
+    .nav-link.active {
+        color: map.get($theme, link-color);
+
+    }
+
+
+    .border-1 {
+        border-color: map.get($theme, content-border-color);
+    }
+
+    .navbar-nav .nav-link,
+    .navbar-nav .btn,
+    .navbar-top .btn {
+        color: map.get($theme, nav-link-color);
+
+
+
+        &:hover {
+            // background-color: color.adjust(map.get($theme, card-bg), $lightness: 5%) !important;
+            background-color: map.get($theme, body-highlight-bg);
+        }
+    }
+
+    .account-nav .nav-link {
+        color: map.get($theme, nav-link-color);
+    }
+
+
+    .navbar-nav .btn-outline {
+        color: map.get($theme, lab-btn-color);
+        border-color: map.get($theme, content-border-color);
+
+
+
+    }
+
+
+    .link-primary {
+        color: map.get($theme, link-color) !important;
+
+
+        &:hover {
+            color: color.adjust(map.get($theme, link-color), $lightness: 15%) !important;
+        }
+
+
+    }
+
+    .navbar-vertical.navbar,
+    .navbar-top {
+        background-color: map.get($theme, navbar-bg);
+        border-color: map.get($theme, content-border-color);
+
+
+    }
+
+    .text-body-secondary {
+        color: map.get($theme, text-body-secondary) !important;
+
+    }
+
+    .text-body-primary {
+        color: map.get($theme, primary-color) !important;
+
+    }
+
+
+
+
+}

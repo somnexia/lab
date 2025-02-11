@@ -4,8 +4,25 @@ $lab-navbar-vertical-width: 16rem;
 $sidebar-width: 250px;
 $main-content-bg: #fff;
 $lab-breadcrumb-divider: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='10' width='6' fill='%236e7891' viewBox='0 0 256 480'%3E%3Cpath d='M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z'/%3E%3C/svg%3E");
-
+$lab-body-bg: #0f111a;
 $bs-link-color-rgb: #727cf5;
 $bs-btn-bg: #727cf5;
 $bs-btn-border-color: #727cf5;
+$quaternary-text-color:#8a94ad;
 $color: #e7e7e7;
+
+
+
+// $light-theme: (
+//     body-bg: #ffffff,
+//     text-color: #000000,
+//     primary-color: #4a90e2,
+//     secondary-color: #50e3c2
+// );
+
+// $dark-theme: (
+//     body-bg: #000000,
+//     text-color: #ffffff,
+//     primary-color: #1e90ff,
+//     secondary-color: #32cd32
+// );

@@ -1,19 +1,39 @@
 @use "../node_modules/rfs/scss" as rfs;
 @use "./variables.scss" as vars;
-@import url("./mixins.scss");
-@import url("./variables.scss");
+@use "./mixins.scss" as mixins;
+@use "./themes.scss" as themes;
 
+// Применяем светлую тему для всего документа
+@include mixins.apply-theme(themes.$light-theme);
 
-
+// Пример использования rfs для заголовков
 h2 {
     @include rfs.font-size(3rem);
 }
 
-.inventory-offcanvas {
-    // bottom: vars.$lab-footer-height;
-    
+h3 {
+    @include rfs.font-size(2rem);
+}
 
+.text-body-quaternary{
+    color: vars.$quaternary-text-color;
+    
+}
+
+.fs-10{
+    font-size: .64rem;
+}
+// Пример использования переменных
+.inventory-offcanvas {
     @media (min-width: 768px) {
         bottom: vars.$lab-footer-height;
     }
+}
+
+html[data-theme="light"] {
+    @include mixins.apply-theme(themes.$light-theme);
+}
+
+html[data-theme="dark"] {
+    @include mixins.apply-theme(themes.$dark-theme);
 }
