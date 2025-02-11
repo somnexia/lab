@@ -13,7 +13,7 @@ module.exports = {
       reference_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        comment: "ID ссылки на запись в одной из связанных таблиц"
+        comment: 'ID ссылки на запись в одной из связанных таблиц'
       },
       item_name: {
         type: Sequelize.STRING(100),
@@ -24,7 +24,7 @@ module.exports = {
         type: Sequelize.ENUM('element', 'compound', 'mixture', 'equipment'),
         allowNull: true,
         defaultValue: null,
-        comment: "Тип связанной записи('element','equipment','compound','mixture')"
+        comment: 'Тип связанной записи("element","equipment","compound","mixture")'
       },
       total_quantity: {
         type: Sequelize.INTEGER,
@@ -84,9 +84,9 @@ module.exports = {
         onUpdate: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       status: {
-        type: Sequelize.ENUM('available', 'reserved', 'used'),
+        type: Sequelize.ENUM('available', 'reserved', 'in use', 'out of stock'),
         allowNull: true,
-        defaultValue: 'available',
+        defaultValue: 'out of stock',
       },
       description: {
         type: Sequelize.TEXT,
@@ -98,7 +98,7 @@ module.exports = {
         allowNull: true,
         defaultValue: null,
       },
-      
+
 
     });
     await queryInterface.addIndex('Inventories', ['reference_id', 'item_type']);
