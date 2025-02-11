@@ -109,6 +109,27 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
+      {
+        inventory_id: 22,
+        storageunit_id: 14,
+        quantity: 3,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        inventory_id: 34,
+        storageunit_id: 15,
+        quantity: 3,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        inventory_id: 44,
+        storageunit_id: 15,
+        quantity: 3,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
     ]);
   },
 
