@@ -9,7 +9,7 @@ class Account extends React.Component {
                 <div className="offcanvas-body">
                     <a className="btn-close" href="#" data-bs-dismiss="offcanvas" aria-label="Close"></a>
                     <div className="text-center">
-                        <img src="./designer-life.svg" alt="" />
+                        <img src="/designer-life.svg" alt="" />
                     </div>
                     <h2 className="text-center mb-2">
                         Make Dashkit Your Own

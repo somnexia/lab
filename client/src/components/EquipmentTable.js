@@ -4,6 +4,7 @@ import EquipmentOffcanvas from "./EquipmentOffcanvas";
 
 
 class EquipmentTable extends Component {
+    
     constructor(props) {
         super(props);
         this.state = {
@@ -61,6 +62,7 @@ class EquipmentTable extends Component {
     handleAddToCart = (equipment) => {
         this.props.onAddToCart(equipment); // Передаем оборудование в родительский компонент
     };
+
     handleOffcanvasOpen = (offcanvasId,equipment) => {
         const offcanvasElement = document.getElementById(offcanvasId);
         if (offcanvasElement) {

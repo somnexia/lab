@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import axios from 'axios';
+import { CartContext } from "../context/CartContext";
 
 class EquipmentOffcanvas extends Component {
+    static contextType = CartContext;
     constructor(props) {
         super(props);
         this.state = {
@@ -32,7 +34,9 @@ class EquipmentOffcanvas extends Component {
                     // total_quantity: inventory.total_quantity,
                     // supplier: inventory.supplier, 
                 }))
+
             );
+            console.log("inventories:", inventories);
 
 
 
@@ -59,10 +63,15 @@ class EquipmentOffcanvas extends Component {
             this.fetchStorageUnits();
         }
     }
+    handleAddToCart = (unit) => {
+        const { addToCart } = this.context;
+        addToCart(unit); // Добавляем инвентарь в корзину через контекст
+    };
 
     render() {
         const { storageUnits, loading, error, } = this.state;
         const { onClose, selectedEquipment, } = this.props;
+        // const { addToCart } = this.context;
 
         return (
             <div
@@ -114,7 +123,8 @@ class EquipmentOffcanvas extends Component {
                                                 <th>Quantity In Unit</th>
                                                 <th>Storage ID</th>
                                                 <th>Status</th>
-                                                
+                                                <th>Actions</th>
+
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -131,7 +141,15 @@ class EquipmentOffcanvas extends Component {
                                                     <td>{unit.InventoryStorageUnit?.quantity || "N/A"}</td>
                                                     <td>{unit.storage_id}</td>
                                                     <td>{unit.status || "N/A"}</td>
-                                                    
+                                                    <td>
+                                                        <button
+                                                            className="btn btn-primary"
+                                                            onClick={() => this.handleAddToCart(unit)}
+                                                        >
+                                                            Add to Cart
+                                                        </button>
+                                                    </td>
+
                                                 </tr>
 
                                             ))}

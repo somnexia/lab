@@ -27,8 +27,8 @@ const InventoryOffcanvas = ({ isLoading, inventories, storageUnit, onClose }) =>
 
 
                         <div className="card  card-inventory bg-body-emphasis text-bg-dark border-0 ">
-                            <div class="card-header pt-3 border-0">
-                                <h5 class="card-header-title">{storageUnit?.unit_name || 'Неизвестный блок'}</h5>
+                            <div className="card-header pt-3 border-0">
+                                <h5 className="card-header-title">{storageUnit?.unit_name || 'Неизвестный блок'}</h5>
                             </div>
 
                             <div className="card-body ">
