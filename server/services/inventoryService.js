@@ -1,4 +1,5 @@
 const { Inventory } = require('../models');
+const { ChemElement, ChemEquipment, ChemCompound, ChemMixture, StorageUnit } = require('../models');
 
 // Создание новой записи Inventory
 const createInventoryItem = async (data) => {
@@ -81,10 +82,125 @@ const deleteInventoryItem = async (id) => {
   }
 };
 
+const getInventoriesByReferenceAndType = async (referenceId, itemType) => {
+  try {
+    const includeOptions = [];
+
+    // Условно добавляем связанные модели в зависимости от item_type
+    if (itemType === 'element') {
+      includeOptions.push({
+        model: ChemElement,
+        as: 'chemElement',
+        required: true, // Включать только если есть связанная запись
+      });
+    } else if (itemType === 'equipment') {
+      includeOptions.push({
+        model: ChemEquipment,
+        as: 'chemEquipment',
+        required: true,
+      });
+    } else if (itemType === 'compound') {
+      includeOptions.push({
+        model: ChemCompound,
+        as: 'chemCompound',
+        required: true,
+      });
+    } else if (itemType === 'mixture') {
+      includeOptions.push({
+        model: ChemMixture,
+        as: 'chemMixture',
+        required: true,
+      });
+    }
+
+    includeOptions.push({
+      model: StorageUnit,
+      as: 'storageUnits', // Псевдоним должен совпадать с определением в модели Inventory
+    });
+
+    // Запрос с учетом фильтрации по item_type
+    const inventoryItems = await Inventory.findAll({
+      where: {
+        reference_id: referenceId,
+        item_type: itemType, // Условие фильтрации
+      },
+      include: includeOptions, // Включение только нужных моделей
+
+    });
+
+    return inventoryItems;
+  } catch (error) {
+    console.error(
+      'Ошибка при получении инвентаря по reference_id и item_type:',
+      error
+    );
+    throw new Error('Не удалось получить инвентарь');
+  }
+};
+
+
+const getLocationsForEntity = async (entityType, entityId) => {
+  try {
+    // Связь типа сущности с соответствующей моделью
+    const entityModels = {
+      element: ChemElement,
+      compound: ChemCompound,
+      mixture: ChemMixture,
+      equipment: ChemEquipment,
+    };
+
+    const model = entityModels[entityType];
+
+    console.log("entityType:", entityType)
+    if (!model) {
+      throw new Error(`Тип ${entityType} не поддерживается.`);
+    }
+
+    // Получаем сущность с ее связанным инвентарем
+    const entity = await model.findByPk(entityId, {
+      include: [
+        {
+          model: Inventory,
+          as: 'inventories', // Используем псевдоним связи из модели
+          include: [
+            {
+              model: StorageUnit,
+              as: 'storageUnits',
+              include: [
+                {
+                  model: StorageUnit,
+                  as: 'parent', // Загружаем родительские единицы
+                  hierarchy: true, // Если используется иерархическая структура
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!entity) {
+      throw new Error(`${entityType} с ID ${entityId} не найден.`);
+    }
+
+    return entity;
+  } catch (error) {
+    console.error('Ошибка при получении данных сущности:', error);
+    throw error;
+  }
+};
+
+
+
+
+
+
 module.exports = {
   createInventoryItem,
   getAllInventoryItems,
   getInventoryItemById,
   updateInventoryItem,
-  deleteInventoryItem
+  deleteInventoryItem,
+  getInventoriesByReferenceAndType,
+  getLocationsForEntity,
 };

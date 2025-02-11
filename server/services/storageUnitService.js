@@ -90,7 +90,7 @@ async function buildLocationChain(storageUnitId) {
         locationChain.unshift({
             id: currentUnit.id,
             name: currentUnit.unit_name,
-            type: currentUnit.unit_type
+            
         });
 
         if (currentUnit.parent_id) {

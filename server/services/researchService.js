@@ -1,4 +1,4 @@
-const { Research } = require('../models');
+const { Research, ResearchEmployee, Employee } = require('../models');
 
 // Создание нового исследования
 const createResearch = async (data) => {
@@ -65,10 +65,30 @@ const deleteResearch = async (id) => {
   }
 };
 
+const addResearchParticipants = async (researchId, employeeIds) => {
+  try {
+      const research = await Research.findByPk(researchId);  // Проверяем, существует ли исследование
+      if (!research) throw new Error('Research not found');
+
+      // Добавляем сотрудников в таблицу researchEmployee
+      const participants = employeeIds.map(employeeId => ({
+          research_id: researchId,
+          employee_id: employeeId
+      }));
+
+      await ResearchEmployee.bulkCreate(participants); // Используем bulkCreate для добавления нескольких записей
+      return { message: 'Participants added successfully' };
+  } catch (error) {
+      console.error('Error adding participants:', error);
+      throw new Error('Error adding participants');
+  }
+};
+
 module.exports = {
   createResearch,
   getAllResearches,
   getResearchById,
   updateResearch,
-  deleteResearch
+  deleteResearch,
+  addResearchParticipants,
 };
