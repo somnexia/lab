@@ -37,9 +37,10 @@ class Equipment extends Component {
 
         return (
             <div>
-                <h2 className="mb-4">Equipment</h2>
+                <h2>Equipment</h2>
+                <hr></hr>
 
-                <div className="row justify-content-between">
+                <div className="row justify-content-between py-4">
                     <div className="col-12 col-sm-4 col-xl-3 mb-5 mb-sm-0">
                         <div className="card lab-nav-card card-reset">
                             <div className="card-body p-0">
@@ -49,7 +50,7 @@ class Equipment extends Component {
                             </div>
                         </div>
                     </div>
-                    <div className="col-12 col-sm-8 mb-5">
+                    <div className="col-12 col-sm-8 col-xxl-9 mb-5">
                         <div className="row g-3">
                             <div className="card bg-body-emphasis text-bg-dark border-0 h-100">
                                 {/* Передаем категории и группы в компонент фильтрации по группе */}
