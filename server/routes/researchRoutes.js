@@ -17,4 +17,6 @@ router.put('/:id', researchController.updateResearch);
 // Удаление исследования по ID
 router.delete('/:id', researchController.deleteResearch);
 
+router.post('/:researchId/participants', researchController.addParticipantsToResearch);
+
 module.exports = router;

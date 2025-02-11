@@ -18,4 +18,6 @@ router.put('/:id', StorageUnitController.updateStorageUnit);
 // Удаление исследования по ID
 router.delete('/:id', StorageUnitController.deleteStorageUnit);
 
+router.get('/:id/location-chain', StorageUnitController.getLocationChain);
+
 module.exports = router;

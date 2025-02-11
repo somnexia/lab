@@ -13,12 +13,14 @@ const experimentRoutes = require("./experimentRoutes"); // Путь к марш�
 const inventoryRoutes = require("./inventoryRoutes"); // Путь к маршрутам для инвентаря
 const storageUnitRoutes = require("./storageUnitRoutes");
 const inventoryStorageUnitRoutes = require('./inventoryStorageUnitRoutes');
+const cartRoutes =require("./cartRoutes")
 const addRoutes = require("./add");
 const addPricingRoutes = require("./addPricing");
 const cardRoutes = require("./card");
 const coursesRoutes = require("./courses");
 const pricingRoutes = require("./pricings");
 const homeRoutes = require("./home");
+const userRoutes =  require("./userRoutes");
 
 
 router.use("/api/chemElements", chemElementRoutes); // Подключаем маршруты для элементов
@@ -33,11 +35,13 @@ router.use("/api/experiments", experimentRoutes); // Подключаем мар
 router.use("/api/inventories", inventoryRoutes); // Подключаем маршруты для инвентаря
 router.use("/api/storageUnits", storageUnitRoutes);
 router.use('/api/inventoryStorageUnit', inventoryStorageUnitRoutes);
+router.use("/api/carts",cartRoutes);
+router.use("/api/users", userRoutes);
 router.use("/add", addRoutes);
 router.use("/addPricing", addPricingRoutes);
 router.use("/card", cardRoutes);
 router.use("/courses", coursesRoutes);
-router.use("/pricings", pricingRoutes);
+router.use("/pricings", pricingRoutes); 
 router.use("/", homeRoutes);
 
 module.exports = router;
