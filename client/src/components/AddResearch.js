@@ -324,7 +324,7 @@ class AddResearch extends Component {
                                         placeholder="Deadline"
                                         id='deadline'
                                         onFocus={() => this.setState({ isFocused: true })}
-                                        onBlur={() => this.setState({ isFocused: !!this.state.startDate })}>
+                                        onBlur={() => this.setState({ isFocused: !!this.state.deadline })}>
 
                                     </DatePicker>
                                     <label htmlFor="deadline" className={this.state.isFocused ? 'active' : ''}>Deadline</label>
