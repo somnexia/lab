@@ -254,6 +254,31 @@ a {
 .nav-account-icon svg {
     height: 20px;
     width: 20px;
+}
+
+.avatar {
+    height: 2rem;
+    width: 2rem;
+    border-radius: 50%;
+}
+
+.avatar-icon {
+    height: 2rem;
+    width: 2rem;
+
+}
+
+.btn-circle {
+
+    height: 2rem;
+    width: 2rem;
+    border-radius: 50%;
+    padding: 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+
+
 
 }
 
@@ -272,14 +297,16 @@ a {
 }
 
 
+
 .nav-link-icon {
     margin-right: 0.5rem;
     vertical-align: middle;
     margin-bottom: 0.2rem;
-    
+
 
 }
-.btn-icon{
+
+.btn-icon {
     height: 2rem;
     width: 2rem;
     padding: 0;
@@ -289,10 +316,15 @@ a {
 
 }
 
+.btn-icon.btn-icon-lg {
+    height: 2.375rem;
+    width: 2.375rem;
+}
+
 .nav-link-icon svg {
     height: 18px;
     width: 18px;
-    
+
 }
 
 .social-media-icons {}
@@ -857,7 +889,7 @@ main .like-icon:hover {
 }
 
 
-.search-box{
+.search-box {
     position: relative;
     width: 20rem;
 
@@ -868,14 +900,15 @@ main .like-icon:hover {
     display: inline-block;
     position: absolute;
     left: 1rem;
-    
+
 
 }
-.search-input{
+
+.search-input {
     padding-left: 2.5rem;
     padding-right: 2rem;
     max-width: 30rem;
-    
+
 }
 
 
@@ -896,7 +929,10 @@ form label {
     color: #000000b7;
 }
 
+.dropdown-caret-none::after {
+    content: none;
 
+}
 
 
 form a,

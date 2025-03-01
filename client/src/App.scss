@@ -23,6 +23,19 @@ h3 {
 .fs-10{
     font-size: .64rem;
 }
+.fs-9{
+    font-size: .72rem;
+}
+
+.fs-8{
+    font-size: .8rem;
+}
+    
+.fs-7{
+    font-size: .88rem;
+}
+
+
 // Пример использования переменных
 .inventory-offcanvas {
     @media (min-width: 768px) {

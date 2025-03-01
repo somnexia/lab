@@ -246,7 +246,7 @@ class ResearchDetailsModal extends Component {
                                             {research.status}
                                         </span>
 
-                                        {/* {error && <p style={{ color: "red" }}>{error}</p>} */}
+                                        /* {error && <p style={{ color: "red" }}>{error}</p>} */
 
                                         <div className="d-flex align-items-center mb-5">
                                             <p className="text-body-highlight fw-700 mb-0 me-2">100%</p>
@@ -361,11 +361,7 @@ class ResearchDetailsModal extends Component {
                                             <p className="text-body-secondary mb-0" style={{ LineClamp: "1", WebkitLineClamp: "1" }}>{research?.goal}
                                                 <a className="d-inline fw-bolder text-decoration-none ps-2" href="">see more</a>
                                             </p>
-
-
                                         </div>
-
-
                                     </div>
                                     <div className='px-5 px-lg-6 py-4'>
                                         {showMore && (
