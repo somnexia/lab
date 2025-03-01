@@ -4,8 +4,6 @@ const researchService = require('../services/researchService'); // Путь к �
 const createResearch = async (req, res) => {
   try {
     if (Object.values(req.body).some(value => value === null || value === undefined || value === '')) {
-      console.log("привет")
-      
       return res.status(400).json({ error: "Все поля обязательны" });
       
     }
@@ -56,7 +54,7 @@ const updateResearch = async (req, res) => {
 const deleteResearch = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await researchService.deleteResearch(id);
+    const result = await researchService.deleteResearch(id, req.body);
     return res.status(200).json(result);
   } catch (error) {
     console.error(error);
