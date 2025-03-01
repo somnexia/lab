@@ -2,12 +2,19 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import { FaSearch, FaPlus, FaChevronRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import ResearchDetailsModal from './ResearchDetailsModal';
+
 
 class ResearchList extends Component {
     state = {
         researches: [],  // Храним список исследований
         statusCounts: {},  // Храним количество исследований по статусам
-        selectedStatus: "All"
+        selectedStatus: "All",
+        modalLoading: false,
+        error: null,
+        isModalOpen: false,
+        selectedResearch: null,
+
     };
 
     componentDidMount() {
@@ -34,11 +41,50 @@ class ResearchList extends Component {
     handleStatusFilter = (status) => {
         this.setState({ selectedStatus: status });
     };
+    openModal = async (research) => {
+        try {
+            this.setState({
+                selectedResearch: research,
+                isModalOpen: true,
+                modalLoading: true,
+                error: null,
+            });
+            console.log('Данные inventory:', research);
+
+            const researchResponse = await axios.get('http://localhost:3000/api/inventories/filter');
+            const researchData = researchResponse.data[0] || {};
+
+            const fullResearch = {
+                ...research,
+                ...researchData,
+            }
+            console.log('Объект, передаваемый в ResearchDetailsModal:', fullResearch);
+
+            this.setState({
+                selectedResearch: fullResearch,
+                modalLoading: false,
+            });
+
+        } catch (error) {
+            console.error('Ошибка при загрузке связанных данных:', error);
+            this.setState({ error: 'Не удалось загрузить связанные данные', modalLoading: false });
+        }
+    };
+    closeModal = () => {
+        this.setState({
+            isModalOpen: false,
+            selectedResearch: null,
+            relatedData: [],
+        });
+    };
 
 
 
     render() {
-        const { researches, statusCounts } = this.state;
+        const { researches, statusCounts, selectedResearch, loading,
+            modalLoading,
+            error,
+            isModalOpen, } = this.state;
         const formatDate = (dateString) => dateString.split('T')[0];
 
         const filteredResearches = this.state.selectedStatus === "All"
@@ -103,7 +149,7 @@ class ResearchList extends Component {
                                     <div className='d-flex align-items-center'>
                                         <h4 className="text-truncate lh-sm flex-1 me-3">{research.title}</h4>
                                         <div className="hover-actions">
-                                            <button type="button" className="btn btn-icon btn-lab"><FaChevronRight /></button>
+                                            <button onClick={() => this.openModal(research)}  type="button" className="btn btn-icon btn-lab"><FaChevronRight /></button>
                                         </div>
                                     </div>
                                     <span className="mb-4 badge">{research.status}</span>
@@ -138,6 +184,15 @@ class ResearchList extends Component {
                         </div>
                     ))}
                 </div>
+                {selectedResearch && (
+                    <ResearchDetailsModal
+                        isOpen={isModalOpen}
+                        research={selectedResearch}
+                        onClose={this.closeModal}
+                        loading={modalLoading}
+                        error={error}
+                    />
+                )}
             </div>
         );
     }
