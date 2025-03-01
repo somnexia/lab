@@ -21,6 +21,7 @@ const coursesRoutes = require("./courses");
 const pricingRoutes = require("./pricings");
 const homeRoutes = require("./home");
 const userRoutes =  require("./userRoutes");
+const taskRoutes = require('./taskRoutes');
 
 
 router.use("/api/chemElements", chemElementRoutes); // Подключаем маршруты для элементов
@@ -37,6 +38,7 @@ router.use("/api/storageUnits", storageUnitRoutes);
 router.use('/api/inventoryStorageUnit', inventoryStorageUnitRoutes);
 router.use("/api/carts",cartRoutes);
 router.use("/api/users", userRoutes);
+router.use('/api/tasks', taskRoutes);
 router.use("/add", addRoutes);
 router.use("/addPricing", addPricingRoutes);
 router.use("/card", cardRoutes);
