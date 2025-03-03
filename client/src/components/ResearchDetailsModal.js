@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import axios from 'axios';
+
 import { FaArrowRightLong } from "react-icons/fa6";
 import { FaRegCopy } from "react-icons/fa";
 import { FaTrashAlt } from "react-icons/fa";
@@ -23,6 +22,8 @@ import { FaEllipsis } from "react-icons/fa6";
 import { FaFileZipper } from "react-icons/fa6";
 import { FaFileLines } from "react-icons/fa6";
 import { FaImage } from "react-icons/fa6";
+import React, { Component } from 'react';
+import axios from 'axios';
 
 
 
@@ -32,19 +33,17 @@ class ResearchDetailsModal extends Component {
         showMore: false,
         deadline: null,
         tasks: [],  // Список задач
+        files: [],  // Список файлов
+        researchEmployees: [],
         loadingTasks: false,
         errorTasks: null,
+        loadingFiles: false,
+        errorFiles: null,
     }
 
 
 
-    handleBackdropClick = (e) => {
-        const { onClose } = this.props;
-        // Закрываем модальное окно, если клик был на фоне (а не на содержимом модального окна)
-        if (e.target === e.currentTarget) {
-            onClose();
-        }
-    };
+
     toggleShowMore = () => {
         this.setState((prevState) => ({ showMore: !prevState.showMore }));
     };
@@ -59,11 +58,16 @@ class ResearchDetailsModal extends Component {
 
     componentDidMount() {
         this.fetchTasks();
+        this.fetchFiles();
+        this.fetchResearchEmployees();
+
     }
 
     componentDidUpdate(prevProps) {
         if (prevProps.research?.id !== this.props.research?.id) {
             this.fetchTasks();
+            this.fetchFiles();
+            this.fetchResearchEmployees();
         }
     }
 
@@ -74,13 +78,62 @@ class ResearchDetailsModal extends Component {
         this.setState({ loadingTasks: true, errorTasks: null });
 
         try {
-            const response = await axios.get(`http://localhost:3000/api/tasks?researchId=${research.id}`);
+            const response = await axios.get(`http://localhost:3000/api/tasks/research?researchId=${research.id}`);
             this.setState({ tasks: response.data, loadingTasks: false });
         } catch (error) {
-            console.error("research",);
             console.error("Ошибка загрузки задач:", error);
             this.setState({ errorTasks: "Не удалось загрузить задачи", loadingTasks: false });
         }
+    };
+
+    fetchFiles = async () => {
+        const { research } = this.props;
+        if (!research?.id) return;
+
+        this.setState({ loadingFiles: true, errorFiles: null });
+
+        try {
+            const response = await axios.get(`http://localhost:3000/api/taskFiles/research/${research.id}`);
+            this.setState({ files: response.data, loadingFiles: false });
+        } catch (error) {
+            console.error("Ошибка загрузки файлов:", error);
+
+            this.setState({ errorFiles: "Не удалось загрузить файлы", loadingFiles: false });
+        }
+    };
+    fetchResearchEmployees = async () => {
+        const { research } = this.props;
+        if (!research?.id) return;
+
+        try {
+            const response = await axios.get(`http://localhost:3000/api/researchEmployees?researchId=${research.id}`);
+
+            // Фильтруем только сотрудников текущего исследования
+            const filteredEmployees = response.data.filter(emp => emp.research_id === research.id);
+
+            console.log("Отфильтрованные сотрудники исследования:", filteredEmployees);
+
+            this.setState({ researchEmployees: filteredEmployees });
+        } catch (error) {
+            console.error("Ошибка загрузки сотрудников исследования:", error);
+        }
+    };
+
+
+    handleBackdropClick = (e) => {
+        const { onClose } = this.props;
+        // Закрываем модальное окно, если клик был на фоне (а не на содержимом модального окна)
+        if (e.target === e.currentTarget) {
+            onClose();
+        }
+    };
+
+    getInitials = (fullName) => {
+        if (!fullName) return '??'; // На случай отсутствия данных
+        const parts = fullName.split(' ');
+        const firstInitial = parts[0] ? parts[0][0].toUpperCase() : '';
+        const lastInitial = parts[1] ? parts[1][0].toUpperCase() : '';
+        return `${firstInitial}${lastInitial}`;
     };
 
 
@@ -88,12 +141,11 @@ class ResearchDetailsModal extends Component {
         const {
             isOpen,
             research,
-            relatedData,
             onClose,
             loading,
             error,
         } = this.props;
-        const { showMore, tasks, loadingTasks, errorTasks } = this.state;
+        const { showMore, tasks, files, loadingTasks, errorTasks, loadingFiles, errorFiles } = this.state;
 
 
 
@@ -211,8 +263,8 @@ class ResearchDetailsModal extends Component {
                                 </div>
                             </div>
                             <div className='g-0 row'>
-                                <div className='border-end bg-body-highlight col-xl-5 col-12'>
-                                    <div className='px-5 px-lg-5 py-4 bg-body-emphasis'>
+                                <div className='border-end  col-xl-5 col-12'>
+                                    <div className='px-5 px-lg-5 py-4'>
                                         <h3 className='align-middle fw-bolder lab-text-primary lh-sm mb-4'>{research?.title || "Название отсутствует"}
                                             <span className='text-secondary ps-3 fs-5 h-100'>({research?.type})</span>
                                         </h3>
@@ -246,7 +298,7 @@ class ResearchDetailsModal extends Component {
                                             {research.status}
                                         </span>
 
-                                        /* {error && <p style={{ color: "red" }}>{error}</p>} */
+
 
                                         <div className="d-flex align-items-center mb-5">
                                             <p className="text-body-highlight fw-700 mb-0 me-2">100%</p>
@@ -257,26 +309,19 @@ class ResearchDetailsModal extends Component {
                                         <div className='mb-4'>
                                             <h6 className='text-body-secondary mb-2'>Assigness</h6>
                                             <div className='d-flex gap-1'>
-                                                <div className='dropdown'>
-                                                    <button type="button" id="react-aria1559520475-:r1h:" aria-expanded="false" className="dropdown-caret-none p-0 dropdown-toggle btn">
-                                                        <div className="avatar avatar-m">
-                                                            <FaRegUserCircle className='avatar-icon' />
-                                                        </div>
-                                                    </button>
-                                                </div>
-                                                <div className='dropdown'>
-                                                    <button type="button" id="react-aria1559520475-:r1h:" aria-expanded="false" className="dropdown-caret-none p-0 dropdown-toggle btn">
-                                                        <div className="avatar avatar-m">
-                                                            <FaRegUserCircle className='avatar-icon' />
-                                                        </div>
-                                                    </button>
-                                                </div>
-                                                <button type="button" className="btn-circle btn btn-secondary">
+                                                {this.state.researchEmployees.map((employee) => (
+                                                    <div className='dropdown' key={employee.id}>
+                                                        <button type="button" className="dropdown-caret-none p-0 dropdown-toggle  btn">
+                                                            <div className="avatar  d-flex align-items-center justify-content-center btn-secondary">
+                                                                {this.getInitials(`${employee.employee?.name} ${employee.employee?.surname}`)}
+                                                            </div>
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button type="button" className="btn-circle btn btn-secondary ms-2">
                                                     <FaPlus />
                                                 </button>
-
                                             </div>
-
                                         </div>
                                         <div className="d-flex align-items-center mb-2">
                                             <p className="fw-bold mb-0 text-truncate lh-1">Scope:
@@ -363,13 +408,15 @@ class ResearchDetailsModal extends Component {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className='px-5 px-lg-6 py-4'>
+                                    
+                                    <div className='px-5 px-lg-6 py-4 bg-body-highlight border-divider border-top'>
+
                                         {showMore && (
                                             <div className="card mt-4 shadow-sm">
-                                                <div className="card-header bg-body-emphasis text-white">
+                                                <div className="card-header  text-white">
                                                     <h6 className="mb-0">Research Details</h6>
                                                 </div>
-                                                <div className="card-body bg-body-emphasis">
+                                                <div className="card-body ">
                                                     <p><strong>Discription:</strong> {research?.goal}</p>
                                                     <p><strong>Safety Info:</strong> {research?.funding_source}</p>
                                                 </div>
@@ -399,56 +446,68 @@ class ResearchDetailsModal extends Component {
 
                                                 </div>
                                             </div>
-                                            {loadingTasks && <p>Загрузка задач...</p>}
-                                            {errorTasks && <p className="text-danger">{errorTasks}</p>}
-                                            <div className='mb-4'>
-                                                {tasks.map((task) =>
-                                                (
-                                                    <div key={task.id} className='py-3 border-top d-flex align-items-center hover-actions-trigger border-bottom border-translucent gap-2 todolist-item'>
-                                                        <input type="checkbox" className="flex-shrink-0 my-0 align-self-start form-check-input"></input>
-                                                        <div className="justify-content-between align-items-center btn-reveal-trigger border-translucent gx-0 flex-grow-1 gy-1 row">
-                                                            <div className="col-lg-auto col-12">
-                                                                <div className="d-flex align-items-center lh-1 gap-2">
-                                                                    <h6 className="mb-0 line-clamp-1 fw-semibold text-body-tertiary cursor-pointer">{task.title}</h6>
-                                                                    <span className="fs-10 ms-auto badge-phoenix badge-phoenix-primary badge"> {task.status.toUpperCase()}</span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="col-lg-auto col-12">
-                                                                <div className="d-flex lh-1 align-items-center">
-                                                                    <button type="button" className="p-0 text-body-tertiary fs-10 me-2 btn">
-                                                                        <FaPaperclip className='me-1' />
 
-                                                                        2</button>
-                                                                    <p className="me-lg-3 text-body-tertiary fs-10 me-2 mb-0">{new Date(task.start_date).toLocaleDateString()}</p>
-                                                                    <div className="hover-lg-hide">
-                                                                        <p className="ps-lg-3 text-body-tertiary fs-10 ps-lg-3 border-start fw-bold mb-md-0 mb-0">
-                                                                            {format(new Date(`1970-01-01T${task.reminder}`), 'hh:mm a')}
-                                                                        </p>
-                                                                        {/* или Встроенный метод toLocaleTimeString()
+                                            {/* {loadingTasks && <p>Загрузка задач...</p>}
+                                            {errorTasks && <p className="text-danger">{errorTasks}</p>} */}
+                                            <div>
+                                                {loadingTasks ? (
+                                                    <p>Загрузка задач...</p>
+                                                ) : files.length === 0 ? (
+                                                    <p>Нет загруженных задач</p>
+                                                ) : errorFiles ? (
+                                                    <p className="text-danger">{errorTasks}</p>
+
+                                                ) : (
+                                                    <div className='mb-4'>
+                                                        {tasks.map((task) =>
+                                                        (
+                                                            <div key={task.id} className='py-3 border-top d-flex align-items-center hover-actions-trigger border-bottom border-translucent gap-2 todolist-item'>
+                                                                <input type="checkbox" className="flex-shrink-0 my-0 align-self-start form-check-input"></input>
+                                                                <div className="justify-content-between align-items-center btn-reveal-trigger border-translucent gx-0 flex-grow-1 gy-1 row">
+                                                                    <div className="col-lg-auto col-12">
+                                                                        <div className="d-flex align-items-center lh-1 gap-2">
+                                                                            <h6 className="mb-0 line-clamp-1 fw-semibold text-body-tertiary cursor-pointer">{task.title}</h6>
+                                                                            <span className="fs-10 ms-auto badge-phoenix badge-phoenix-primary badge"> {task.status.toUpperCase()}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="col-lg-auto col-12">
+                                                                        <div className="d-flex lh-1 align-items-center">
+                                                                            <button type="button" className="p-0 text-body-tertiary fs-10 me-2 btn">
+                                                                                <FaPaperclip className='me-1' />
+
+                                                                                2</button>
+                                                                            <p className="me-lg-3 text-body-tertiary fs-10 me-2 mb-0">{new Date(task.start_date).toLocaleDateString()}</p>
+                                                                            <div className="hover-lg-hide">
+                                                                                <p className="ps-lg-3 text-body-tertiary fs-10 ps-lg-3 border-start fw-bold mb-md-0 mb-0">
+                                                                                    {format(new Date(`1970-01-01T${task.reminder}`), 'hh:mm a')}
+                                                                                </p>
+                                                                                {/* или Встроенный метод toLocaleTimeString()
                                                                         1970-01-01T${task.Reminder} – превращает строку 12:00:00 в корректную дату.
                                                                         toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true }) – форматирует в 12:00 PM
 
                                                                         <p className="ps-lg-3 text-body-tertiary fs-10 ps-lg-3 border-start-lg fw-bold mb-md-0 mb-0">
                                                                             {new Date(`1970-01-01T${task.Reminder}`).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
                                                                         </p> */}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="d-lg-block d-none end-0 position-absolute" style={{ top: "50rem" }}>
+                                                                    <div className="hover-actions end-0">
+                                                                        <button type="button" className="btn-icon fs-10 me-1 btn btn-phoenix-secondary">
+
+                                                                        </button>
+
+                                                                        <button type="button" className="btn-icon fs-10 btn btn-phoenix-secondary">
+
+                                                                        </button>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-
-                                                        <div className="d-lg-block d-none end-0 position-absolute" style={{ top: "50rem" }}>
-                                                            <div className="hover-actions end-0">
-                                                                <button type="button" className="btn-icon fs-10 me-1 btn btn-phoenix-secondary">
-
-                                                                </button>
-
-                                                                <button type="button" className="btn-icon fs-10 btn btn-phoenix-secondary">
-
-                                                                </button>
-                                                            </div>
-                                                        </div>
+                                                        ))}
                                                     </div>
-                                                ))}
+                                                )}
                                             </div>
                                             <button type="button" className="text-decoration-none p-0 btn btn-link">
                                                 <FaPlus />
@@ -459,37 +518,52 @@ class ResearchDetailsModal extends Component {
                                         <div>
                                             <h5 className='mb-3'>Files</h5>
                                             <hr />
-                                            <div className='mb-3'>
-                                                <div className='border-bottom py-4'>
-                                                    <div className='d-flex justify-content-between align-items-start'>
-                                                        <div>
-                                                            <div class="d-flex align-items-center mb-1">
-                                                                <FaFileZipper className='me-1' />
-                                                                <p class="text-body-highlight mb-0 lh-1">All_images.zip</p>
+                                            {loadingFiles ? (
+                                                <p>Загрузка файлов...</p>
+                                            ) : files.length === 0 ? (
+                                                <p>Нет загруженных файлов</p>
+                                            ) : errorFiles ? (
+                                                <p className="text-danger">{errorFiles}</p>
+
+                                            ) : (
+                                                <div className='mb-3'>
+                                                    {files.map((file) => (
+                                                        <div key={file.id} className='border-bottom py-4'>
+                                                            <div className='d-flex justify-content-between align-items-start'>
+                                                                <div>
+                                                                    <div className="d-flex align-items-center mb-1">
+                                                                        <FaFileZipper className='me-1' />
+                                                                        <p className="text-body-highlight mb-0 lh-1">{file.file_name}</p>
+                                                                    </div>
+                                                                    <div className="d-flex fs-9 text-body-tertiary flex-wrap">
+                                                                        <span>{(file.file_size / 1024).toFixed(1)} MB</span>
+                                                                        <span className="text-body-quaternary mx-1">|</span>
+                                                                        <a href={file.file_path} download>Download</a>
+                                                                        <span className="text-body-quaternary mx-1">|</span>
+                                                                        <span className="text-nowrap">
+                                                                            {new Date(file.updatedAt).toLocaleString('en-US', { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                                        </span>
+                                                                        <span className="text-body-quaternary mx-1">|</span>
+                                                                        <span>Uploaded by: <strong>{file.uploader?.name || 'Неизвестно'}</strong></span>
+
+                                                                    </div>
+                                                                </div>
+
+
+                                                                <div className="btn-reveal-trigger">
+                                                                    <div className="dropdown">
+                                                                        <button type="button" id="" className="btn-outline-secondary border-0 dropdown-caret-none transition-none dropdown-toggle btn btn-sm">
+
+                                                                            <FaEllipsis />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <div class="d-flex fs-9 text-body-tertiary flex-wrap">
-                                                                <span>12.8 mb</span>
-                                                                <span class="text-body-quaternary mx-1">| </span>
-                                                                <a href="#!">Yves Tanguy</a>
-                                                                <span class="text-body-quaternary mx-1">| </span>
-                                                                <span class="text-nowrap">19th Dec, 08:56 PM</span>
-                                                            </div>
+
                                                         </div>
-
-
-                                                        <div class="btn-reveal-trigger">
-                                                            <div class="dropdown">
-                                                                <button type="button" id="" class="btn-outline-secondary border-0 dropdown-caret-none transition-none dropdown-toggle btn btn-sm">
-
-                                                                    <FaEllipsis />
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
+                                                    ))}
                                                 </div>
-                                            </div>
-
+                                            )}
 
                                         </div>
                                     </div>
