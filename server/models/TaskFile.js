@@ -9,6 +9,13 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'task_id',
                 as: 'task'
             });
+        
+        
+            TaskFile.belongsTo(models.User, {
+                foreignKey: 'uploaded_by',
+                as: 'uploader'
+            });
+            
         }
     }
 
@@ -31,6 +38,25 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING(50),
             allowNull: false,
             comment: "Тип файла (image, zip, text, etc.)"
+        },
+        updatedAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            comment: "Дата загрузки файла"
+        },
+        uploaded_by: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+                model: 'Users', // Имя таблицы
+                key: 'id'
+            },
+            comment: "ID пользователя, загрузившего файл"
+        },
+        file_size: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+            comment: "Размер файла в MB"
         }
     }, {
         sequelize,
