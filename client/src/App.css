@@ -166,10 +166,7 @@ a {
     max-width: max-content;
 }
 
-.bg-body-emphasis {
 
-    background-color: var(--lab-emphasis-bg) !important;
-}
 
 .bg-body-primary {
     background-color: var(--lab-primary-bg);
@@ -257,11 +254,12 @@ a {
 }
 
 .avatar {
-    height: 2rem;
-    width: 2rem;
+    height: 2.5rem;
+    width: 2.5rem;
     border-radius: 50%;
+    border: #31374a  solid 1px;
+    font-size: 0.9rem;
 }
-
 .avatar-icon {
     height: 2rem;
     width: 2rem;
@@ -270,8 +268,8 @@ a {
 
 .btn-circle {
 
-    height: 2rem;
-    width: 2rem;
+    height: 2.5rem;
+    width: 2.5rem;
     border-radius: 50%;
     padding: 0;
     display: inline-flex;

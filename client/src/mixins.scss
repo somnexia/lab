@@ -195,6 +195,12 @@
         color: map.get($theme, secondary-border-color);
         opacity: 1
     }
+    .border-divider{
+        border-color: map.get($theme, secondary-border-color) !important;;
+        border-top: 1px solid;
+        
+
+    }
 
     .divider-content-center {
         background-color: map.get($theme, body-bg);
@@ -293,6 +299,9 @@
     .text-body-primary {
         color: map.get($theme, primary-color) !important;
 
+    }
+    .bg-body-highlight {
+        background-color: map.get($theme, body-highlight-bg) ;
     }
 
 
