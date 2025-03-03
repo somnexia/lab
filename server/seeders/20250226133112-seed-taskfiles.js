@@ -8,19 +8,30 @@ module.exports = {
         id: 1,
         task_id: 1,
         file_path: "uploads/reports/water_analysis.pdf",
-        file_type: "pdf"
+        file_type: "pdf",
+        updatedAt: new Date(),
+        uploaded_by: 1,
+        file_size: 3000
+
+
       },
       {
         id: 2,
         task_id: 1,
         file_path: "uploads/images/sample1.jpg",
-        file_type: "image"
+        file_type: "image",
+        updatedAt: new Date(),
+        uploaded_by: 1,
+        file_size: 1000
       },
       {
         id: 3,
         task_id: 2,
         file_path: "uploads/docs/reagent_test_results.zip",
-        file_type: "zip"
+        file_type: "zip",
+        updatedAt: new Date(),
+        uploaded_by: 1,
+        file_size: 2000
       }
     ]);
   },

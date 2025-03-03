@@ -29,7 +29,28 @@ module.exports = {
         type: Sequelize.STRING(50),
         allowNull: false,
         comment: "Тип файла (image, zip, text, etc.)"
+      },
+      updatedAt: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        comment: "Дата загрузки файла"
+      },
+      uploaded_by: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'users', // Название таблицы в БД
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+        file_size: {
+        type: Sequelize.FLOAT,
+        allowNull: false,
+        comment: "Размер файла в MB"
       }
+
     });
   },
 
