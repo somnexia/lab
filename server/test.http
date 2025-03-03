@@ -58,12 +58,20 @@
         # # Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJnZW9yZ2lpZ2libG92QGdtYWlsLmNvbSIsImlhdCI6MTczNjM1ODg1NywiZXhwIjoxNzM2MzYyNDU3fQ.DxzyNqIvWN0REPaxCKtzurzzy2ZXvU11z1wd1M8tyvE
 
 
-POST http://localhost:3000/api/carts
-Content-Type: application/json
+        # POST http://localhost:3000/api/carts
+        # Content-Type: application/json
 
-{
-  "user_id": 1,
-  "item_id": 14,
-  "item_name": "Test Item",
-  "quantity": 2
-}
+        # {
+        # "user_id": 1,
+        # "item_id": 14,
+        # "item_name": "Test Item",
+        # "quantity": 2
+        # }
+
+        
+        # GET http://localhost:3000/api/taskFiles/research/1
+
+        GET http://localhost:3000/api/tasks/research?researchId=1
+
+
+
