@@ -18,6 +18,7 @@ import InventoryOverview from "../components/InventoryOverview";
 import Profile from "../components/Profile";
 import ResearchList from "../components/ResearchList";
 import AddResearch from "../components/AddResearch";
+import ParticipantList from "../components/ParticipantList";
 
 const Main = () => {
     return (
@@ -50,9 +51,8 @@ const Main = () => {
                         <Route path="profile" element={<Profile />} />
 
                     </Route>
-
-
-
+                    <Route path="/teams/participants" element={<ParticipantList />} />
+                    
                     <Route path="projects/research-list" element={<ResearchList />} />
                     <Route path="projects/research-create" element={<AddResearch />} />
 

@@ -322,7 +322,7 @@ class Aside extends React.Component {
                                             </button>
                                             <div className="collapse" id="teams-collapse">
                                                 <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">New...</a></li>
+                                                    <li><Link to="/teams/participants" className="nav-link  d-inline-flex text-decoration-none rounded">Participants</Link></li>
                                                     <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Profile</a></li>
                                                     <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Settings</a></li>
                                                     <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Sign out</a></li>
