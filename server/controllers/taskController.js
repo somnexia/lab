@@ -14,6 +14,22 @@ const createTask = async (req, res) => {
 };
 
 // Получение всех задач
+
+
+const getTasksByResearch = async (req, res) => {
+  const { researchId } = req.query; // Получаем researchId из запроса
+  if (!researchId) {
+      return res.status(400).json({ error: "Не указан researchId" });
+  }
+
+  try {
+      const tasks = await taskService.getTasksByResearch(researchId);
+      res.json(tasks);
+  } catch (error) {
+      res.status(500).json({ error: "Ошибка при получении задач исследования" });
+  }
+};
+
 const getAllTasks = async (req, res) => {
   try {
     const tasks = await taskService.getAllTasks();
@@ -61,5 +77,6 @@ module.exports = {
   getAllTasks,
   getTaskById,
   updateTask,
-  deleteTask
+  deleteTask,
+  getTasksByResearch
 };
