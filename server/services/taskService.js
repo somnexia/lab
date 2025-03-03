@@ -10,6 +10,17 @@ const createTask = async (data) => {
     throw error;
   }
 };
+const getTasksByResearch = async (researchId) => {
+  try {
+      const tasks = await Task.findAll({
+          where: { research_id: researchId }
+      });
+      return tasks;
+  } catch (error) {
+      console.error("Ошибка при получении задач по research_id:", error);
+      throw error;
+  }
+};
 
 // Получение всех задач
 const getAllTasks = async () => {
@@ -74,5 +85,6 @@ module.exports = {
   getAllTasks,
   getTaskById,
   updateTask,
-  deleteTask
+  deleteTask,
+  getTasksByResearch,
 };
