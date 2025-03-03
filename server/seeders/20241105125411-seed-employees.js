@@ -11,7 +11,9 @@ module.exports = {
         position: 'Research Scientist',
         department: 'Chemistry',
         specialization: 'Organic Chemistry',
-        lab_id: 1
+        lab_id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: 2,
@@ -20,7 +22,9 @@ module.exports = {
         position: 'Lab Technician',
         department: 'Biology',
         specialization: 'Microbiology',
-        lab_id: 2
+        lab_id: 2,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: 3,
@@ -29,7 +33,9 @@ module.exports = {
         position: 'Data Analyst',
         department: 'Physics',
         specialization: 'Astrophysics',
-        lab_id: 3
+        lab_id: 3,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: 4,
@@ -38,7 +44,9 @@ module.exports = {
         position: 'Lab Assistant',
         department: 'Materials Science',
         specialization: 'Nanotechnology',
-        lab_id: 4
+        lab_id: 4,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: 5,
@@ -47,7 +55,9 @@ module.exports = {
         position: 'Lab Manager',
         department: 'Chemistry',
         specialization: 'Analytical Chemistry',
-        lab_id: 1
+        lab_id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: 6,
@@ -56,7 +66,9 @@ module.exports = {
         position: 'Lab Assistant',
         department: 'Biology',
         specialization: 'Genetics',
-        lab_id: 2
+        lab_id: 2,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: 7,
@@ -65,7 +77,9 @@ module.exports = {
         position: 'Data Scientist',
         department: 'Physics',
         specialization: 'Particle Physics',
-        lab_id: 3
+        lab_id: 3,
+        createdAt: new Date(),
+        updatedAt: new Date()
       },
       {
         id: 8,
@@ -74,7 +88,9 @@ module.exports = {
         position: 'Lab Technician',
         department: 'Materials Science',
         specialization: 'Metallurgy',
-        lab_id: 4
+        lab_id: 4,
+        createdAt: new Date(),
+        updatedAt: new Date()
       }
     ]);
   },
