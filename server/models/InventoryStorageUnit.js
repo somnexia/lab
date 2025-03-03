@@ -38,13 +38,24 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
+        },
+        createdAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW
+        },
+        updatedAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW
         }
+        
 
     }, {
         sequelize,
         modelName: 'InventoryStorageUnit',
         tableName: 'inventorystorageunits',
-        timestamps: false
+        timestamps: true
     });
 
     return InventoryStorageUnit;

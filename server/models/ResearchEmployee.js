@@ -42,12 +42,22 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(100),
       allowNull: true,
       defaultValue: null
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
     }
   }, {
     sequelize,
     modelName: 'ResearchEmployee',
     tableName: 'researchemployees',  // Название таблицы в БД
-    timestamps: false  // Отключаем автоматические поля createdAt и updatedAt
+    timestamps: true  // Отключаем автоматические поля createdAt и updatedAt
   });
 
   return ResearchEmployee;
