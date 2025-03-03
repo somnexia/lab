@@ -49,16 +49,18 @@ class ResearchList extends Component {
                 modalLoading: true,
                 error: null,
             });
-            console.log('Данные inventory:', research);
+            console.log('Данные research:', research);
 
-            const researchResponse = await axios.get('http://localhost:3000/api/inventories/filter');
-            const researchData = researchResponse.data[0] || {};
+            const researchResponse = await axios.get(`http://localhost:3000/api/researches/${research.id}`);
+            const researchData = researchResponse.data;
+             
+            console.log('Данные research: researchData', researchData);
 
             const fullResearch = {
                 ...research,
                 ...researchData,
             }
-            console.log('Объект, передаваемый в ResearchDetailsModal:', fullResearch);
+            console.log('Объект, передаваемый в ResearchDetailsModal fullResearch:', fullResearch);
 
             this.setState({
                 selectedResearch: fullResearch,
