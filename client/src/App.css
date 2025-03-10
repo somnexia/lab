@@ -37,6 +37,22 @@
   }
 } */
 
+.page-item {
+    margin: .125rem;
+
+}
+
+.page-link {
+
+    padding: .5rem 0.75rem;
+    font-size: .8rem;
+    font-weight: 700;
+    border-radius: .375rem;
+    line-height: 1.2;
+
+
+}
+
 
 .lab-modal-backdrop {
     display: block;
@@ -257,13 +273,18 @@ a {
     height: 2.5rem;
     width: 2.5rem;
     border-radius: 50%;
-    border: #31374a  solid 1px;
+    border: #31374a solid 1px;
     font-size: 0.9rem;
 }
+
 .avatar-icon {
     height: 2rem;
     width: 2rem;
 
+}
+
+.link-hover:hover {
+    text-decoration: underline !important;
 }
 
 .btn-circle {
