@@ -474,8 +474,10 @@ class ResearchDetailsModal extends Component {
                                                                         <div className="d-flex lh-1 align-items-center">
                                                                             <button type="button" className="p-0 text-body-tertiary fs-10 me-2 btn">
                                                                                 <FaPaperclip className='me-1' />
-
-                                                                                2</button>
+                                                                                {/*кол-во файлов прикрепленных к задаче
+                                                                                Фильтруем массив files, оставляя только файлы, у которых task_id совпадает с task.id.
+                                                                                Берем length, чтобы получить количество файлов для данной задачи.*/}
+                                                                                {files.filter(file => file.task_id === task.id).length}</button>
                                                                             <p className="me-lg-3 text-body-tertiary fs-10 me-2 mb-0">{new Date(task.start_date).toLocaleDateString()}</p>
                                                                             <div className="hover-lg-hide">
                                                                                 <p className="ps-lg-3 text-body-tertiary fs-10 ps-lg-3 border-start fw-bold mb-md-0 mb-0">
