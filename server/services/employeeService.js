@@ -1,4 +1,4 @@
-const { Employee } = require('../models');
+const { Employee, User, Laboratory } = require('../models');
 
 // Создание нового сотрудника
 const createEmployee = async (data) => {
@@ -15,7 +15,11 @@ const createEmployee = async (data) => {
 const getAllEmployees = async () => {
   try {
     return await Employee.findAll({
-      include: { association: 'laboratory' }
+      include: [
+        { model: User, as: 'user' },
+        { model: Laboratory, as: 'laboratory' }
+      ]
+      
     });
   } catch (error) {
     console.error('Ошибка при получении списка сотрудников:', error);

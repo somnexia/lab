@@ -86,6 +86,10 @@ const loginUser = async (email, password) => {
       throw new Error('Неверный email или пароль');
     }
 
+    user.setDataValue('updatedAt', new Date());
+    await user.save();
+
+
     // Генерация токена (используем секретный ключ)
     const token = jwt.sign(
       { id: user.id, email: user.email },
