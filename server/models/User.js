@@ -46,13 +46,24 @@ module.exports = (sequelize, DataTypes) => {
       },
       onUpdate: 'CASCADE',
       onDelete: 'SET NULL'
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
     }
 
   }, {
     sequelize,
     modelName: 'User',
     tableName: 'users',  // Название таблицы в БД
-    timestamps: false  // Отключаем автоматические поля createdAt и updatedAt
+    timestamps: true,
+    silent: false  
   });
 
   User.beforeCreate(async (user) => {
