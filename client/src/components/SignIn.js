@@ -24,32 +24,42 @@ class SignIn extends Component {
     handleSubmit = async (event) => {
         event.preventDefault();
         const { email, password } = this.state;
-        const { loadUser } = this.context; // Доступ к методу loadUser из контекста
+        const { login } = this.context; // Получаем метод login из AuthContext
 
-        try {
-            const response = await axios.post('http://localhost:3000/api/users/login', {
-                email,
-                password,
-            });
-            
+        //     try {
+        //         const response = await axios.post('http://localhost:3000/api/users/login', {
+        //             email,
+        //             password,
+        //         });
 
-            // Сохранение токена в localStorage
-            const token = response.data.token;
-            localStorage.setItem('authToken', token);
 
-            // Загрузка данных пользователя через контекст
-            console.log("token:",token)
-            loadUser();
+        //         // Сохранение токена в localStorage
+        //         const token = response.data.token;
+        //         localStorage.setItem('authToken', token);
 
-            // Очистка состояния и редирект
+        //         // Загрузка данных пользователя через контекст
+        //         console.log("token:",token)
+        //         loadUser();
+
+        //         // Очистка состояния и редирект
+        //         this.setState({ email: '', password: '', errorMessage: '' });
+        //         alert('Вы успешно вошли в систему!');
+        //         window.location.href = '/customer/profile'; // Измените на ваш маршрут
+        //     } catch (error) {
+        //         console.error(error); // Логируем ошибку
+        //         this.setState({
+        //             errorMessage: error.response?.data?.message || 'Ошибка входа. Проверьте ваши данные.',
+        //         });
+        //     }
+        // };
+        const result = await login(email, password);
+
+        if (result.success) {
             this.setState({ email: '', password: '', errorMessage: '' });
             alert('Вы успешно вошли в систему!');
-            window.location.href = '/customer/profile'; // Измените на ваш маршрут
-        } catch (error) {
-            console.error(error); // Логируем ошибку
-            this.setState({
-                errorMessage: error.response?.data?.message || 'Ошибка входа. Проверьте ваши данные.',
-            });
+            window.location.href = '/customer/profile'; // Перенаправляем после успешного входа
+        } else {
+            this.setState({ errorMessage: result.message });
         }
     };
 

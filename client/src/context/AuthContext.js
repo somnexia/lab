@@ -32,6 +32,28 @@ class AuthProvider extends Component {
             this.setState({ user: null, loading: false });
         }
     };
+    login = async (email, password) => {
+        try {
+            const response = await axios.post('http://localhost:3000/api/users/login', { email, password });
+
+            const token = response.data.token;
+            localStorage.setItem('authToken', token);
+
+            // Загружаем данные пользователя сразу после входа
+            const userResponse = await axios.get('http://localhost:3000/api/users/profile', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            this.setState({ user: userResponse.data, loading: false });
+
+            await this.loadUser(); 
+
+            return { success: true };
+        } catch (error) {
+            console.error('Ошибка входа:', error.response?.data?.message || error.message);
+            return { success: false, message: error.response?.data?.message || 'Ошибка входа' };
+        }
+    };
 
     logout = () => {
         localStorage.removeItem('authToken');
@@ -43,7 +65,7 @@ class AuthProvider extends Component {
         const { user, loading } = this.state;
 
         return (
-            <AuthContext.Provider value={{ user, loading, logout: this.logout, loadUser: this.loadUser }}>
+            <AuthContext.Provider value={{ user, loading, login: this.login, logout: this.logout, loadUser: this.loadUser }}>
                 {children}
             </AuthContext.Provider>
         );
