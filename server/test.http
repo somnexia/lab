@@ -71,7 +71,11 @@
         
         # GET http://localhost:3000/api/taskFiles/research/1
 
-        GET http://localhost:3000/api/tasks/research?researchId=1
+        # GET http://localhost:3000/api/tasks/research?researchId=1
+
+        get http://localhost:3000/api/inventories
+
+
 
 
 
