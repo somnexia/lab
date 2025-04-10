@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'research_id',
                 as: 'research'
             });
+            Task.belongsTo(models.User, {
+                foreignKey: 'user_id',
+                as: 'user'
+            });
 
             // Связь с таблицей файлов
             Task.hasMany(models.TaskFile, {
@@ -24,7 +28,8 @@ module.exports = (sequelize, DataTypes) => {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            autoIncrement: true
+            autoIncrement: true,
+            allowNull: false
         },
         research_id:{
             type: DataTypes.INTEGER,
@@ -43,6 +48,15 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
             defaultValue: null,
             comment: "Список подзадач, разделенных ';'"
+        },
+        user_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+                model: 'users', // Имя таблицы
+                key: 'id'
+            },
+            comment: "ID пользователя, загрузившего файл"
         },
 
         reminder: {
