@@ -23,4 +23,9 @@ router.put('/:id', inventoryController.updateInventoryItem);
 // Удаление записи инвентаря по ID
 router.delete('/:id', inventoryController.deleteInventoryItem);
 
+router.get('/chemicals/count', inventoryController.getChemicalCount);
+
+router.get('/equipment/count', inventoryController.getEquipmentCount);
+
+
 module.exports = router;

@@ -19,6 +19,7 @@ import Profile from "../components/Profile";
 import ResearchList from "../components/ResearchList";
 import AddResearch from "../components/AddResearch";
 import ParticipantList from "../components/ParticipantList";
+import AdminLogsPage from "../components/AdminLogsPage";
 
 const Main = () => {
     return (
@@ -55,6 +56,9 @@ const Main = () => {
                     
                     <Route path="projects/research-list" element={<ResearchList />} />
                     <Route path="projects/research-create" element={<AddResearch />} />
+
+                    <Route path="/management/userlog" element={<AdminLogsPage />} />
+
 
 
                 </Routes>

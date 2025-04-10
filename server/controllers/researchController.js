@@ -77,6 +77,16 @@ const addParticipantsToResearch = async (req, res) => {
   }
 };
 
+const getOngoingResearchCount = async (req, res) => {
+  try {
+    const count = await researchService.getOngoingResearchCount();
+    return res.status(200).json({ count });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createResearch,
   getAllResearches,
@@ -84,4 +94,5 @@ module.exports = {
   updateResearch,
   deleteResearch,
   addParticipantsToResearch,
+  getOngoingResearchCount,
 };

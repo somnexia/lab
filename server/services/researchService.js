@@ -84,6 +84,18 @@ const addResearchParticipants = async (researchId, employeeIds) => {
   }
 };
 
+const getOngoingResearchCount = async () => {
+  try {
+    const count = await Research.count({
+      where: { status: 'Ongoing' }
+    });
+    return count;
+  } catch (error) {
+    console.error('Ошибка при подсчете ongoing-исследований:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   createResearch,
   getAllResearches,
@@ -91,4 +103,5 @@ module.exports = {
   updateResearch,
   deleteResearch,
   addResearchParticipants,
+  getOngoingResearchCount,
 };

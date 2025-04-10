@@ -3,6 +3,7 @@
 @use "./mixins.scss" as mixins;
 @use "./themes.scss" as themes;
 
+
 // Применяем светлую тему для всего документа
 @include mixins.apply-theme(themes.$light-theme);
 
@@ -15,23 +16,24 @@ h3 {
     @include rfs.font-size(2rem);
 }
 
-.text-body-quaternary{
+.text-body-quaternary {
     color: vars.$quaternary-text-color;
-    
+
 }
 
-.fs-10{
+.fs-10 {
     font-size: .64rem;
 }
-.fs-9{
+
+.fs-9 {
     font-size: .72rem;
 }
 
-.fs-8{
+.fs-8 {
     font-size: .8rem;
 }
-    
-.fs-7{
+
+.fs-7 {
     font-size: .88rem;
 }
 
@@ -49,4 +51,15 @@ html[data-theme="light"] {
 
 html[data-theme="dark"] {
     @include mixins.apply-theme(themes.$dark-theme);
+}
+
+.bg-purple {
+    @include mixins.bg-purple;
+}
+.bg-purple-10 {
+    @include mixins.bg-purple-10;
+}
+
+.text-purple {
+    @include mixins.text-purple;
 }

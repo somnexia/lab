@@ -191,6 +191,36 @@ const getLocationsForEntity = async (entityType, entityId) => {
 };
 
 
+const countChemicals = async () => {
+  try {
+    const count = await Inventory.count({
+      where: {
+        item_type: ['element', 'compound', 'mixture'], // или Sequelize.Op.in
+      },
+    });
+    return count;
+  } catch (error) {
+    console.error('Ошибка при подсчете химикатов:', error);
+    throw error;
+  }
+};
+
+const countEquipment = async () => {
+  try {
+    const count = await Inventory.count({
+      where: {
+        item_type: 'equipment',
+      },
+    });
+    return count;
+  } catch (error) {
+    console.error('Ошибка при подсчете оборудования:', error);
+    throw error;
+  }
+};
+
+
+
 
 
 
@@ -203,4 +233,6 @@ module.exports = {
   deleteInventoryItem,
   getInventoriesByReferenceAndType,
   getLocationsForEntity,
+  countChemicals,
+  countEquipment,
 };
