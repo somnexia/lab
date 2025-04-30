@@ -24,10 +24,6 @@ import { FaFileLines } from "react-icons/fa6";
 import { FaImage } from "react-icons/fa6";
 import React, { Component } from 'react';
 import axios from 'axios';
-
-
-
-
 class ResearchDetailsModal extends Component {
     state = {
         showMore: false,
@@ -40,29 +36,20 @@ class ResearchDetailsModal extends Component {
         loadingFiles: false,
         errorFiles: null,
     }
-
-
-
-
     toggleShowMore = () => {
         this.setState((prevState) => ({ showMore: !prevState.showMore }));
     };
-
     handleDeadlineChange = (date) => {
         this.setState({ deadline: date });
     };
-
     handleChange = (event) => {
         this.setState({ [event.target.name]: event.target.value });
     };
-
     componentDidMount() {
         this.fetchTasks();
         this.fetchFiles();
         this.fetchResearchEmployees();
-
     }
-
     componentDidUpdate(prevProps) {
         if (prevProps.research?.id !== this.props.research?.id) {
             this.fetchTasks();
@@ -70,13 +57,10 @@ class ResearchDetailsModal extends Component {
             this.fetchResearchEmployees();
         }
     }
-
     fetchTasks = async () => {
         const { research } = this.props;
         if (!research?.id) return;
-
         this.setState({ loadingTasks: true, errorTasks: null });
-
         try {
             const response = await axios.get(`http://localhost:3000/api/tasks/research?researchId=${research.id}`);
             this.setState({ tasks: response.data, loadingTasks: false });
@@ -85,41 +69,31 @@ class ResearchDetailsModal extends Component {
             this.setState({ errorTasks: "Не удалось загрузить задачи", loadingTasks: false });
         }
     };
-
     fetchFiles = async () => {
         const { research } = this.props;
         if (!research?.id) return;
-
         this.setState({ loadingFiles: true, errorFiles: null });
-
         try {
             const response = await axios.get(`http://localhost:3000/api/taskFiles/research/${research.id}`);
             this.setState({ files: response.data, loadingFiles: false });
         } catch (error) {
             console.error("Ошибка загрузки файлов:", error);
-
             this.setState({ errorFiles: "Не удалось загрузить файлы", loadingFiles: false });
         }
     };
     fetchResearchEmployees = async () => {
         const { research } = this.props;
         if (!research?.id) return;
-
         try {
             const response = await axios.get(`http://localhost:3000/api/researchEmployees?researchId=${research.id}`);
-
             // Фильтруем только сотрудников текущего исследования
             const filteredEmployees = response.data.filter(emp => emp.research_id === research.id);
-
             console.log("Отфильтрованные сотрудники исследования:", filteredEmployees);
-
             this.setState({ researchEmployees: filteredEmployees });
         } catch (error) {
             console.error("Ошибка загрузки сотрудников исследования:", error);
         }
     };
-
-
     handleBackdropClick = (e) => {
         const { onClose } = this.props;
         // Закрываем модальное окно, если клик был на фоне (а не на содержимом модального окна)
@@ -127,7 +101,6 @@ class ResearchDetailsModal extends Component {
             onClose();
         }
     };
-
     getInitials = (fullName) => {
         if (!fullName) return '??'; // На случай отсутствия данных
         const parts = fullName.split(' ');
@@ -135,8 +108,6 @@ class ResearchDetailsModal extends Component {
         const lastInitial = parts[1] ? parts[1][0].toUpperCase() : '';
         return `${firstInitial}${lastInitial}`;
     };
-
-
     render() {
         const {
             isOpen,
@@ -146,11 +117,7 @@ class ResearchDetailsModal extends Component {
             error,
         } = this.props;
         const { showMore, tasks, files, loadingTasks, errorTasks, loadingFiles, errorFiles } = this.state;
-
-
-
         if (!isOpen) return null;
-
         return (
             <div
                 className="modal fade lab-modal-backdrop p-0 show"
@@ -182,9 +149,7 @@ class ResearchDetailsModal extends Component {
                             ></img>
                         </div>
                         <div className="modal-body p-0">
-
                             {loading && <p>Загрузка связанных данных...</p>}
-
                             <div className='gx-0 gy-3 border-bottom px-5 px-lg-5 py-4 p-xl-0 row'>
                                 <div className="border-end col-xl-5 col-12 ">
                                     <div className="h-100 align-items-center px-xl-5 justify-content-between justify-content-xl-start row">
@@ -207,14 +172,12 @@ class ResearchDetailsModal extends Component {
                                                     id='deadline'
                                                     onFocus={() => this.setState({ isFocused: true })}
                                                     onBlur={() => this.setState({ isFocused: !!this.state.deadline })}>
-
                                                 </DatePicker>
                                                 <label htmlFor="deadline" className={this.state.isFocused ? 'active' : ''}>Deadline</label>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
                                 <div className="col-xl-7 col-12">
                                     <div className="px-xl-5 py-xl-4">
                                         <div className="d-flex gap-2 justify-content-between align-items-center">
@@ -222,20 +185,14 @@ class ResearchDetailsModal extends Component {
                                                 <div className="dropdown">
                                                     <button type="button" id="" aria-expanded="false" className="btn-outline-secondary d-none d-sm-block btn dropdown-toggle dropdown-caret-none d-flex align-items-center">
                                                         Add to card <FaPlus />
-
                                                     </button>
                                                 </div>
-
                                                 <div className="dropdown d-flex align-items-center">
                                                     <button type="button" data-bs-toggle="dropdown" id="react-aria7113992956-:r4n:" aria-expanded="false" enable-caret="false" className="btn rounded-2 btn-icon btn-icon-lg me-2 dropdown-caret-none btn-outline-secondary dropdown-toggle">
                                                         <FaEllipsisVertical />
-
                                                     </button>
-
                                                     <div x-placement="bottom-end" aria-labelledby="react-aria7113992956-:r4n:" className="dropdown-menu dropdown-menu-end" data-popper-reference-hidden="false" data-popper-escaped="false" data-popper-placement="bottom-end" style={{ position: 'absolute', inset: '0px 0px auto auto', transform: 'translate3d(-8px, 40px, 0px)' }}>
                                                         <div className="px-2 d-flex flex-column gap-2">
-
-
                                                         </div>
                                                     </div>
                                                 </div>
@@ -259,7 +216,6 @@ class ResearchDetailsModal extends Component {
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                             <div className='g-0 row'>
@@ -268,8 +224,6 @@ class ResearchDetailsModal extends Component {
                                         <h3 className='align-middle fw-bolder lab-text-primary lh-sm mb-4'>{research?.title || "Название отсутствует"}
                                             <span className='text-secondary ps-3 fs-5 h-100'>({research?.type})</span>
                                         </h3>
-
-
                                         <span
                                             className={`py-1 px-4 fs-6 badge fw-bold lh-1 mb-5 bg-opacity-25 border text-uppercase text-bg-${research.status === "Completed"
                                                 ? "success"
@@ -297,9 +251,6 @@ class ResearchDetailsModal extends Component {
                                         >
                                             {research.status}
                                         </span>
-
-
-
                                         <div className="d-flex align-items-center mb-5">
                                             <p className="text-body-highlight fw-700 mb-0 me-2">100%</p>
                                             <div className="progress flex-fill bg-success bg-opacity-25" style={{ height: ".450rem" }}>
@@ -410,7 +361,6 @@ class ResearchDetailsModal extends Component {
                                     </div>
                                     
                                     <div className='px-5 px-lg-6 py-4 bg-body-highlight border-divider border-top'>
-
                                         {showMore && (
                                             <div className="card mt-4 shadow-sm">
                                                 <div className="card-header  text-white">
@@ -421,14 +371,11 @@ class ResearchDetailsModal extends Component {
                                                     <p><strong>Safety Info:</strong> {research?.funding_source}</p>
                                                 </div>
                                             </div>
-
                                         )}
                                         <button type="button" className="dropdown-toggle btn btn-lab mt-4" onClick={this.toggleShowMore}>
                                             {showMore ? 'View Less' : 'View More'}
                                         </button>
-
                                     </div>
-
                                 </div>
                                 <div className='col-xl-7 col-12'>
                                     <div className='px-5 px-lg-6 pt-4 pb-5 pb-lg-6'>
@@ -436,17 +383,14 @@ class ResearchDetailsModal extends Component {
                                             <h5 className="mb-4">To do list
                                                 <span className="text-body-tertiary fw-normal fs-6">(23)</span>
                                             </h5>
-
                                             <div className="d-flex justify-content-between align-items-center flex-wrap gap-x-5 gap-y-3 mb-3">
                                                 <div className="search-box" style={{ maxWidth: "30rem" }}>
                                                     <form className="position-relative">
                                                         <input placeholder="Search tasks" type="search" className="search-input search form-control">
                                                         </input>
                                                     </form>
-
                                                 </div>
                                             </div>
-
                                             {/* {loadingTasks && <p>Загрузка задач...</p>}
                                             {errorTasks && <p className="text-danger">{errorTasks}</p>} */}
                                             <div>
@@ -456,7 +400,6 @@ class ResearchDetailsModal extends Component {
                                                     <p>Нет загруженных задач</p>
                                                 ) : errorFiles ? (
                                                     <p className="text-danger">{errorTasks}</p>
-
                                                 ) : (
                                                     <div className='mb-4'>
                                                         {tasks.map((task) =>
@@ -486,7 +429,6 @@ class ResearchDetailsModal extends Component {
                                                                                 {/* или Встроенный метод toLocaleTimeString()
                                                                         1970-01-01T${task.Reminder} – превращает строку 12:00:00 в корректную дату.
                                                                         toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: true }) – форматирует в 12:00 PM
-
                                                                         <p className="ps-lg-3 text-body-tertiary fs-10 ps-lg-3 border-start-lg fw-bold mb-md-0 mb-0">
                                                                             {new Date(`1970-01-01T${task.Reminder}`).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
                                                                         </p> */}
@@ -494,15 +436,11 @@ class ResearchDetailsModal extends Component {
                                                                         </div>
                                                                     </div>
                                                                 </div>
-
                                                                 <div className="d-lg-block d-none end-0 position-absolute" style={{ top: "50rem" }}>
                                                                     <div className="hover-actions end-0">
                                                                         <button type="button" className="btn-icon fs-10 me-1 btn btn-phoenix-secondary">
-
                                                                         </button>
-
                                                                         <button type="button" className="btn-icon fs-10 btn btn-phoenix-secondary">
-
                                                                         </button>
                                                                     </div>
                                                                 </div>
@@ -515,7 +453,6 @@ class ResearchDetailsModal extends Component {
                                                 <FaPlus />
                                                 Add new task
                                             </button>
-
                                         </div>
                                         <div>
                                             <h5 className='mb-3'>Files</h5>
@@ -526,7 +463,6 @@ class ResearchDetailsModal extends Component {
                                                 <p>Нет загруженных файлов</p>
                                             ) : errorFiles ? (
                                                 <p className="text-danger">{errorFiles}</p>
-
                                             ) : (
                                                 <div className='mb-3'>
                                                     {files.map((file) => (
@@ -547,41 +483,26 @@ class ResearchDetailsModal extends Component {
                                                                         </span>
                                                                         <span className="text-body-quaternary mx-1">|</span>
                                                                         <span>Uploaded by: <strong>{file.uploader?.name || 'Неизвестно'}</strong></span>
-
                                                                     </div>
                                                                 </div>
-
-
                                                                 <div className="btn-reveal-trigger">
                                                                     <div className="dropdown">
                                                                         <button type="button" id="" className="btn-outline-secondary border-0 dropdown-caret-none transition-none dropdown-toggle btn btn-sm">
-
                                                                             <FaEllipsis />
                                                                         </button>
                                                                     </div>
                                                                 </div>
                                                             </div>
-
                                                         </div>
                                                     ))}
                                                 </div>
                                             )}
-
                                         </div>
                                     </div>
-
                                 </div>
-
                             </div>
-
-
-
-
-
                             {/* <div className='row gap-3'>
                                 <div className='col-xl-10 col-12'>
-
-
                                 </div>
                                 <div className='inventory-modal-actions row px-0 col-xl-2 col-11 mt-0'>
                                     <div className='dropdown ' >
@@ -621,7 +542,6 @@ class ResearchDetailsModal extends Component {
                                                     Set "Out Of Stock"
                                                 </button>
                                             </li>
-
                                         </ul>
                                     </div>
                                     <div>
@@ -630,11 +550,8 @@ class ResearchDetailsModal extends Component {
                                             <button onClick={() => addToCart(inventory)} type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaCartPlus /><span className='ps-2'></span>Add To Cart</button>
                                             <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'>< FaHistory /><span className='ps-2'>Mark as Favorite</span></button>
                                             <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaBell /><span className='ps-2'>Set Reminder</span></button>
-
                                         </div>
                                     </div>
-
-
                                     <div className="mt-auto"></div>
                                     <div>
                                         <h5 className="text-body-secondary">Management Actions</h5>
@@ -649,14 +566,10 @@ class ResearchDetailsModal extends Component {
                                 </div>
                             </div> */}
                         </div>
-
                     </div>
                 </div>
             </div >
-
         );
     }
-
 }
-
 export default ResearchDetailsModal;
