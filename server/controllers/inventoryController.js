@@ -111,6 +111,28 @@ const getLocationsForEntity = async (req, res) => {
 };
 
 
+const getChemicalCount = async (req, res) => {
+  try {
+    const count = await inventoryService.countChemicals();
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ message: 'Ошибка при подсчете химикатов' });
+  }
+};
+
+const { countEquipment } = require('../services/inventoryService');
+
+const getEquipmentCount = async (req, res) => {
+  try {
+    const count = await countEquipment();
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка при получении количества оборудования' });
+  }
+};
+
+
+
 
 
 
@@ -121,7 +143,9 @@ module.exports = {
   updateInventoryItem,
   deleteInventoryItem,
   getInventoriesByReferenceAndType,
-  getLocationsForEntity
+  getLocationsForEntity,
+  getChemicalCount,
+  getEquipmentCount,
 
 
 };

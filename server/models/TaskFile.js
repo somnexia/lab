@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         
         
             TaskFile.belongsTo(models.User, {
-                foreignKey: 'uploaded_by',
+                foreignKey: 'user_id',
                 as: 'uploader'
             });
             
@@ -23,7 +23,8 @@ module.exports = (sequelize, DataTypes) => {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            autoIncrement: true
+            autoIncrement: true,
+            allowNull: false,
         },
         task_id: {
             type: DataTypes.INTEGER,
@@ -44,11 +45,11 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             comment: "Дата загрузки файла"
         },
-        uploaded_by: {
+        user_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: 'Users', // Имя таблицы
+                model: 'users', // Имя таблицы
                 key: 'id'
             },
             comment: "ID пользователя, загрузившего файл"

@@ -121,7 +121,7 @@ class Aside extends React.Component {
                                                             </ul>
                                                         </div>
                                                     </li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Updates</a></li>
+                                                    <li><Link to="/management/userlog" className="nav-link btn   d-inline-flex text-decoration-none rounded">User log</Link></li>
                                                     <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Reports</a></li>
                                                 </ul>
                                             </div>

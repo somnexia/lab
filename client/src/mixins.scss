@@ -1,5 +1,6 @@
 @use "sass:color";
 @use "sass:map";
+@use './variables' as vars;
 
 @mixin apply-theme($theme) {
     body {
@@ -16,42 +17,48 @@
         }
 
     }
-    .link-primary{
+
+    .link-primary {
         color: map.get($theme, primary-color);
+
         &:hover {
             color: color.adjust(map.get($theme, primary-color), $lightness: -5%);
         }
 
     }
 
-    .pagination .page-item{
-        
-        background-color: map.get($theme, body-bg )!important;
-        --bs-pagination-color: map.get($theme, text-color )!important;
-        --bs-pagination-bg: map.get($theme, )!important;
-        --bs-pagination-border-width:0px,
-        --bs-pagination-active-bg: map.get($theme, primary-color )!important;
+
+    .pagination .page-item {
+
+        background-color: map.get($theme, body-bg) !important;
+        --bs-pagination-color: map.get($theme, text-color) !important;
+        --bs-pagination-bg: map.get($theme, ) !important;
+        --bs-pagination-border-width: 0px,
+            --bs-pagination-active-bg: map.get($theme, primary-color) !important;
+
         &:hover {
-            color: map.get($theme, secondary-color )!important;
+            color: map.get($theme, secondary-color) !important;
         }
     }
-    .page-link:hover{
-        color: map.get($theme, primary-color )!important;
-        background-color: map.get($theme, tertiary-color )!important;
-    }
-    
 
-    .active>.page-link{
-        background-color: map.get($theme, primary-color )!important;
-        color: map.get($theme, text-color )!important;
-        
+    .page-link:hover {
+        color: map.get($theme, primary-color) !important;
+        background-color: map.get($theme, tertiary-color) !important;
     }
-    .disabled>.page-link{
-        background-color: map.get($theme, tertiary-color )!important;
-        color: map.get($theme, text-color )!important;
-        
+
+
+    .active>.page-link {
+        background-color: map.get($theme, primary-color) !important;
+        color: map.get($theme, text-color) !important;
+
     }
-    
+
+    .disabled>.page-link {
+        background-color: map.get($theme, tertiary-color) !important;
+        color: map.get($theme, text-color) !important;
+
+    }
+
 
 
     .btn-secondary {
@@ -64,7 +71,9 @@
         }
     }
 
-    input, select ,textarea {
+    input,
+    select,
+    textarea {
         background-color: map.get($theme, lab-input-bg);
         color: map.get($theme, text-color);
         border-color: map.get($theme, secondary-border-color);
@@ -79,7 +88,7 @@
     form label,
     .form-floating label {
         color: map.get($theme, tertiary-color);
-        
+
     }
 
     form label,
@@ -129,29 +138,34 @@
 
     }
 
-    .form-control, .form-select {
+    .form-control,
+    .form-select {
         background-color: map.get($theme, lab-input-bg);
         color: map.get($theme, text-color);
 
-        
-        
+
+
 
     }
+
     // .form-floating>.form-control:not(:placeholder-shown)~label{
     //     background-color: map.get($theme, lab;
-        
+
     // }
-    .form-floating>.form-control:not(:placeholder-shown)~label::after, .form-floating>.form-select:not(:placeholder-shown)~label::after{
+    .form-floating>.form-control:not(:placeholder-shown)~label::after,
+    .form-floating>.form-select:not(:placeholder-shown)~label::after {
         background-color: map.get($theme, lab-input-bg);
         color: map.get($theme, tertiary-color);
-        
+
     }
-    .form-floating>.form-control:not(:placeholder-shown)~label, .form-floating>.form-select:not(:placeholder-shown)~label{
-        
+
+    .form-floating>.form-control:not(:placeholder-shown)~label,
+    .form-floating>.form-select:not(:placeholder-shown)~label {
+
         color: color.adjust(map.get($theme, tertiary-color), $lightness: -5%) !important;
-        
+
     }
-    
+
 
     .form-check-input:checked {
         background-color: map.get($theme, primary-color);
@@ -232,10 +246,12 @@
         color: map.get($theme, secondary-border-color);
         opacity: 1
     }
-    .border-divider{
-        border-color: map.get($theme, secondary-border-color) !important;;
+
+    .border-divider {
+        border-color: map.get($theme, secondary-border-color) !important;
+        ;
         border-top: 1px solid;
-        
+
 
     }
 
@@ -337,11 +353,27 @@
         color: map.get($theme, primary-color) !important;
 
     }
+
     .bg-body-highlight {
-        background-color: map.get($theme, body-highlight-bg) ;
+        background-color: map.get($theme, body-highlight-bg);
     }
 
 
 
 
+}
+@mixin bg-purple {
+    background-color: vars.$bg-purple;
+    opacity: 1 !important;
+
+}
+
+@mixin bg-purple-10 {
+    background-color: rgba(vars.$bg-purple, 0.1) !important;
+
+}
+
+@mixin text-purple {
+    color: vars.$text-purple;
+    opacity: 1 !important;
 }

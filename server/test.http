@@ -73,9 +73,12 @@
 
         # GET http://localhost:3000/api/tasks/research?researchId=1
 
-        get http://localhost:3000/api/inventories
+        # get http://localhost:3000/api/inventories
 
+        # get http://localhost:3000/api/inventories/chemicals/count
 
+        # get http://localhost:3000/api/researches/ongoing/count
 
+# get http://localhost:3000/api/orders/active/count
 
-
+get http://localhost:3000/api/logs

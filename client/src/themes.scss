@@ -33,9 +33,11 @@ $light-theme: (
     lab-input-bg: #f5f7fa,
     lab-label-bg:#e7e7e7,
     body-highlight-bg:#eff2f6,
- 
-    
-    
+    lab-bg: #727cf5,
+
+
+
+
 );
 
 $dark-theme: (
@@ -65,6 +67,6 @@ $dark-theme: (
     lab-btn-active-border-color: #222834,
     lab-input-bg: #0f111a,
     lab-label-bg:#0f111a,
-    body-highlight-bg:#222834
+    body-highlight-bg:#222834,
+    lab-bg: #727cf5,
 );
-

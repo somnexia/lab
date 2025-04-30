@@ -24,7 +24,8 @@ const userRoutes =  require("./userRoutes");
 const taskRoutes = require('./taskRoutes');
 const taskFileRouter = require('./taskFileRoutes');
 const researchEmployeeRoutes = require('./researchEmployeeRoutes');
-
+const orderRoutes = require('./orderRoutes'); // Путь к маршрутам для заказов
+const logRoutes = require('./logRoutes'); // Путь к маршрутам для логов
 
 router.use("/api/chemElements", chemElementRoutes); // Подключаем маршруты для элементов
 router.use("/api/chemCompounds", chemCompoundRoutes); // Подключаем маршруты для соединений
@@ -49,5 +50,7 @@ router.use("/pricings", pricingRoutes);
 router.use("/", homeRoutes);
 router.use('/api/taskFiles', taskFileRouter);
 router.use('/api/researchEmployees', researchEmployeeRoutes);
+router.use('/api/orders', orderRoutes); // Подключаем маршруты для заказов
+router.use('/api/logs', logRoutes); // Подключаем маршруты для логов
 
 module.exports = router;

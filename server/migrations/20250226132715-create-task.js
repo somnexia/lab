@@ -7,7 +7,7 @@ module.exports = {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
+        autoIncrement: false,
         allowNull: false
       },
       research_id: {
@@ -34,6 +34,15 @@ module.exports = {
         defaultValue: null,
         comment: "Список подзадач, разделенных ';'"
       },
+      user_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'users', // Имя таблицы
+            key: 'id'
+        },
+        comment: "ID пользователя, загрузившего файл"
+    },
       reminder: {
         type: Sequelize.TIME,
         allowNull: true,
