@@ -3,7 +3,11 @@ const userService = require('../services/userService');
 // Создание нового пользователя
 const createUser = async (req, res) => {
   try {
-    const user = await userService.createUser(req.body);
+    const user = await userService.createUser(req.body, {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      sessionId: null, // можно будет заменить на реальный ID, если добавишь сессии
+    });
     res.status(201).json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });

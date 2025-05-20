@@ -4,6 +4,6 @@ const router = express.Router();
 const logController = require('../controllers/logController');
 
 // Только админ может смотреть логи
-router.get('/', logController.getAllLogs);
+router.get('/', logController.getLogs);
 
 module.exports = router;

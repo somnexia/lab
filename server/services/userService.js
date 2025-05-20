@@ -1,11 +1,23 @@
-const { User, Employee } = require('../models');
+const { User, Employee, Log  } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key'; // Убедитесь, что SECRET_KEY определен
 // Создание нового пользователя
-const createUser = async (data) => {
+const createUser = async (data, context = {}) => {
   try {
     const user = await User.create(data);
+
+    // Логирование события регистрации
+    await Log.create({
+      user_id: user.id,
+      action: 'REGISTER',
+      description: `Пользователь с email ${user.email} зарегистрирован`,
+      timestamp: new Date(),
+      ip_address: context.ip || null,
+      user_agent: context.userAgent || null,
+      session_id: context.sessionId || null,
+    });
+
     return user;
   } catch (error) {
     console.error('Ошибка при создании пользователя:', error);
