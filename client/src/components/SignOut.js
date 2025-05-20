@@ -16,7 +16,7 @@ class SignOut extends Component {
 
         setTimeout(() => {
             navigate('/management/signin'); // Перенаправление через 3 секунды
-        }, 3000);
+        }, 30000);
     }
 
     render() {

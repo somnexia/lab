@@ -60,24 +60,24 @@ class Dashboard extends Component {
             <div className="flex-grow py-4">
                 <div className="container">
                     <div className="mb-5">
-                        <h1 className="h4 fw-semibold text-dark">
+                        <h1 className="h4 fw-semibold ">
                             Laboratory Inventory Dashboard
                         </h1>
-                        <p className="text-muted small mt-1">
+                        <p className="secondary-color small mt-1">
                             Welcome back! Here's an overview of your laboratory inventory.
                         </p>
                     </div>
 
                     {/* Quick Actions */}
                     <div className="mb-5">
-                        <h2 className="h5 mb-3 text-dark">Quick Actions</h2>
+                        <h2 className="h5 mb-3 ">Quick Actions</h2>
                         <div className="row g-3">
                             <div className="col-6 col-md-3">
                                 <button className="btn btn-light w-100 d-flex flex-column align-items-center justify-content-center border shadow-sm p-3">
                                     <div className="bg-primary bg-opacity-10 rounded-circle p-2 mb-2">
                                         <Search size={24} className="text-primary" />
                                     </div>
-                                    <span className="small fw-medium text-dark">Search Inventory</span>
+                                    <span className="small fw-medium ">Search Inventory</span>
                                 </button>
                             </div>
                             <div className="col-6 col-md-3">
@@ -85,7 +85,7 @@ class Dashboard extends Component {
                                     <div className="bg-success bg-opacity-10 rounded-circle p-2 mb-2">
                                         <PlusCircle size={24} className="text-success" />
                                     </div>
-                                    <span className="small fw-medium text-dark">Add Item</span>
+                                    <span className="small fw-medium ">Add Item</span>
                                 </button>
                             </div>
                             <div className="col-6 col-md-3">
@@ -93,7 +93,7 @@ class Dashboard extends Component {
                                     <div className="bg-purple-10 rounded-circle p-2 mb-2">
                                         <ClipboardList size={24} className="text-purple" />
                                     </div>
-                                    <span className="small fw-medium text-dark">Generate Report</span>
+                                    <span className="small fw-medium ">Generate Report</span>
                                 </button>
                             </div>
                             <div className="col-6 col-md-3">
@@ -101,7 +101,7 @@ class Dashboard extends Component {
                                     <div className="bg-warning bg-opacity-10 rounded-circle p-2 mb-2">
                                         <RefreshCw size={24} className="text-warning" />
                                     </div>
-                                    <span className="small fw-medium text-dark">Update Stock</span>
+                                    <span className="small fw-medium ">Update Stock</span>
                                 </button>
                             </div>
                         </div>
@@ -110,7 +110,7 @@ class Dashboard extends Component {
                     {/* Inventory Overview */}
                     <div className="mb-5">
                         <div className="d-flex justify-content-between align-items-center mb-3">
-                            <h2 className="h5 text-dark">Inventory Overview</h2>
+                            <h2 className="h5 ">Inventory Overview</h2>
                             <button className="btn btn-link p-0 text-primary d-flex align-items-center small fw-medium">
                                 <TrendingUp size={16} className="me-1" />
                                 View Analytics

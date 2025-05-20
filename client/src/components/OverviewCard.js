@@ -54,7 +54,7 @@ class OverviewCard extends Component {
                         </div>
                         <div className="ms-3 flex-grow-1">
                             <dl>
-                                <dt className="text-muted small mb-1">{title}</dt>
+                                <dt className="text-body-secondary small mb-1">{title}</dt>
                                 <dd className="h5 mb-0">{count !== null ? count : 'Загрузка...'}</dd>
                             </dl>
                         </div>
