@@ -3,11 +3,18 @@ const userService = require('../services/userService');
 // Создание нового пользователя
 const createUser = async (req, res) => {
   try {
+    // const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const ipList = req.headers['x-forwarded-for']?.split(',') || [];
+    const realIp = ipList[0]?.trim() || req.ip;
+    const userAgent = req.headers['user-agent'];
+    const sessionId = req.session?.id || null; // если у тебя используется express-session
+
     const user = await userService.createUser(req.body, {
-      ip: req.ip,
-      userAgent: req.headers['user-agent'],
-      sessionId: null, // можно будет заменить на реальный ID, если добавишь сессии
+      realIp,
+      userAgent,
+      sessionId,
     });
+
     res.status(201).json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });

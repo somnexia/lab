@@ -10,8 +10,11 @@ const morgan = require('morgan');
 
 
 
+
+
 const app = express();
 
+app.set('trust proxy', ['loopback']);
 app.use(morgan('dev')); // Это будет логировать запросы в консоль
 app.use((req, res, next) => {
   try {

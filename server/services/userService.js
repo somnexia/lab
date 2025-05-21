@@ -1,26 +1,43 @@
-const { User, Employee, Log  } = require('../models');
+const { User, Employee, Log } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key'; // Убедитесь, что SECRET_KEY определен
 // Создание нового пользователя
-const createUser = async (data, context = {}) => {
+const createUser = async (data, meta, context = {}) => {
   try {
-    const user = await User.create(data);
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const user = await User.create({
+      ...data,
+      password: hashedPassword,
+    });
 
     // Логирование события регистрации
     await Log.create({
       user_id: user.id,
       action: 'REGISTER',
+      resource_id: user.id,
+      resource_type: 'User',
       description: `Пользователь с email ${user.email} зарегистрирован`,
       timestamp: new Date(),
-      ip_address: context.ip || null,
-      user_agent: context.userAgent || null,
-      session_id: context.sessionId || null,
+      ip_address: meta.ip || null,
+      user_agent: meta.userAgent || null,
+      session_id: meta.sessionId || null,
+      status: 'SUCCESS',
     });
 
     return user;
   } catch (error) {
     console.error('Ошибка при создании пользователя:', error);
+    await Log.create({
+      user_id: null,
+      action: 'REGISTER_FAILED',
+      description: `Ошибка при регистрации: ${error.message}`,
+      timestamp: new Date(),
+      ip_address: meta.ip || null,
+      user_agent: meta.userAgent || null,
+      session_id: meta.sessionId || null,
+      status: 'FAILED',
+    });
     throw error;
   }
 };
