@@ -1,20 +1,20 @@
 const userService = require('../services/userService');
-
+const jwt = require('jsonwebtoken');
 // Создание нового пользователя
 const createUser = async (req, res) => {
   try {
     // const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const ipList = req.headers['x-forwarded-for']?.split(',') || [];
-    const realIp = ipList[0]?.trim() || req.ip;
+    const ip = ipList[0]?.trim() || req.ip;
     const userAgent = req.headers['user-agent'];
     const sessionId = req.session?.id || null; // если у тебя используется express-session
 
     const user = await userService.createUser(req.body, {
-      realIp,
+      ip,
       userAgent,
       sessionId,
     });
-
+    console.log('Создан новый пользователь:', user);
     res.status(201).json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -66,8 +66,16 @@ const deleteUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+  const ipList = req.headers['x-forwarded-for']?.split(',') || [];
+  const ip = ipList[0]?.trim() || req.ip;
+  const userAgent = req.headers['user-agent'];
+  const sessionId = req.session?.id || null;
   try {
-    const { token, user } = await userService.loginUser(email, password);
+    const { token, user } = await userService.loginUser(email, password, {
+      ip,
+      userAgent,
+      sessionId,
+    });
     res.status(200).json({ message: 'Авторизация успешна', token, user });
   } catch (error) {
     res.status(401).json({ message: error.message });
@@ -76,10 +84,11 @@ const loginUser = async (req, res) => {
 
 const getProfile = async (req, res) => {
   // Проверяем наличие токена в заголовке Authorization
-  const token = req.headers.authorization?.split(' ')[1]; // Извлекаем токен из заголовка
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
   if (!token) {
-    return res.status(401).json({ message: 'Токен не предоставлен' });
+    return res.status(401).json({ message: 'Токен не предоставлен или недействителен' });
   }
 
   try {
@@ -91,6 +100,33 @@ const getProfile = async (req, res) => {
   }
 };
 
+const logoutUser = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) return res.status(401).json({ message: 'Токен не предоставлен' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    const userId = decoded.id;
+
+    const ipList = req.headers['x-forwarded-for']?.split(',') || [];
+    const ip = ipList[0]?.trim() || req.ip;
+    const userAgent = req.headers['user-agent'];
+    const sessionId = req.session?.id || null;
+
+    await userService.logoutUser(userId, {
+      ip,
+      userAgent,
+      sessionId,
+    });
+
+    res.status(200).json({ message: 'Пользователь вышел из системы' });
+  } catch (error) {
+    console.error('Ошибка при выходе из системы:', error);
+    res.status(500).json({ message: 'Ошибка при выходе' });
+  }
+};
+
 module.exports = {
   createUser,
   getAllUsers,
@@ -99,4 +135,5 @@ module.exports = {
   deleteUser,
   loginUser,
   getProfile,
+  logoutUser
 };

@@ -6,15 +6,9 @@ const path = require("path")
 const exphbs = require("express-handlebars")
 const db = require("../server/data/db")
 const morgan = require('morgan');
-
-
-
-
-
-
 const app = express();
 
-app.set('trust proxy', ['loopback']);
+app.set('trust proxy', ['loopback', 'uniquelocal']);
 app.use(morgan('dev')); // Это будет логировать запросы в консоль
 app.use((req, res, next) => {
   try {
@@ -44,9 +38,6 @@ app.use(express.urlencoded({ extended: true }))
 
 // Используем основной файл маршрутов
 app.use('/', routes);
-
-
-
 
 // Запуск сервера с обработкой ошибок
 const port = process.env.PORT || 3000;

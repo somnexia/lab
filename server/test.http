@@ -91,7 +91,7 @@ X-Forwarded-For: 203.0.113.25
 
 {  
 "name": "Test User",
-  "email": "testuser222@example.com",
+  "email": "testuser222233@example.com",
   "password": "securePassword123",
   "role": "user"
 }
