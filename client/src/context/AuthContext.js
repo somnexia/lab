@@ -22,7 +22,7 @@ class AuthProvider extends Component {
                 const response = await axios.get('http://localhost:3000/api/users/profile', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                
+
                 this.setState({ user: response.data, loading: false });
             } catch (error) {
                 console.error('Ошибка при загрузке профиля:', error.response?.data || error.message);
@@ -46,7 +46,7 @@ class AuthProvider extends Component {
 
             this.setState({ user: userResponse.data, loading: false });
 
-            await this.loadUser(); 
+            await this.loadUser();
 
             return { success: true };
         } catch (error) {
@@ -55,7 +55,21 @@ class AuthProvider extends Component {
         }
     };
 
-    logout = () => {
+    logout = async () => {
+        const token = localStorage.getItem('authToken');
+
+        try {
+            if (token) {
+                await axios.post(
+                    'http://localhost:3000/api/users/logout',
+                    {},
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+            }
+        } catch (error) {
+            console.error('Ошибка при попытке выхода:', error.response?.data || error.message);
+        }
+
         localStorage.removeItem('authToken');
         this.setState({ user: null });
     };

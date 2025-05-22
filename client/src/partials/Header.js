@@ -23,10 +23,10 @@ class Header extends Component {
 
     handleLogout = () => {
         const { logout } = this.context;
-        const navigate = this.props.navigate; // Получаем `navigate` из пропсов
+        const navigate = this.props.navigate;
 
-        logout();
-        navigate("/management/signout");
+        logout(); // уже делает запрос
+        navigate("/login"); // или "/"
     };
 
 
