@@ -151,7 +151,7 @@ class ResearchList extends Component {
                                     <div className='d-flex align-items-center'>
                                         <h4 className="text-truncate lh-sm flex-1 me-3">{research.title}</h4>
                                         <div className="hover-actions">
-                                            <button onClick={() => this.openModal(research)}  type="button" className="btn btn-icon btn-lab"><FaChevronRight /></button>
+                                            <button onClick={() => this.openModal(research)}  type="button" className="btn btn-icon btn-primary"><FaChevronRight /></button>
                                         </div>
                                     </div>
                                     <span className="mb-4 badge">{research.status}</span>

@@ -8,16 +8,36 @@ import withNavigate from '../utils/withNavigate'; // Импорт HOC
 class SignOut extends Component {
     static contextType = AuthContext; // Привязываем компонент к контексту
 
+
+    state = {
+        countdown: 100 // Начинаем с 10 секунд, можно изменить
+    };
+
     componentDidMount() {
-        const { logout } = this.context; // Получаем метод logout из контекста
-        const { navigate } = this.props; // Получаем navigate из HOC
+        this.performLogout();
 
-        logout(); // Выполняем выход из аккаунта
-
-        setTimeout(() => {
-            navigate('/management/signin'); // Перенаправление через 3 секунды
-        }, 30000);
+        // Запуск интервала для обратного отсчета
+        this.interval = setInterval(() => {
+            this.setState(prevState => {
+                if (prevState.countdown <= 1) {
+                    clearInterval(this.interval); // Остановить отсчёт
+                    this.props.navigate('/');    // Редирект
+                }
+                return { countdown: prevState.countdown - 1 };
+            });
+        }, 1000);
     }
+
+    componentWillUnmount() {
+        // Очищаем интервал при размонтировании компонента
+        clearInterval(this.interval);
+    }
+
+    performLogout = async () => {
+        const { logout } = this.context;
+        await logout();
+        // Весь переход теперь обрабатывается в setInterval
+    };
 
     render() {
         return (
@@ -36,10 +56,14 @@ class SignOut extends Component {
                                     Thanks for using Phoenix.<br className="d-lg-none" />
                                     You are now successfully signed out.
                                 </p>
+
                             </div>
-                            <div>
+                            <div className=''>
                                 <Link to="/management/signin" className='w-100 mb-3 btn btn-lab'>Go to sign in page</Link>
                             </div>
+                            <p className="text-body-secondary">
+                                You will be redirected in <strong>{this.state.countdown}</strong> second{this.state.countdown !== 1 ? 's' : ''}...
+                            </p>
                         </div>
                     </div>
                 </div>

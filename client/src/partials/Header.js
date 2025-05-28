@@ -22,11 +22,8 @@ class Header extends Component {
     static contextType = AuthContext;
 
     handleLogout = () => {
-        const { logout } = this.context;
         const navigate = this.props.navigate;
-
-        logout(); // уже делает запрос
-        navigate("/login"); // или "/"
+        navigate("/management/signout"); // или "/"
     };
 
 
@@ -113,7 +110,7 @@ class Header extends Component {
 
                     <div className="navbar-nav text-end flex-row">
                         <Link to="/management/signin" role="button" className="btn btn-outline me-2">Sing-in</Link>
-                        <Link to="/management/signup" role="button" className="btn btn-lab">Sign-up</Link>
+                        <Link to="/management/signup" role="button" className="btn btn-primary">Sign-up</Link>
                     </div>
                     <ul className="nav account-nav d-flex align-items-center">
 
@@ -191,7 +188,7 @@ class Header extends Component {
                             </a>
                         </li>
                         <li className="dropdown h-100" >
-                            <a className="nav-link p-0 m-3 h-100 d-flex align-items-center" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a className="nav-link link-primary p-0 m-3 h-100 d-flex align-items-center" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span className="nav-account-icon profile">
                                     <FaRegUserCircle />
                                 </span>
@@ -200,8 +197,8 @@ class Header extends Component {
                                 <div className="position-relative border-1 card">
                                     <div className="p-0 card-body">
                                         <div className="d-flex flex-column align-items-center justify-content-center gap-2 pt-4 pb-3">
-                                            <Link className="nav-link" to="/customer/profile">
-                                                <span className="nav-account-icon profile">
+                                            <Link className="nav-link link-primary" to="/customer/profile">
+                                                <span className="nav-account-icon  profile">
                                                     <FaRegUserCircle />
                                                 </span>
                                             </Link>
@@ -274,7 +271,7 @@ class Header extends Component {
 
                                         <div className="px-3">
                                             <button
-                                                className="btn btn-secondary d-flex justify-content-center w-100"
+                                                className="btn btn-primary d-flex justify-content-center w-100"
                                                 onClick={this.handleLogout}
                                             >
                                                 Sign out

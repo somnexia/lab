@@ -66,31 +66,31 @@ const AdminLogsPage = () => {
     return (
       <div className="container mt-4 text-center">
         <Spinner animation="border" variant="primary" />
-        <p>Загрузка...</p>
+        <p>Loading...</p>
       </div>
     );
   }
 
   return (
     <div className="container mt-4">
-      <h2>Журнал активности пользователей</h2>
+      <h2>User activity log</h2>
 
       <Form onSubmit={handleSearchSubmit} className="mb-3">
         <Row>
           <Col md={4}>
             <Form.Control
               type="text"
-              placeholder="Поиск по действию или ресурсу"
+              placeholder="Search by action or resource"
               value={searchQuery}
               onChange={handleSearchChange}
             />
           </Col>
           <Col md={3}>
             <Form.Control as="select" value={filterStatus} onChange={handleFilterChange}>
-              <option value="">Все статусы</option>
-              <option value="success">Успешно</option>
-              <option value="error">Ошибка</option>
-              <option value="pending">В ожидании</option>
+              <option value="">All statuses</option>
+              <option value="success">Success</option>
+              <option value="error">Error</option>
+              <option value="pending">Pending</option>
             </Form.Control>
           </Col>
           <Col md={4}>
@@ -105,16 +105,16 @@ const AdminLogsPage = () => {
       <Table bordered hover responsive>
         <thead>
           <tr>
-            <th>Дата и время</th>
-            <th>Пользователь</th>
-            <th>Действие</th>
-            <th>Ресурс</th>
-            <th>Тип ресурса</th>
-            <th>Описание</th>
-            <th>IP-адрес</th>
+            <th>Date and Time</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Resource</th>
+            <th>Resource Type</th>
+            <th>Description</th>
+            <th>IP Address</th>
             <th>User Agent</th>
             <th>Session ID</th>
-            <th>Статус</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -141,15 +141,15 @@ const AdminLogsPage = () => {
           onClick={() => handlePageChange(page > 1 ? page - 1 : 1)}
           disabled={page === 1}
         >
-          Назад
+          Back
         </Button>
-        <span>Страница {page} из {totalPages}</span>
+        <span>Page {page} of {totalPages}</span>
         <Button
           variant="secondary"
           onClick={() => handlePageChange(page < totalPages ? page + 1 : totalPages)}
           disabled={page === totalPages}
         >
-          Вперед
+          Next
         </Button>
       </div>
     </div>

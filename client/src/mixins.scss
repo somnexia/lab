@@ -9,11 +9,11 @@
     }
 
     .btn-primary {
-        background-color: map.get($theme, primary-color);
-        color: #fff;
+        background-color: map.get($theme, primary-color) !important;
+        color: #fff !important;
 
         &:hover {
-            background-color: color.adjust(map.get($theme, primary-color), $lightness: -5%);
+            background-color: color.adjust(map.get($theme, primary-color), $lightness: -5%) !important;
         }
 
     }
@@ -279,18 +279,36 @@
         color: map.get($theme, body-color);
 
         &:hover {
-            color: color.adjust(map.get($theme, body-color), $lightness: 5%) !important;
+            color: color.adjust(map.get($theme, link-color), $lightness: 15%) !important;
         }
 
+        &.active,
         &:active {
-            color: map.get($theme, link-color);
+            color: map.get($theme, link-color) !important;
 
+            &:hover {
+                color: color.adjust(map.get($theme, link-color), $lightness: 15%) !important;
+                // color: map.get($theme, body-color) !important;
+            }
         }
     }
 
     .nav-link.active {
         color: map.get($theme, link-color);
 
+    }
+
+    .breadcrumb-item {
+        color: map.get($theme, quaternary-text-color) !important;
+
+        &:hover {
+            color: color.adjust(map.get($theme, link-color), $lightness: 15%) !important;
+        }
+
+        &:active {
+            color: map.get($theme, secondary-color) !important;
+
+        }
     }
 
 
@@ -308,16 +326,18 @@
         &:hover {
             // background-color: color.adjust(map.get($theme, card-bg), $lightness: 5%) !important;
             background-color: map.get($theme, body-highlight-bg);
+            border-color: map.get($theme, body-color);
         }
     }
+    
 
-    .account-nav .nav-link {
-        color: map.get($theme, nav-link-color);
-    }
+    // .account-nav .nav-link {
+    //     color: map.get($theme, nav-link-color);
+    // }
 
 
     .navbar-nav .btn-outline {
-        color: map.get($theme, lab-btn-color);
+        color: map.get($theme, text-color);
         border-color: map.get($theme, content-border-color);
 
 
@@ -362,6 +382,7 @@
 
 
 }
+
 @mixin bg-purple {
     background-color: vars.$bg-purple;
     opacity: 1 !important;

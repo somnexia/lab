@@ -619,15 +619,9 @@ header .header-links {
 header .nav ul li {
     display: inline;
     cursor: pointer;
-
-
 }
 
-header .nav ul li:hover {
 
-    background-color: var(--lab-body-highlight-bg);
-
-}
 
 .dropdown-profile .nav .nav-link:hover {
     background: var();
@@ -707,7 +701,7 @@ s .vertical-nav-scroll {
     min-width: 18rem;
 }
 
-.dropdown-profile-navbar {}
+
 
 
 
