@@ -4,10 +4,6 @@ import axios from 'axios';
 import { FaAngleDown } from "react-icons/fa";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-
-
-
-
 class AddResearch extends Component {
     state = {
         types: [],
@@ -27,25 +23,20 @@ class AddResearch extends Component {
         goal: '',
         client: '',
         selectedFunding: '',
-
     };
-
     componentDidMount() {
         this.fetchResearchData();
         this.fetchEmployees();
     }
-
     fetchResearchData = async () => {
         try {
             const response = await axios.get('http://localhost:3000/api/researches');
             const researches = response.data;
-
             // Извлекаем уникальные значения
             const types = [...new Set(researches.map(r => r.type))];
             const scopes = [...new Set(researches.map(r => r.scope))];
             const objects = [...new Set(researches.map(r => r.research_object))];
             const fundings = [...new Set(researches.map(r => r.funding_source))];
-
             this.setState({ types, scopes, objects, fundings });
         } catch (error) {
             console.error('Ошибка загрузки данных:', error);
@@ -59,11 +50,9 @@ class AddResearch extends Component {
             console.error('Ошибка загрузки сотрудников:', error);
         }
     };
-
     handleLeaderChange = (event) => {
         this.setState({ selectedLeader: event.target.value });
     };
-
     handleParticipantChange = (event) => {
         const value = Number(event.target.value); // Number() преобраpазование в число
         //либо сразу передавать employee.id как число, заменить атребут defaultValue вместо value
@@ -73,25 +62,20 @@ class AddResearch extends Component {
                 : [...prevState.selectedParticipants, value]
         }));
     };
-
     handleStartDateChange = (date) => {
         this.setState({ startDate: date });
     };
-
     handleDeadlineChange = (date) => {
         this.setState({ deadline: date });
     };
     handleSubmit = async (event) => {
         event.preventDefault();  // предотвращаем перезагрузку страницы при отправке формы
-
         const {
             title, taskView, selectedType, selectedObject, selectedScope,
             selectedLeader, selectedParticipants, startDate, deadline,
             goal, client, selectedFunding
         } = this.state;
-
         const errors = {};
-
         if (!title) errors.title = "Project title is required";
         if (!taskView) errors.taskView = "Task view is required";
         if (!selectedType) errors.selectedType = "Research type is required";
@@ -104,12 +88,10 @@ class AddResearch extends Component {
         if (!goal) errors.goal = "Goal is required";
         if (!client) errors.client = "Client is required";
         if (!selectedFunding) errors.selectedFunding = "Funding source is required";
-
         if (Object.keys(errors).length > 0) {
             this.setState({ errors });
             return;
         }
-
         // Получаем значения из формы
         const formData = {
             title: this.state.title || null,
@@ -126,11 +108,9 @@ class AddResearch extends Component {
             funding_source: this.state.selectedFunding || null
         };
         console.log("formData:", formData)
-
         try {
             // Отправка POST-запроса для создания нового исследования
             const response = await axios.post('http://localhost:3000/api/researches', formData);
-
             // Обработка успешного ответа
             console.log('Research created:', response.data);
             alert('Research created successfully!');
@@ -143,18 +123,13 @@ class AddResearch extends Component {
     handleChange = (event) => {
         this.setState({ [event.target.name]: event.target.value });
     };
-
-
-
     render() {
         return (
             <div>
-
                 <h2>Create a research</h2>
                 <div className='row'>
                     <div className='col-xl-9 col-12'>
                         <div className='g-3 mb-6 row'>
-
                             <div className="col-md-8 col-sm-6">
                                 <div className="form-floating">
                                     <input
@@ -165,16 +140,12 @@ class AddResearch extends Component {
                                         type="text"
                                         id="floatingInputTitle"
                                         className={`form-control ${this.state.errors?.title ? 'is-invalid' : ''}`}
-
                                         required>
-
                                     </input>
                                     <label htmlFor="floatingInputTitle">Project title</label>
                                 </div>
                                 {this.state.errors?.title && <div className="text-danger">{this.state.errors.title}</div>}
                             </div>
-
-
                             <div className="col-md-4 col-sm-6">
                                 <div className="form-floating">
                                     <select
@@ -183,17 +154,14 @@ class AddResearch extends Component {
                                         id="floatingSelectTask"
                                         value={this.state.taskView}
                                         onChange={this.handleChange}>
-
                                         <option value="">Select task view</option>
                                         <option defaultValue="1">technical</option>
                                         <option defaultValue="2">external</option>
                                         <option defaultValue="3">organizational</option>
-
                                     </select>
                                     <label htmlFor="floatingSelectTask">Defult task view</label>
                                 </div>
                             </div>
-
                             <div className="col-md-4 col-sm-6">
                                 <div className="form-floating">
                                     <select
@@ -203,7 +171,6 @@ class AddResearch extends Component {
                                         className={`form-select ${this.state.errors?.selectedType ? 'is-invalid' : ''}`}
                                         id="floatingSelectType"
                                     >
-
                                         <option value="">Select research type</option>
                                         {this.state.types.map((type, index) => (
                                             <option key={index} value={type}>{type}</option>
@@ -212,10 +179,7 @@ class AddResearch extends Component {
                                     </select>
                                     <label htmlFor="floatingSelectType">Research type</label>
                                 </div>
-
                             </div>
-
-
                             <div className="col-md-4 col-sm-6">
                                 <div className="input-group mb-3">
                                     <div className="form-floating">
@@ -238,7 +202,6 @@ class AddResearch extends Component {
                                     </datalist>
                                 </div>
                             </div>
-
                             <div className="col-md-4 col-sm-6">
                                 <div className="input-group mb-3">
                                     <div className="form-floating">
@@ -261,10 +224,6 @@ class AddResearch extends Component {
                                     </datalist>
                                 </div>
                             </div>
-
-
-
-
                             <div className="col-md-4 col-sm-6">
                                 <div className="form-floating">
                                     <select
@@ -283,13 +242,8 @@ class AddResearch extends Component {
                                     <label htmlFor="floatingSelectLeader">Research leader</label>
                                 </div>
                             </div>
-
-
                             <div className="col-md-4 col-sm-6">
-
                                 <div className="form-floating">
-
-
                                     <DatePicker
                                         name='startDate'
                                         type="text"
@@ -301,18 +255,11 @@ class AddResearch extends Component {
                                         id='startDate'
                                         onFocus={() => this.setState({ isFocused: true })}
                                         onBlur={() => this.setState({ isFocused: !!this.state.startDate })}>
-
                                     </DatePicker>
                                     <label htmlFor="startDate" className={this.state.isFocused ? 'active' : ''}>Start date</label>
-
-
-
-
                                 </div>
                             </div>
-
                             <div className="col-md-4 col-sm-6">
-
                                 <div className="form-floating">
                                     <DatePicker
                                         name="deadline"
@@ -325,13 +272,10 @@ class AddResearch extends Component {
                                         id='deadline'
                                         onFocus={() => this.setState({ isFocused: true })}
                                         onBlur={() => this.setState({ isFocused: !!this.state.deadline })}>
-
                                     </DatePicker>
                                     <label htmlFor="deadline" className={this.state.isFocused ? 'active' : ''}>Deadline</label>
                                 </div>
-
                             </div>
-
                             <div className="gy-6 col-12">
                                 <FaAngleDown />
                                 <label className="text-capitalize fw-bolder">Research Participants</label>
@@ -354,12 +298,7 @@ class AddResearch extends Component {
                                         </div>
                                     ))}
                                 </div>
-
                             </div>
-
-
-
-
                             <div className="gy-6 col-12">
                                 <div className="form-floating">
                                     <textarea
@@ -374,10 +313,8 @@ class AddResearch extends Component {
                                     <label htmlFor="floatingProjectOverview">Project overview</label>
                                 </div>
                             </div>
-
                             <div className="gy-6 col-md-6">
                                 <div className="input-group mb-3">
-
                                     <div className="form-floating">
                                         <input
                                             name='client'
@@ -388,24 +325,16 @@ class AddResearch extends Component {
                                             list="ClientOptions"
                                             className={`form-control ${this.state.errors?.client ? 'is-invalid' : ''}`}
                                             id='floatingInputClient'>
-
                                         </input>
                                         <label htmlFor="floatingInputClient">Client</label>
                                     </div>
-
                                     <datalist id="ClientOptions">
-
-
                                         {/* здесь должены быть данные из базы данных колонки client */}
-
                                     </datalist>
-
                                 </div>
                             </div>
-
                             <div className="gy-6 col-md-6">
                                 <div className="input-group mb-3">
-
                                     <div className="form-floating">
                                         <input
                                             name="selectedFunding"
@@ -419,43 +348,25 @@ class AddResearch extends Component {
                                         </input>
                                         <label htmlFor="floatingFunding">Funding source</label>
                                     </div>
-
                                     <datalist id="fundingOptions">
                                         {this.state.fundings.map((funding, index) => (
                                             <option key={index} value={funding}></option>
                                         ))}
-
                                         {/* здесь должены быть данные из базы данных колонки funding_source */}
-
                                     </datalist>
-
-
-
                                 </div>
                             </div>
-
-
-
                             <div className="gy-6 col-12">
                                 <div className="d-flex justify-content-end gap-3">
                                     <button type="button" className="px-5 btn btn-phoenix-primary">Cancel</button>
                                     <button onClick={this.handleSubmit} type="button" className="px-5 px-sm-15 btn btn-primary">Create Project</button>
-
                                 </div>
                             </div>
-
-
                         </div>
-
                     </div>
                 </div>
-
-
-
             </div >
-
         );
     }
 }
-
 export default AddResearch;

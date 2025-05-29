@@ -84,14 +84,33 @@
 # get http://localhost:3000/api/logs
 
 ### Регистрация нового пользователя
-POST http://localhost:3000/api/users
-Content-Type: application/json
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) CustomAgent
-X-Forwarded-For: 203.0.113.25
+# POST http://localhost:3000/api/users
+# Content-Type: application/json
+# User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) CustomAgent
+# X-Forwarded-For: 203.0.113.25
 
-{  
-"name": "Test User",
-  "email": "testuser222233@example.com",
-  "password": "securePassword123",
-  "role": "user"
+# {  
+# "name": "Test User",
+#   "email": "testuser222233@example.com",
+#   "password": "securePassword123",
+#   "role": "user"
+# }
+
+### Создание исследования с участниками
+POST http://localhost:3000/api/researches/with-participants
+Content-Type: application/json
+
+{
+  "researchData": {
+    "title": "Исследование загрязнения воздуха",
+    "type": "Аналитическое",
+    "goal": "Изучение источников загрязнения воздуха в регионе",
+    "scope": "Экология",
+    "research_object": "Воздушные массы",
+    "funding_source": "Государственный грант",
+    "start_date": "2025-06-01",
+    "end_date": "2026-01-01",
+    "status": "Ongoing"
+  },
+  "employeeIds": [1, 2, 3]
 }
