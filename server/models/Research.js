@@ -5,7 +5,19 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Research extends Model {
     static associate(models) {
-      // Определите здесь ассоциации, если они есть
+      // One research has many participants (ResearchEmployee)
+      Research.hasMany(models.ResearchEmployee, {
+        foreignKey: 'research_id',
+        as: 'participants'
+      });
+
+      // Можно также связать через промежуточную таблицу напрямую с Employee:
+      Research.belongsToMany(models.Employee, {
+        through: models.ResearchEmployee,
+        foreignKey: 'research_id',
+        otherKey: 'employee_id',
+        as: 'employees'
+      });
     }
   }
 

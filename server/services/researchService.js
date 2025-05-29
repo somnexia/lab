@@ -1,5 +1,4 @@
 const { Research, ResearchEmployee, Employee } = require('../models');
-
 // Создание нового исследования
 const createResearch = async (data) => {
   try {
@@ -10,7 +9,6 @@ const createResearch = async (data) => {
     throw error;
   }
 };
-
 // Получение всех исследований
 const getAllResearches = async () => {
   try {
@@ -20,7 +18,6 @@ const getAllResearches = async () => {
     throw error;
   }
 };
-
 // Получение исследования по ID
 const getResearchById = async (id) => {
   try {
@@ -34,7 +31,6 @@ const getResearchById = async (id) => {
     throw error;
   }
 };
-
 // Обновление исследования по ID
 const updateResearch = async (id, data) => {
   try {
@@ -49,7 +45,6 @@ const updateResearch = async (id, data) => {
     throw error;
   }
 };
-
 // Удаление исследования по ID
 const deleteResearch = async (id) => {
   try {
@@ -64,26 +59,40 @@ const deleteResearch = async (id) => {
     throw error;
   }
 };
-
-const addResearchParticipants = async (researchId, employeeIds) => {
+const createResearchWithParticipants = async (data, employeeIds) => {
   try {
-      const research = await Research.findByPk(researchId);  // Проверяем, существует ли исследование
-      if (!research) throw new Error('Research not found');
+    const research = await Research.create(data); // создаём исследование
 
-      // Добавляем сотрудников в таблицу researchEmployee
+    if (employeeIds && employeeIds.length > 0) {
       const participants = employeeIds.map(employeeId => ({
-          research_id: researchId,
-          employee_id: employeeId
+        research_id: research.id,
+        employee_id: employeeId
       }));
+      await ResearchEmployee.bulkCreate(participants); // добавляем участников
+    }
 
-      await ResearchEmployee.bulkCreate(participants); // Используем bulkCreate для добавления нескольких записей
-      return { message: 'Participants added successfully' };
+    return research;
   } catch (error) {
-      console.error('Error adding participants:', error);
-      throw new Error('Error adding participants');
+    console.error('Ошибка при создании исследования с участниками:', error);
+    throw error;
   }
 };
-
+const addResearchParticipants = async (researchId, employeeIds) => {
+  try {
+    const research = await Research.findByPk(researchId);  // Проверяем, существует ли исследование
+    if (!research) throw new Error('Research not found');
+    // Добавляем сотрудников в таблицу researchEmployee
+    const participants = employeeIds.map(employeeId => ({
+      research_id: researchId,
+      employee_id: employeeId
+    }));
+    await ResearchEmployee.bulkCreate(participants); // Используем bulkCreate для добавления нескольких записей
+    return { message: 'Participants added successfully' };
+  } catch (error) {
+    console.error('Error adding participants:', error);
+    throw new Error('Error adding participants');
+  }
+};
 const getOngoingResearchCount = async () => {
   try {
     const count = await Research.count({
@@ -95,13 +104,13 @@ const getOngoingResearchCount = async () => {
     throw error;
   }
 };
-
 module.exports = {
   createResearch,
   getAllResearches,
   getResearchById,
   updateResearch,
   deleteResearch,
+  createResearchWithParticipants,
   addResearchParticipants,
   getOngoingResearchCount,
 };

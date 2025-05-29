@@ -15,6 +15,31 @@ const createResearch = async (req, res) => {
   }
 };
 
+const createResearchWithParticipants = async (req, res) => {
+  try {
+    const { researchData, employeeIds } = req.body;
+
+    // Проверка входных данных
+    if (
+      !researchData || typeof researchData !== 'object' ||
+      !employeeIds || !Array.isArray(employeeIds)
+    ) {
+      return res.status(400).json({ error: 'Некорректные данные. Ожидались researchData и employeeIds.' });
+    }
+
+    // Проверка на пустые поля
+    if (Object.values(researchData).some(value => value === null || value === undefined || value === '')) {
+      return res.status(400).json({ error: "Все поля исследования обязательны" });
+    }
+
+    const newResearch = await researchService.createResearchWithParticipants(researchData, employeeIds);
+    return res.status(201).json(newResearch);
+  } catch (error) {
+    console.error('Ошибка в контроллере при создании исследования с участниками:', error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 // Получение всех исследований
 const getAllResearches = async (req, res) => {
   try {
@@ -89,6 +114,7 @@ const getOngoingResearchCount = async (req, res) => {
 
 module.exports = {
   createResearch,
+  createResearchWithParticipants,
   getAllResearches,
   getResearchById,
   updateResearch,
