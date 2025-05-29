@@ -4,6 +4,8 @@ const researchController = require('../controllers/researchController'); // Пу
 
 // Создание нового исследования
 router.post('/', researchController.createResearch);
+// Создание нового исследования с участниками
+router.post('/with-participants', researchController.createResearchWithParticipants);
 
 // Получение всех исследований
 router.get('/', researchController.getAllResearches);

@@ -1,5 +1,4 @@
 const { ResearchEmployee, Research, Employee } = require('../models');
-
 // Создание новой записи ResearchEmployee
 const createResearchEmployee = async (data) => {
   try {
@@ -10,7 +9,6 @@ const createResearchEmployee = async (data) => {
     throw error;
   }
 };
-
 // Получение всех записей ResearchEmployee
 const getAllResearchEmployees = async () => {
   try {
@@ -25,7 +23,6 @@ const getAllResearchEmployees = async () => {
     throw error;
   }
 };
-
 // Получение записи ResearchEmployee по ID
 const getResearchEmployeeById = async (id) => {
   try {
@@ -44,7 +41,6 @@ const getResearchEmployeeById = async (id) => {
     throw error;
   }
 };
-
 // Обновление записи ResearchEmployee по ID
 const updateResearchEmployee = async (id, data) => {
   try {
@@ -59,7 +55,6 @@ const updateResearchEmployee = async (id, data) => {
     throw error;
   }
 };
-
 // Удаление записи ResearchEmployee по ID
 const deleteResearchEmployee = async (id) => {
   try {
@@ -74,7 +69,6 @@ const deleteResearchEmployee = async (id) => {
     throw error;
   }
 };
-
 module.exports = {
   createResearchEmployee,
   getAllResearchEmployees,
