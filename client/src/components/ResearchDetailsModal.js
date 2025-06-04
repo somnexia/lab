@@ -285,7 +285,7 @@ class ResearchDetailsModal extends Component {
                                             </p>
                                         </div>
                                         <div className="mb-5">
-                                            <h6 className="text-body-secondary mb-2">References</h6>
+                                            <h6 className="text-body-secondary mb-2">Labels</h6>
                                             <div className="d-flex gap-2 align-items-center">
                                                 <span
                                                     className={`fs-10 badge fw-bold lh-1 bg-opacity-25 border text-uppercase text-bg-${research.status === "Completed"
@@ -359,7 +359,7 @@ class ResearchDetailsModal extends Component {
                                             </p>
                                         </div>
                                     </div>
-                                    
+
                                     <div className='px-5 px-lg-6 py-4 bg-body-highlight border-divider border-top'>
                                         {showMore && (
                                             <div className="card mt-4 shadow-sm">
@@ -383,6 +383,7 @@ class ResearchDetailsModal extends Component {
                                             <h5 className="mb-4">To do list
                                                 <span className="text-body-tertiary fw-normal fs-6">(23)</span>
                                             </h5>
+                                            <hr />
                                             <div className="d-flex justify-content-between align-items-center flex-wrap gap-x-5 gap-y-3 mb-3">
                                                 <div className="search-box" style={{ maxWidth: "30rem" }}>
                                                     <form className="position-relative">
@@ -393,7 +394,7 @@ class ResearchDetailsModal extends Component {
                                             </div>
                                             {/* {loadingTasks && <p>Загрузка задач...</p>}
                                             {errorTasks && <p className="text-danger">{errorTasks}</p>} */}
-                                            <div>
+                                            <div className="mb-3">
                                                 {loadingTasks ? (
                                                     <p>Загрузка задач...</p>
                                                 ) : files.length === 0 ? (
@@ -454,49 +455,55 @@ class ResearchDetailsModal extends Component {
                                                 Add new task
                                             </button>
                                         </div>
-                                        <div>
-                                            <h5 className='mb-3'>Files</h5>
+                                        <div className="mb-5">
+                                            <h5 className='mb-4'>Files</h5>
                                             <hr />
-                                            {loadingFiles ? (
-                                                <p>Загрузка файлов...</p>
-                                            ) : files.length === 0 ? (
-                                                <p>Нет загруженных файлов</p>
-                                            ) : errorFiles ? (
-                                                <p className="text-danger">{errorFiles}</p>
-                                            ) : (
-                                                <div className='mb-3'>
-                                                    {files.map((file) => (
-                                                        <div key={file.id} className='border-bottom py-4'>
-                                                            <div className='d-flex justify-content-between align-items-start'>
-                                                                <div>
-                                                                    <div className="d-flex align-items-center mb-1">
-                                                                        <FaFileZipper className='me-1' />
-                                                                        <p className="text-body-highlight mb-0 lh-1">{file.file_name}</p>
+                                            <div className="mb-3">
+                                                {loadingFiles ? (
+                                                    <p>Загрузка файлов...</p>
+                                                ) : files.length === 0 ? (
+                                                    <p>Нет загруженных файлов</p>
+                                                ) : errorFiles ? (
+                                                    <p className="text-danger">{errorFiles}</p>
+                                                ) : (
+                                                    <div className='mb-3'>
+                                                        {files.map((file) => (
+                                                            <div key={file.id} className='border-bottom py-4'>
+                                                                <div className='d-flex justify-content-between align-items-start'>
+                                                                    <div>
+                                                                        <div className="d-flex align-items-center mb-1">
+                                                                            <FaFileZipper className='me-1' />
+                                                                            <p className="text-body-highlight mb-0 lh-1">{file.file_name}</p>
+                                                                        </div>
+                                                                        <div className="d-flex fs-9 text-body-tertiary flex-wrap">
+                                                                            <span>{(file.file_size / 1024).toFixed(1)} MB</span>
+                                                                            <span className="text-body-quaternary mx-1">|</span>
+                                                                            <a href={file.file_path} download>Download</a>
+                                                                            <span className="text-body-quaternary mx-1">|</span>
+                                                                            <span className="text-nowrap">
+                                                                                {new Date(file.updatedAt).toLocaleString('en-US', { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                                            </span>
+                                                                            <span className="text-body-quaternary mx-1">|</span>
+                                                                            <span>Uploaded by: <strong>{file.uploader?.name || 'Неизвестно'}</strong></span>
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="d-flex fs-9 text-body-tertiary flex-wrap">
-                                                                        <span>{(file.file_size / 1024).toFixed(1)} MB</span>
-                                                                        <span className="text-body-quaternary mx-1">|</span>
-                                                                        <a href={file.file_path} download>Download</a>
-                                                                        <span className="text-body-quaternary mx-1">|</span>
-                                                                        <span className="text-nowrap">
-                                                                            {new Date(file.updatedAt).toLocaleString('en-US', { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true })}
-                                                                        </span>
-                                                                        <span className="text-body-quaternary mx-1">|</span>
-                                                                        <span>Uploaded by: <strong>{file.uploader?.name || 'Неизвестно'}</strong></span>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="btn-reveal-trigger">
-                                                                    <div className="dropdown">
-                                                                        <button type="button" id="" className="btn-outline-secondary border-0 dropdown-caret-none transition-none dropdown-toggle btn btn-sm">
-                                                                            <FaEllipsis />
-                                                                        </button>
+                                                                    <div className="btn-reveal-trigger">
+                                                                        <div className="dropdown">
+                                                                            <button type="button" id="" className="btn-outline-secondary border-0 dropdown-caret-none transition-none dropdown-toggle btn btn-sm">
+                                                                                <FaEllipsis />
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <button type="button" className="text-decoration-none p-0 btn btn-link">
+                                                <FaPlus />
+                                                Add new file
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

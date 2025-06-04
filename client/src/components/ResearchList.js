@@ -143,7 +143,7 @@ class ResearchList extends Component {
                 </div>
 
                 {/* Список исследований */}
-                <div className='g-3 mb-9 row'>
+                <div className='g-1 mb-5 row'>
                     {filteredResearches.map(research => (
                         <div key={research.id} className='col-xxl-3 col-xl-4 col-sm-6 col-12'>
                             <div className='h-100 hover-actions-trigger card'>
