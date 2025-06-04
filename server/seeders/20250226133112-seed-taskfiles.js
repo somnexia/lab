@@ -10,7 +10,7 @@ module.exports = {
         file_path: "uploads/reports/water_analysis.pdf",
         file_type: "pdf",
         updatedAt: new Date(),
-        uploaded_by: 1,
+        user_id: 1,
         file_size: 3000
 
 
@@ -21,7 +21,7 @@ module.exports = {
         file_path: "uploads/images/sample1.jpg",
         file_type: "image",
         updatedAt: new Date(),
-        uploaded_by: 1,
+        user_id: 1,
         file_size: 1000
       },
       {
@@ -30,7 +30,7 @@ module.exports = {
         file_path: "uploads/docs/reagent_test_results.zip",
         file_type: "zip",
         updatedAt: new Date(),
-        uploaded_by: 1,
+        user_id: 2,
         file_size: 2000
       }
     ]);

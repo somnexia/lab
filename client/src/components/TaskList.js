@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import { FaSearch, FaPlus, FaChevronRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import TaskDetailsModal from './TaskDetailsModal';
+import TaskDetailsModal from './TaskDetailsOffcanvas';
 
 class TaskList extends Component {
     state = {
@@ -15,6 +15,7 @@ class TaskList extends Component {
         selectedTask: null,
 
     };
+    
 
     componentDidMount() {
         this.fetchTasks();
@@ -40,11 +41,22 @@ class TaskList extends Component {
     handleStatusFilter = (status) => {
         this.setState({ selectedStatus: status });
     };
+    getBadgeColor = (status) => {
+        switch (status) {
+            case "Pending": return "secondary";
+            case "Ongoing": return "warning";
+            case "Completed": return "success";
+            case "Draft": return "info";
+            case "Canceled": return "dark";
+            case "Critical": return "danger";
+            default: return "light";
+        }
+    }
     render() {
         const { tasks, statusCounts, selectedTask, loading,
             modalLoading,
             error,
-            isModalOpen, } = this.state;
+            isModalOpen} = this.state;
         const formatDate = (dateString) => dateString.split('T')[0];
 
         const filteredTasks = this.state.selectedStatus === "All"
@@ -100,6 +112,43 @@ class TaskList extends Component {
                 </div>
                 {/* Список исследований */}
                 <div className='mb-5'>
+                    <div className="table-responsive">
+                        <table className="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Assigned User</th>
+                                    <th>Status</th>
+                                    <th>Start</th>
+                                    <th>Due</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredTasks.length === 0 && (
+                                    <tr>
+                                        <td colSpan="7" className="text-center">No tasks found</td>
+                                    </tr>
+                                )}
+                                {filteredTasks.map(task => (
+                                    <tr key={task.id}>
+                                        <td>{task.title}</td>
+                                        <td>{task.description?.slice(0, 60)}...</td>
+                                        <td>{task.user?.name || "Unknown"}</td>
+                                        <td><span className={`badge bg-${this.getBadgeColor(task.status)}`}>{task.status}</span></td>
+                                        <td>{formatDate(task.start_date)}</td>
+                                        <td>{task.due_date ? formatDate(task.due_date) : "-"}</td>
+                                        <td>
+                                            <button className="btn btn-sm btn-outline-primary" onClick={() => this.setState({ isModalOpen: true, selectedTask: task })}>
+                                                View
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
                 </div>
             </div>

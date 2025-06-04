@@ -35,7 +35,7 @@ module.exports = {
         allowNull: false,
         comment: "Дата загрузки файла"
       },
-      uploaded_by: {
+      user_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {

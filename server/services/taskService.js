@@ -1,4 +1,4 @@
-const { Task, TaskFile } = require('../models');
+const { Task, TaskFile ,User } = require('../models');
 
 // Создание новой задачи
 const createTask = async (data) => {
@@ -12,13 +12,13 @@ const createTask = async (data) => {
 };
 const getTasksByResearch = async (researchId) => {
   try {
-      const tasks = await Task.findAll({
-          where: { research_id: researchId }
-      });
-      return tasks;
+    const tasks = await Task.findAll({
+      where: { research_id: researchId }
+    });
+    return tasks;
   } catch (error) {
-      console.error("Ошибка при получении задач по research_id:", error);
-      throw error;
+    console.error("Ошибка при получении задач по research_id:", error);
+    throw error;
   }
 };
 
@@ -26,14 +26,16 @@ const getTasksByResearch = async (researchId) => {
 const getAllTasks = async () => {
   try {
     return await Task.findAll({
-      include: [{ model: TaskFile, as: 'files' }]
+      include: [
+        { model: TaskFile, as: 'files' },
+        { model: User, as: 'user' }
+      ]
     });
   } catch (error) {
-    console.error('Ошибка при получении списка задач:', error);
+    console.error('Ошибка при получении задач:', error);
     throw error;
   }
 };
-
 // Получение задачи по ID
 const getTaskById = async (id) => {
   try {

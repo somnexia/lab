@@ -193,7 +193,8 @@ class Aside extends React.Component {
                                                     <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</a></li>
                                                     <li><Link to="/projects/research-list" className="nav-link btn   d-inline-flex text-decoration-none rounded">Researches</Link></li>
                                                     <li><Link to="/projects/research-create" className="nav-link btn   d-inline-flex text-decoration-none rounded">Create new</Link></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
+                                                    <li><Link to="/projects/task-list" className="nav-link btn   d-inline-flex text-decoration-none rounded">Todo list</Link></li>
+                                                    <li><Link to="/projects/task-create" className="nav-link btn   d-inline-flex text-decoration-none rounded"></Link></li>
                                                 </ul>
                                             </div>
                                         </li>
