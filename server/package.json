@@ -1,3 +1,4 @@
+
 {
   "name": "lab",
   "version": "1.0.0",
@@ -43,9 +44,9 @@
     "webpack-dev-server": "^5.1.0"
   },
   "scripts": {
-    "server": "nodemon app.js",
-    "client": "cd ..&& cd client && set PORT=3001 && webpack serve",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "server": "npx nodemon app.js",
+    "client": "cd ..&& cd client && set PORT=3001 && npx webpack serve",
+    "dev": "npx concurrently \"npm run server\" \"npm run client\""
   },
   "author": "",
   "license": "ISC",
