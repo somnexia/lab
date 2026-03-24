@@ -23,13 +23,16 @@
     "react-router-dom": "^6.28.0",
     "react-scripts": "5.0.1",
     "rfs": "file:./src/local-rfs",
+    "serve": "^14.2.6",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "client": "cross-env PORT=3001 webpack serve --mode development",
+    "dev": "npm run client",
+    "build": "cross-env NODE_ENV=production webpack --mode production",
+    "start": "serve -s dist",
+    "prod": "cross-env NODE_ENV=production serve -s dist",
+    "lint": "eslint src --fix"
   },
   "proxy": "http://localhost:3000",
   "eslintConfig": {
@@ -51,10 +54,19 @@
     ]
   },
   "devDependencies": {
-    "css-loader": "^7.1.2",
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2",
+    "@babel/preset-react": "^7.28.5",
+    "babel-loader": "^10.1.1",
+    "cross-env": "^10.1.0",
+    "css-loader": "^7.1.4",
+    "file-loader": "^6.2.0",
+    "mini-css-extract-plugin": "^2.10.1",
     "sass": "^1.83.0",
     "sass-loader": "^16.0.4",
+    "style-loader": "^4.0.0",
     "webpack": "^5.98.0",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.3"
   }
 }
