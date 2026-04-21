@@ -64,3 +64,16 @@ html[data-theme="dark"] {
 .text-purple {
     @include mixins.text-purple;
 }
+
+textarea.form-control,
+input.form-control,
+select.form-select {
+  background-color: var(--lab-input-bg);
+  color: var(--text-color);
+  border-color: var(--secondary-border-color);
+}
+
+textarea.form-control::placeholder,
+input.form-control::placeholder {
+  color: var(--text-body-secondary);
+}

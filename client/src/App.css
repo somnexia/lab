@@ -1127,3 +1127,36 @@ form button:hover {
 form .div {
     text-align: center;
 }
+
+/* client/src/components/TaskCreate.css */
+.research-list {
+    scrollbar-width: thin;
+    scrollbar-color: #adb5bd #f8f9fa;
+}
+
+.research-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.research-list::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.research-list::-webkit-scrollbar-thumb {
+    background-color: #adb5bd;
+    border-radius: 4px;
+}
+
+.research-list::-webkit-scrollbar-thumb:hover {
+    background-color: #6c757d;
+}
+
+.research-item:hover {
+    background-color: #f8f9fa;
+}
+
+.research-item.active {
+    background-color: rgba(201, 75, 17, 0) !important;
+    border-left: 3px solid #fd810d;
+}
