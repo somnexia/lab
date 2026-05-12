@@ -1,4 +1,4 @@
-$inventory-card-radius: 1.25rem;
+$inventory-card-radius: 0.75rem;
 $inventory-shadow: 0 1rem 2.5rem rgba(4, 3, 22, 0.08);
 $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
 
@@ -13,7 +13,7 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
     radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--primary-color) 20%, transparent), transparent 32%),
     linear-gradient(135deg, var(--card-bg), var(--content-bg));
   border: 1px solid var(--secondary-border-color);
-  border-radius: calc($inventory-card-radius + 0.25rem);
+  border-radius:$inventory-card-radius;
   box-shadow: $inventory-shadow;
   display: flex;
   justify-content: space-between;
@@ -65,7 +65,7 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
   align-items: center;
   background-color: var(--body-highlight-bg);
   border: 1px solid transparent;
-  border-radius: 1rem;
+  border-radius: $inventory-card-radius;
   color: var(--text-color);
   display: flex;
   gap: 0.9rem;
@@ -116,7 +116,7 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
 .inventory-page__nav-icon {
   align-items: center;
   background-color: color-mix(in srgb, var(--inventory-nav-accent, var(--link-color)) 14%, transparent);
-  border-radius: 0.9rem;
+  border-radius: $inventory-card-radius;
   color: var(--inventory-nav-accent, var(--link-color));
   display: inline-flex;
   flex: 0 0 3rem;
