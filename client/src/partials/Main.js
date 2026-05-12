@@ -37,6 +37,7 @@ const Main = () => {
                     <Route path="/inventory" element={<Inventory />}>
                         <Route index element={<InventoryOverview />} />
                         <Route path="overview" element={<InventoryOverview />} />
+                        <Route path="list" element={<InventoryOverview fullPage />} />
                         <Route path="warehouses" element={<WarehouseList />} />
                         <Route path="storage-units" element={<StorageUnitList />} />
                         <Route path="ladder" element={<StorageUnitC />} />

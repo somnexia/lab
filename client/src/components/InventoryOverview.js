@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import InventoryDetailsModal from "./InventoryDetailsModal";
+import InventoryTable from "./InventoryTable";
 import { CartContext } from "../context/CartContext";
 
 class InventoryOverview extends Component {
@@ -138,98 +139,26 @@ class InventoryOverview extends Component {
         } = this.state;
  
         const { addToCart } = this.context;
-        return (
-            <div>
-                <div className="row g-3">
-                    <div className="card border-0 h-100">
-                        <div className="card-header pt-3 border-0">
-                            <h3 className="card-header-title">Inventory List</h3>
-                        </div>
-                        <div className="card-body">
-                            <div className="table-responsive">
-                                <table className="table table-striped table-hover table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Name</th>
-                                            <th>Type</th>
-                                            <th>Reference ID</th>
-                                            <th>Total Quantity</th>
-                                            <th>Substance Amount</th>
-                                            <th>Unit Measure</th>
-                                            <th>Status</th>
-                                            <th>Receipt Date</th>
-                                            <th>Expiration Date</th>
-                                            <th>Supplier</th>
-                                            <th>Latest update</th>
-                                            <th>Description</th>
-                                            <th>Safety Information</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {loading && (
-                                            <tr>
-                                                <td colSpan="14" style={{ textAlign: 'center' }}>
-                                                    Загрузка...
-                                                </td>
-                                            </tr>
-                                        )}
-                                        {error && (
-                                            <tr>
-                                                <td colSpan="14" style={{ textAlign: 'center', color: 'red' }}>
-                                                    {error}
-                                                </td>
-                                            </tr>
-                                        )}
-                                        {inventories.length > 0 ? (
-                                            inventories.map((inventory) => (
-                                                <tr key={inventory.id}>
-                                                    <td>{inventory.id}</td>
-                                                    <td>
-                                                        <a
-                                                            className="btn btn-link text-decoration-none " role="button"
-                                                            onClick={() => this.openModal(inventory)}
-                                                        >
-                                                            {inventory.item_name || 'Название отсутствует'}
-                                                        </a>
-                                                    </td>
-                                                    <td>{inventory.item_type}</td>
-                                                    <td>{inventory.reference_id}</td>
-                                                    <td>{inventory.total_quantity}</td>
-                                                    <td>{inventory.substance_amount || 'N/A'}</td>
-                                                    <td>{inventory.unit_measure || 'N/A'}</td>
-                                                    <td>{inventory.status}</td>
-                                                    <td>{inventory.receipt_date}</td>
-                                                    <td>{inventory.expiration_date || 'N/A'}</td>
-                                                    <td>{inventory.supplier || 'N/A'}</td>
-                                                    <td>{inventory.last_updated}</td>
-                                                    <td>{inventory.description || 'N/A'}</td>
-                                                    <td>{inventory.safety_info || 'N/A'}</td>
-                                                    <td>
-                                                        <button
-                                                            className="btn btn-primary"
-                                                            onClick={() => this.handleAddToCart(inventory)}
-                                                        >
-                                                            Add to Cart
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="14" style={{ textAlign: 'center' }}>
-                                                    Inventory not found
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        const isFullPage = Boolean(this.props.fullPage);
 
+        return (
+            <div className={isFullPage ? "inventory-overview inventory-overview--full" : "inventory-overview"}>
+                <InventoryTable
+                    compact={!isFullPage}
+                    error={error}
+                    fullViewLink={isFullPage ? null : "/inventory/list"}
+                    inventories={inventories}
+                    loading={loading}
+                    maxRows={isFullPage ? null : 6}
+                    onAddToCart={this.handleAddToCart}
+                    onOpenDetails={this.openModal}
+                    sectionDescription={
+                        isFullPage
+                            ? "A complete inventory table with item references, quantities, statuses and storage details."
+                            : "A short preview of recent inventory records. Open the full table for all fields and more rows."
+                    }
+                    sectionTitle={isFullPage ? "All Inventory" : "Inventory List"}
+                />
                 {selectedInventory && (
                     <InventoryDetailsModal
                         isOpen={isModalOpen}
