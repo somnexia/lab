@@ -108,7 +108,7 @@
     primary-color: $primary,
     secondary-color: $secondary,
     tertiary-color: $tertiary-color,
-    link-color: $accent,
+    link-color: $primary,
     text-body-secondary: $text-body-secondary,
     quaternary-text-color: $quaternary-text-color,
     secondary-border-color: $border,
@@ -146,7 +146,7 @@ $dark-theme: build-app-theme(dark.$root);
     color: #fff !important;
 
     &:hover {
-      background-color: color.adjust(map.get($theme, primary-color), $lightness: -5%) !important;
+      background-color: color.adjust(map.get($theme, primary-color), $lightness: -20%) !important;
     }
   }
 

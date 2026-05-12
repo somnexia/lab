@@ -1,4 +1,4 @@
-$dashboard-card-radius: 1.25rem;
+$dashboard-card-radius: 0.75rem;
 $dashboard-card-shadow: 0 1rem 2.5rem rgba(4, 3, 22, 0.08);
 $dashboard-card-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
 $dashboard-action-min-height: 8rem;
@@ -16,7 +16,7 @@ $dashboard-action-min-height: 8rem;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--secondary-border-color);
-  border-radius: calc($dashboard-card-radius + 0.25rem);
+  border-radius: calc($dashboard-card-radius);
   background:
     radial-gradient(circle at top right, color-mix(in srgb, var(--link-color) 24%, transparent), transparent 34%),
     linear-gradient(135deg, var(--card-bg), var(--content-bg));
@@ -85,7 +85,7 @@ $dashboard-action-min-height: 8rem;
 
 .lab-dashboard__quick-action-icon {
   align-items: center;
-  border-radius: 999px;
+  border-radius: $dashboard-card-radius;
   display: inline-flex;
   height: 3rem;
   justify-content: center;
@@ -183,7 +183,7 @@ $dashboard-action-min-height: 8rem;
 }
 
 .overview-card__footer {
-  background-color: var(--body-highlight-bg);
+ 
   border-top: 1px solid var(--secondary-border-color);
   padding: 0.75rem 1.25rem;
 }
