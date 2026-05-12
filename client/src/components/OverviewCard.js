@@ -42,26 +42,26 @@ class OverviewCard extends Component {
     }
 
     render() {
-        const { Icon, color, title } = this.props;
+        const { Icon, variant = 'accent', title } = this.props;
         const { count } = this.state;
 
         return (
-            <div className="card shadow-sm mb-4">
-                <div className="card-body">
+            <div className="overview-card">
+                <div className="overview-card__body">
                     <div className="d-flex align-items-center">
-                        <div className={`d-flex align-items-center justify-content-center rounded-circle ${color}`} style={{ width: '48px', height: '48px' }}>
-                            <Icon style={{ width: '24px', height: '24px' }} />
+                        <div className={`overview-card__icon overview-card__icon--${variant}`}>
+                            <Icon size={24} />
                         </div>
                         <div className="ms-3 flex-grow-1">
-                            <dl>
-                                <dt className="text-body-secondary small mb-1">{title}</dt>
-                                <dd className="h5 mb-0">{count !== null ? count : 'Загрузка...'}</dd>
+                            <dl className="mb-0">
+                                <dt className="overview-card__label">{title}</dt>
+                                <dd className="overview-card__value">{count !== null ? count : 'Загрузка...'}</dd>
                             </dl>
                         </div>
                     </div>
                 </div>
-                <div className="card-footer bg-light py-2 px-3">
-                    <a href="#" className="text-decoration-none text-primary">
+                <div className="overview-card__footer">
+                    <a href="#" className="overview-card__link">
                         View all
                     </a>
                 </div>

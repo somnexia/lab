@@ -15,7 +15,6 @@
   --secondary-color: #{map.get($theme, secondary-color)};
   --tertiary-color: #{map.get($theme, tertiary-color)};
   --link-color: #{map.get($theme, link-color)};
-  --accent-color: #{map.get($theme, link-color)};
   --secondary-border-color: #{map.get($theme, secondary-border-color)};
   --content-border-color: #{map.get($theme, content-border-color)};
   --content-bg: #{map.get($theme, content-bg)};
@@ -29,7 +28,6 @@
   --lab-body-bg: #{map.get($theme, body-bg)};
   --lab-emphasis-bg: #{map.get($theme, emphasis-bg)};
   --lab-primary-bg: #{map.get($theme, primary-soft-bg)};
-  --lab-body-highlight-bg: #{map.get($theme, body-highlight-bg)};
   --bs-link-color-rgb: #{map.get($theme, link-color)};
   --bs-btn-bg: #{map.get($theme, primary-color)};
   --bs-btn-border-color: #{map.get($theme, primary-color)};

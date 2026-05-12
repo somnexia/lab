@@ -1,13 +1,13 @@
-@use "../theme/theme" as theme;
-
 .bg-purple {
-  @include theme.bg-purple;
+  background-color: var(--link-color) !important;
+  opacity: 1 !important;
 }
 
 .bg-purple-10 {
-  @include theme.bg-purple-10;
+  background-color: color-mix(in srgb, var(--link-color) 12%, transparent) !important;
 }
 
 .text-purple {
-  @include theme.text-purple;
+  color: var(--link-color) !important;
+  opacity: 1 !important;
 }
