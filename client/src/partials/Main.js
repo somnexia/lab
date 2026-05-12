@@ -35,6 +35,7 @@ const Main = () => {
 
                     {/* Инвентарь с вложенными маршрутами */}
                     <Route path="/inventory" element={<Inventory />}>
+                        <Route index element={<InventoryOverview />} />
                         <Route path="overview" element={<InventoryOverview />} />
                         <Route path="warehouses" element={<WarehouseList />} />
                         <Route path="storage-units" element={<StorageUnitList />} />
