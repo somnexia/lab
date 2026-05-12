@@ -4,9 +4,8 @@ import Home from "../pages/Home";
 import Inventory from "../pages/Inventory";
 import WarehouseList from "../components/WarehouseList";
 import Breadcrumb from "../components/Breadcrumb";
-import StorageUnitC from "../components/StorageUnitС";
+import StorageTree from "../components/StorageTree";
 import StorageUnitList from "../components/StorageUnitList";
-import StorageUnit from "../components/StorageUnit";
 import DropdownHierarchy from "../components/DropdownHierarchy";
 import ParentStorageUnits from "../components/ParentStorageUnits";
 import Footer from "./Footer";
@@ -40,7 +39,7 @@ const Main = () => {
                         <Route path="list" element={<InventoryOverview fullPage />} />
                         <Route path="warehouses" element={<WarehouseList />} />
                         <Route path="storage-units" element={<StorageUnitList />} />
-                        <Route path="ladder" element={<StorageUnitC />} />
+                        <Route path="ladder" element={<StorageTree />} />
                         <Route path="dropdown" element={< DropdownHierarchy />} />
                         <Route path="location" element={<ParentStorageUnits />} />
                     </Route>
