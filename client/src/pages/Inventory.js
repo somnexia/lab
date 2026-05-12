@@ -3,6 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import {
     Boxes,
     Building2,
+    GitBranch,
     LayoutDashboard,
     ListTree,
     MapPin,
@@ -74,25 +75,39 @@ class Inventory extends Component {
 
                 <div className="row g-4 inventory-page__layout">
                     <aside className="col-12 col-xl-4 col-xxl-3">
-                        <nav className="inventory-page__nav" aria-label="Inventory sections">
-                            {navItems.map(({ to, Icon, title, description, variant }) => (
-                                <NavLink
-                                    className={({ isActive }) =>
-                                        `inventory-page__nav-button inventory-page__nav-button--${variant}${isActive ? " active" : ""}`
-                                    }
-                                    key={to}
-                                    to={to}
-                                >
-                                    <span className="inventory-page__nav-icon">
-                                        <Icon size={24} />
-                                    </span>
-                                    <span className="inventory-page__nav-copy">
-                                        <span className="inventory-page__nav-title">{title}</span>
-                                        <span className="inventory-page__nav-description">{description}</span>
-                                    </span>
-                                </NavLink>
-                            ))}
-                        </nav>
+                        <div className="inventory-page__sidebar">
+                            <nav className="inventory-page__nav" aria-label="Inventory sections">
+                                {navItems.map(({ to, Icon, title, description, variant }) => (
+                                    <NavLink
+                                        className={({ isActive }) =>
+                                            `inventory-page__nav-button inventory-page__nav-button--${variant}${isActive ? " active" : ""}`
+                                        }
+                                        key={to}
+                                        to={to}
+                                    >
+                                        <span className="inventory-page__nav-icon">
+                                            <Icon size={24} />
+                                        </span>
+                                        <span className="inventory-page__nav-copy">
+                                            <span className="inventory-page__nav-title">{title}</span>
+                                            <span className="inventory-page__nav-description">{description}</span>
+                                        </span>
+                                    </NavLink>
+                                ))}
+                            </nav>
+
+                            <div className="inventory-page__sidebar-card">
+                                <span className="inventory-page__sidebar-icon">
+                                    <GitBranch size={20} />
+                                </span>
+                                <div>
+                                    <strong>Storage Tree tip</strong>
+                                    <p>
+                                        Use colored levels to read parent and child units faster while scrolling long hierarchies.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </aside>
 
                     <div className="col-12 col-xl-8 col-xxl-9">

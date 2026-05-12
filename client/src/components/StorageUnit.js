@@ -157,13 +157,24 @@ class StorageUnit extends Component {
     const nestedInventoryCount = this.getNestedInventoryCount(storageUnit);
     const utilizationPercent = this.getUtilizationPercent();
     const hasChildren = directChildrenCount > 0;
+    const visualLevel = Math.min(depth, 5);
 
     return (
       <article
-        className={`storage-unit-card${depth > 0 ? ' storage-unit-card--nested' : ''}`}
+        className={[
+          'storage-unit-card',
+          `storage-unit-card--level-${visualLevel}`,
+          depth > 0 ? 'storage-unit-card--nested' : 'storage-unit-card--root',
+          isExpanded ? 'storage-unit-card--expanded' : '',
+        ].filter(Boolean).join(' ')}
         style={{ '--storage-unit-depth': depth }}
       >
-        <button className="storage-unit-card__summary" onClick={this.toggleExpanded} type="button">
+        <button
+          aria-expanded={isExpanded}
+          className="storage-unit-card__summary"
+          onClick={this.toggleExpanded}
+          type="button"
+        >
           <span className="storage-unit-card__expand">
             {hasChildren ? (
               isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />
@@ -179,6 +190,9 @@ class StorageUnit extends Component {
           <span className="storage-unit-card__main">
             <span className="storage-unit-card__title-row">
               <span className="storage-unit-card__title">{storageUnit.unit_name || 'Unnamed storage unit'}</span>
+              <span className="storage-unit-card__level">
+                {depth === 0 ? 'Parent' : `Level ${depth + 1}`}
+              </span>
               <span className="storage-unit-card__type">{storageUnit.unit_type || 'unknown'}</span>
               {storageUnit.is_locked && (
                 <span className="storage-unit-card__lock">
@@ -235,6 +249,10 @@ class StorageUnit extends Component {
 
             {hasChildren && (
               <div className="storage-unit-card__children">
+                <div className="storage-unit-card__children-header">
+                  <span>Child units of {storageUnit.unit_name || 'this unit'}</span>
+                  <strong>{directChildrenCount}</strong>
+                </div>
                 {children.map((child) => (
                   <StorageUnit
                     defaultExpanded={false}

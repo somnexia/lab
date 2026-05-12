@@ -126,6 +126,7 @@ class StorageTree extends Component {
     const totalInventory = tree.reduce((total, unit) => total + this.getInventoryCount(unit), 0);
     const typeOptions = this.getTypeOptions();
     const stateMessage = this.renderState();
+    const depthLegend = ['Parent', 'Level 2', 'Level 3', 'Level 4', 'Level 5', 'Level 6+'];
 
     return (
       <section className="storage-tree">
@@ -180,6 +181,15 @@ class StorageTree extends Component {
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="storage-tree__legend" aria-label="Storage tree level colors">
+          {depthLegend.map((label, index) => (
+            <span className={`storage-tree__legend-item storage-tree__legend-item--level-${index}`} key={label}>
+              <i />
+              {label}
+            </span>
+          ))}
         </div>
 
         {stateMessage || (
