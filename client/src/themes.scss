@@ -1,152 +1,147 @@
 @use './variables.scss' as vars;
 
+/* =========================================================
+   🌞 LIGHT THEME (Cybercore Light)
+   ========================================================= */
+
 $light-theme: (
-  // Основные цвета
-  body-bg: #f9fafd,
-  body-color: #31374a,
+
+  /* === BASE BACKGROUNDS === */
+  body-bg: #f4f7ff,
+  content-bg: #eef2ff,
   card-bg: #ffffff,
   table-bg: #ffffff,
-  offcanvas-bg: #ffffff,
-  table-striped-bg: #f1f3f5,
+  table-striped-bg: #e9edff,
   navbar-bg: #ffffff,
-  content-bg: #f5f7fa,
-  content-border-color: #c1c4ca,
-  link-color: #727cf5,
-  nav-link-color: #31374a,
-  text-color: #000000,
-  text-body-secondary: #3e465b,
-  primary-color: #727cf5,
-  secondary-color: #748194,
-  tertiary-color: #747883,
-  secondary-border-color: #c1c4ca,
-  lab-btn-color: #23356e,
-  lab-btn-bg: #f5f7fa,
-  lab-btn-border-color: #e3e6ed,
-  lab-btn-hover-color: #222834,
-  lab-btn-hover-bg: #e3e6ed,
-  lab-btn-hover-border-color: #e6e9ef,
-  lab-btn-active-color: #31374a,
-  lab-btn-active-bg: #e3e6ed,
-  lab-btn-active-shadow: initial,
-  lab-btn-disabled-color: #000000,
-  lab-btn-disabled-bg: #f5f7fa,
-  lab-btn-disabled-border-color: #e3e6ed,
-  lab-input-bg: #f5f7fa,
-  lab-label-bg: #e7e7e7,
-  body-highlight-bg: #eff2f6,
-  lab-bg: #2c7be5,
+  offcanvas-bg: #ffffff,
 
-  // Дополнительные переменные из Phoenix
-  body-secondary-color: #3e465b,
-  body-secondary-bg: #f1f3f5,
-  body-tertiary-color: #747883,
-  body-tertiary-bg: #e3e6ed,
-  body-quaternary-color: #8a94ad,
-  body-quaternary-bg: #d3d6db,
-  body-emphasis-color: #000000,
-  body-emphasis-bg: #ffffff,
-  body-highlight-color: #3e465b,
+  /* === TEXT COLORS === */
+  text-color: #0f172a,
+  text-body-secondary: #64748b,
+  quaternary-text-color: #94a3b8,
+
+  /* === PRIMARY / ACCENTS === */
+  primary-color: #4f7cff,
+  link-color: #4f7cff,
+  accent-color: #6366f1,
+  highlight-color: #8b5cf6,
+
+  /* === SECONDARY UI COLORS === */
+  secondary-color: #cbd5f5,
+  tertiary-color: #94a3b8,
+
+  /* === BORDERS === */
+  content-border-color: #dbe2ff,
+  secondary-border-color: #c7d2fe,
+
+  /* === INPUTS === */
+  lab-input-bg: #eef2ff,
+  lab-label-bg: #e0e7ff,
+
+  /* === BUTTONS === */
+  lab-btn-bg: #eef2ff,
+  lab-btn-color: #1e293b,
+  lab-btn-border-color: #c7d2fe,
+
+  /* === STATES === */
+  body-highlight-bg: #e0e7ff,
+
+  /* === NAV === */
+  nav-link-color: #1e293b,
+
+  /* === SYSTEM COLORS === */
   theme-colors: (
-    'primary': #2c7be5,
-    'secondary': #748194,
-    'success': #00d27a,
-    'info': #27bcfd,
-    'warning': #f5803e,
-    'danger': #e63757,
-    'light': #f8f9fa,
-    'dark': #0b1727,
-    'indigo': vars.$indigo-500,
-    'indigo-light': vars.$indigo-200,
-    'indigo-dark': vars.$indigo-700,
-    'purple': vars.$purple-500,
-    'purple-light': vars.$purple-200,
-    'purple-dark': vars.$purple-700
+    'primary': #4f7cff,
+    'success': #00d4ff,
+    'info': #38bdf8,
+    'warning': #f59e0b,
+    'danger': #ef4444
   ),
-  accent-color: vars.$indigo-500,
-  highlight-color: vars.$purple-400,
 
+  /* === GRAYSCALE === */
   grays: (
-    100: #f9fafd,
-    200: #f1f3f5,
-    300: #e3e6ed,
-    400: #c1c4ca,
-    500: #a1a4ab,
-    600: #747883,
-    700: #3e465b,
-    800: #31374a,
-    900: #222834
+    100: #f8fafc,
+    200: #eef2ff,
+    300: #e0e7ff,
+    400: #c7d2fe,
+    500: #94a3b8,
+    600: #64748b,
+    700: #334155,
+    800: #1e293b,
+    900: #0f172a
   )
 );
 
+
+
+/* =========================================================
+   🌑 DARK THEME (Cybercore Dark)
+   ========================================================= */
+
 $dark-theme: (
-  // Основные цвета
-  body-bg: #0f111a,
-  body-color: #9fa6bc,
-  card-bg: #141824,
-  table-bg: #141824,
-  offcanvas-bg: #141824,
-  table-striped-bg: #1e2230,
-  navbar-bg: #141824,
-  content-bg: #0f111a,
-  content-border-color: #31374a,
-  link-color: #727cf5,
-  nav-link-color: #9fa6bc,
-  text-color: #ffffff,
-  text-body-secondary: #949db5,
-  quaternary-text-color: #8a94ad,
-  primary-color: #727cf5,
-  secondary-color: #1e2230,
-  tertiary-color: #8a94ad,
-  secondary-border-color: #31374a,
-  lab-btn-color: #9fa6bc,
-  lab-btn-active-color: #9fa6bc,
-  lab-btn-bg: #0f111a,
-  lab-btn-border-color: #31374a,
-  lab-btn-hover-border-color: #31374a,
-  lab-btn-active-border-color: #222834,
-  lab-input-bg: #0f111a,
-  lab-label-bg: #0f111a,
-  body-highlight-bg: #222834,
-  lab-bg: #2c7be5,
 
-  // Дополнительные переменные из Phoenix
-  body-secondary-color: #949db5,
-  body-secondary-bg: #1e2230,
-  body-tertiary-color: #8a94ad,
-  body-tertiary-bg: #2a2e3e,
-  body-quaternary-color: #6c757d,
-  body-quaternary-bg: #343a40,
-  body-emphasis-color: #ffffff,
-  body-emphasis-bg: #141824,
-  body-highlight-color: #9fa6bc,
+  /* === BASE BACKGROUNDS === */
+  body-bg: #0a0f1c,
+  content-bg: #0a0f1c,
+  card-bg: #111827,
+  table-bg: #111827,
+  table-striped-bg: #1a2238,
+  navbar-bg: #111827,
+  offcanvas-bg: #111827,
+
+  /* === TEXT COLORS === */
+  text-color: #e0ecff,
+  text-body-secondary: #94a3b8,
+  quaternary-text-color: #64748b,
+
+  /* === PRIMARY / ACCENTS === */
+  primary-color: #4f7cff,
+  link-color: #6ea8ff,
+  accent-color: #818cf8,
+  highlight-color: #a78bfa,
+
+  /* === SECONDARY UI COLORS === */
+  secondary-color: #1f2a44,
+  tertiary-color: #64748b,
+
+  /* === BORDERS === */
+  content-border-color: #1e293b,
+  secondary-border-color: #2a344f,
+
+  /* === INPUTS === */
+  lab-input-bg: #0a0f1c,
+  lab-label-bg: #0a0f1c,
+
+  /* === BUTTONS === */
+  lab-btn-bg: #111827,
+  lab-btn-color: #c7d2fe,
+  lab-btn-border-color: #2a344f,
+
+  /* === STATES === */
+  body-highlight-bg: #1a2238,
+
+  /* === NAV === */
+  nav-link-color: #c7d2fe,
+
+  /* === SYSTEM COLORS === */
   theme-colors: (
-    'primary': #2c7be5,
-    'secondary': #1e2230,
-    'success': #00d27a,
-    'info': #27bcfd,
-    'warning': #f5803e,
-    'danger': #e63757,
-    'light': #f8f9fa,
-    'dark': #0b1727,
-    'indigo': vars.$indigo-300,
-    'indigo-light': vars.$indigo-100,
-    'indigo-dark': vars.$indigo-600,
-    'purple': vars.$purple-300,
-    'purple-light': vars.$purple-100,
-    'purple-dark': vars.$purple-600,
+    'primary': #4f7cff,
+    'success': #00e5ff,
+    'info': #38bdf8,
+    'warning': #f59e0b,
+    'danger': #ef4444
   ),
-  accent-color: vars.$indigo-300,
-  highlight-color: vars.$purple-300,
 
+  /* === GRAYSCALE === */
   grays: (
-    100: #1e2230,
-    200: #2a2e3e,
-    300: #343a40,
-    400: #495057,
-    500: #6c757d,
-    600: #adb5bd,
-    700: #ced4da,
-    800: #dee2e6,
-    900: #e9ecef
+    100: #1a2238,
+    200: #1f2a44,
+    300: #2a344f,
+    400: #334155,
+    500: #64748b,
+    600: #94a3b8,
+    700: #cbd5f5,
+    800: #e0ecff,
+    900: #f1f5ff
   )
 );
