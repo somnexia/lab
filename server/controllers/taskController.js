@@ -2,14 +2,23 @@ const taskService = require('../services/taskService');
 
 // Создание новой задачи
 const createTask = async (req, res) => {
-  if (Object.values(req.body).some(value => value === null || value === undefined || value === '')) {
-    return res.status(400).json({ error: "Все поля обязательны" });
+  const { research_id, title, start_date } = req.body;
+
+  if (!research_id || !title || !start_date) {
+    return res.status(400).json({
+      error: "research_id, title и start_date обязательны"
+    });
   }
+
   try {
     const task = await taskService.createTask(req.body);
     return res.status(201).json(task);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    console.error(error);
+
+    return res.status(500).json({
+      error: error.message
+    });
   }
 };
 
@@ -19,14 +28,14 @@ const createTask = async (req, res) => {
 const getTasksByResearch = async (req, res) => {
   const { researchId } = req.query; // Получаем researchId из запроса
   if (!researchId) {
-      return res.status(400).json({ error: "Не указан researchId" });
+    return res.status(400).json({ error: "Не указан researchId" });
   }
 
   try {
-      const tasks = await taskService.getTasksByResearch(researchId);
-      res.json(tasks);
+    const tasks = await taskService.getTasksByResearch(researchId);
+    res.json(tasks);
   } catch (error) {
-      res.status(500).json({ error: "Ошибка при получении задач исследования" });
+    res.status(500).json({ error: "Ошибка при получении задач исследования" });
   }
 };
 
@@ -65,7 +74,7 @@ const updateTask = async (req, res) => {
 const deleteTask = async (req, res) => {
   const { id } = req.params;
   try {
-    const message = await taskService.deleteTask(id ,req.body);
+    const message = await taskService.deleteTask(id, req.body);
     return res.status(200).json(message);
   } catch (error) {
     return res.status(404).json({ error: error.message });

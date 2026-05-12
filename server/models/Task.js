@@ -67,13 +67,13 @@ module.exports = (sequelize, DataTypes) => {
 
 
         start_date: {
-            type: DataTypes.DATE,
+            type: DataTypes.DATEONLY,
             allowNull: false
         },
 
 
         due_date: {
-            type: DataTypes.DATE,
+            type: DataTypes.DATEONLY,
             allowNull: true,
             defaultValue: null
         },

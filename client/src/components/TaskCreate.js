@@ -94,7 +94,11 @@ class TaskCreate extends Component {
         if (!formData.start_date) {
             errors.start_date = "Дата начала обязательна";
         }
-        if (formData.due_date && formData.start_date && formData.due_date < formData.start_date) {
+        if (
+            formData.due_date &&
+            formData.start_date &&
+            new Date(formData.due_date) < new Date(formData.start_date)
+        ) {
             errors.due_date = "Дата завершения должна быть позже даты начала";
         }
 
@@ -104,7 +108,7 @@ class TaskCreate extends Component {
 
     handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!this.validateForm()) {
             return;
         }
@@ -121,8 +125,8 @@ class TaskCreate extends Component {
             };
 
             const response = await axios.post('http://localhost:3000/api/tasks', taskData);
-            
-            this.setState({ 
+
+            this.setState({
                 success: true,
                 loading: false,
                 selectedResearch: null,
@@ -141,14 +145,13 @@ class TaskCreate extends Component {
 
             // Перенаправление через 2 секунды
             setTimeout(() => {
-                this.props.history.push('/projects/tasks');
+                window.location.href = '/projects/task-list';
             }, 2000);
-
         } catch (error) {
             console.error("Ошибка создания задачи:", error);
-            this.setState({ 
+            this.setState({
                 error: error.response?.data?.message || "Не удалось создать задачу",
-                loading: false 
+                loading: false
             });
         }
     };
@@ -218,8 +221,8 @@ class TaskCreate extends Component {
                                 <h5 className="mb-0">Select Research</h5>
                             </div>
                             <div className="card-body p-0">
-                                <div className="research-list" style={{ 
-                                    maxHeight: '600px', 
+                                <div className="research-list" style={{
+                                    maxHeight: '600px',
                                     overflowY: 'auto',
                                     border: '1px solid #dee2e6',
                                     borderTop: 'none'
@@ -280,8 +283,8 @@ class TaskCreate extends Component {
                             <div className="card shadow-sm">
                                 <div className="card-header bg-body-primary text-white d-flex justify-content-between align-items-center">
                                     <h5 className="mb-0">Task Details</h5>
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         className="btn btn-sm btn-outline-light"
                                         onClick={this.handleReset}
                                     >
@@ -410,7 +413,7 @@ class TaskCreate extends Component {
                                                 Start Date <span className="text-danger">*</span>
                                             </label>
                                             <input
-                                                type="datetime-local"
+                                                type="date"
                                                 className={`form-control ${validationErrors.start_date ? 'is-invalid' : ''}`}
                                                 id="start_date"
                                                 name="start_date"
@@ -428,7 +431,7 @@ class TaskCreate extends Component {
                                                 Due Date
                                             </label>
                                             <input
-                                                type="datetime-local"
+                                                type="date"
                                                 className={`form-control ${validationErrors.due_date ? 'is-invalid' : ''}`}
                                                 id="due_date"
                                                 name="due_date"
@@ -464,8 +467,8 @@ class TaskCreate extends Component {
                                         <FaArrowLeft className="me-2" />
                                         Cancel
                                     </Link>
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         className="btn btn-primary"
                                         disabled={loading || !selectedResearch}
                                     >
@@ -487,6 +490,7 @@ class TaskCreate extends Component {
                     </div>
                 </div>
             </div>
+            
         );
     }
 }

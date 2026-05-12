@@ -3,8 +3,17 @@ const { Task, TaskFile ,User } = require('../models');
 // Создание новой задачи
 const createTask = async (data) => {
   try {
-    const task = await Task.create(data);
+
+    const taskData = {
+      ...data,
+      start_date: data.start_date || null,
+      due_date: data.due_date || null
+    };
+
+    const task = await Task.create(taskData);
+
     return task;
+
   } catch (error) {
     console.error('Ошибка при создании задачи:', error);
     throw error;

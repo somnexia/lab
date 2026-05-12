@@ -1,27 +1,89 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import { FaSearch, FaPlus, FaChevronRight } from "react-icons/fa";
-import { Link } from "react-router-dom";
 
 class TaskDetailsOffcanvas extends Component {
-    state = {}
+
     render() {
+
+        const { isOpen, task, onClose } = this.props;
+
+        // Если модалка закрыта — ничего не рендерим
+        if (!isOpen || !task) {
+            return null;
+        }
+
         return (
-            <div>
-                <div class="offcanvas todolist-offcancas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
-                    <div class="offcanvas-header">
-                        <div className='d-flex flex-between-center mb-4 gap-3'>
-                            <h5 class="offcanvas-title fw-bold fs-6 mb-0 text-body-highlight line-clamp-1" id="offcanvasRightLabel">Offcanvas right</h5>
-                            <button type="button" class="btn btn-secondary btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                        </div>
+
+            <div
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    right: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    zIndex: 1050,
+                    display: 'flex',
+                    justifyContent: 'flex-end'
+                }}
+            >
+
+                {/* Sidebar */}
+                <div className="modal-content"
+                    style={{
+                        width: '30rem',
+                        height: '100%',
+                        padding: '24px',
+                        overflowY: 'auto',
+                        boxShadow: '-2px 0 10px rgba(0,0,0,0.2)'
+                    }}
+                >
+
+                    {/* Header */}
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+
+                        <h4 className="mb-0">
+                            {task.title}
+                        </h4>
+
+                        <button
+                            className="btn  btn-outline-primary"
+                            onClick={onClose}
+                        >
+                            Close
+                        </button>
+
                     </div>
-                    <div class="offcanvas-body">
-                        <div className='mb-5'></div>
-                        <div className='mb-5'></div>
-                        <div className='mb-5'></div>
-                        <div className='mb-5'></div>
-                        <div className='mb-5'></div>
+
+                    <hr />
+
+                    {/* Content */}
+                    
+
+                    <div className="mb-4">
+                        <strong>Description</strong>
+                        <p>{task.description || 'No description'}</p>
                     </div>
+
+                    <div className="mb-4">
+                        <strong>Status</strong>
+                        <p>{task.status}</p>
+                    </div>
+
+                    <div className="mb-4">
+                        <strong>Assigned User</strong>
+                        <p>{task.user?.name || 'Unknown'}</p>
+                    </div>
+
+                    <div className="mb-4">
+                        <strong>Start Date</strong>
+                        <p>{task.start_date}</p>
+                    </div>
+
+                    <div className="mb-4">
+                        <strong>Due Date</strong>
+                        <p>{task.due_date || '-'}</p>
+                    </div>
+
                 </div>
             </div>
         );

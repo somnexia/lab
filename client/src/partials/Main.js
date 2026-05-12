@@ -20,7 +20,7 @@ import AddResearch from "../components/AddResearch";
 import ParticipantList from "../components/ParticipantList";
 import AdminLogsPage from "../components/AdminLogsPage";
 import TaskList from "../components/TaskList";
-import TastCreate from "../components/TastCreate";
+import TaskCreate from "../components/TaskCreate";
 
 const Main = () => {
     return (
@@ -60,7 +60,7 @@ const Main = () => {
                     <Route path="projects/research-list" element={<ResearchList />} />
                     <Route path="projects/research-create" element={<AddResearch />} />
                     <Route path="projects/task-list" element={<TaskList />} />
-                    <Route path="projects/task-create" element={<TastCreate/>}/>
+                    <Route path="projects/task-create" element={<TaskCreate/>}/>
 
                     <Route path="/management/userlog" element={<AdminLogsPage />} />
 

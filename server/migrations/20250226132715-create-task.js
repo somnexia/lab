@@ -7,7 +7,7 @@ module.exports = {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
-        autoIncrement: false,
+        autoIncrement: true,
         allowNull: false
       },
       research_id: {
@@ -49,11 +49,11 @@ module.exports = {
         defaultValue: null
       },
       start_date: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATEONLY,
         allowNull: false
       },
       due_date: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATEONLY,
         allowNull: true,
         defaultValue: null
       },
