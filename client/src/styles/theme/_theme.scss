@@ -1,6 +1,5 @@
 @use "sass:color";
 @use "sass:map";
-@use "../abstracts/brand" as brand;
 @use "light" as light;
 @use "dark" as dark;
 @use "tokens" as tokens;
@@ -448,16 +447,3 @@ $dark-theme: build-app-theme(dark.$root);
   }
 }
 
-@mixin bg-purple {
-  background-color: brand.$bg-purple;
-  opacity: 1 !important;
-}
-
-@mixin bg-purple-10 {
-  background-color: rgba(brand.$bg-purple, 0.1) !important;
-}
-
-@mixin text-purple {
-  color: brand.$text-purple;
-  opacity: 1 !important;
-}

@@ -4,6 +4,7 @@
 @use "abstracts/variables" as vars;
 @use "theme/theme" as lab-theme;
 @use "base/typography";
+@use "components/dashboard";
 @use "components/forms";
 @use "components/utilities";
 @use "layout/root";
