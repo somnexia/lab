@@ -1,0 +1,170 @@
+$inventory-card-radius: 1.25rem;
+$inventory-shadow: 0 1rem 2.5rem rgba(4, 3, 22, 0.08);
+$inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+
+.inventory-page {
+  color: var(--text-color);
+  padding-block: clamp(1rem, 2vw, 2rem) 2.5rem;
+}
+
+.inventory-page__hero {
+  align-items: center;
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--primary-color) 20%, transparent), transparent 32%),
+    linear-gradient(135deg, var(--card-bg), var(--content-bg));
+  border: 1px solid var(--secondary-border-color);
+  border-radius: calc($inventory-card-radius + 0.25rem);
+  box-shadow: $inventory-shadow;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  overflow: hidden;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.inventory-page__eyebrow {
+  color: var(--link-color);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.65rem;
+  text-transform: uppercase;
+}
+
+.inventory-page__title {
+  color: var(--text-color);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+
+.inventory-page__subtitle {
+  color: var(--text-body-secondary);
+  margin-bottom: 0;
+  max-width: 48rem;
+}
+
+.inventory-page__layout {
+  align-items: flex-start;
+}
+
+.inventory-page__nav {
+  background-color: var(--card-bg);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: $inventory-card-radius;
+  box-shadow: 0 0.75rem 1.75rem rgba(4, 3, 22, 0.06);
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  position: sticky;
+  top: calc(var(--lab-navbar-top-height) + 1rem);
+}
+
+.inventory-page__nav-button {
+  align-items: center;
+  background-color: var(--body-highlight-bg);
+  border: 1px solid transparent;
+  border-radius: 1rem;
+  color: var(--text-color);
+  display: flex;
+  gap: 0.9rem;
+  min-height: 5.75rem;
+  padding: 1rem;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover,
+  &:focus-visible,
+  &.active {
+    background-color: var(--card-bg);
+    border-color: var(--inventory-nav-accent, var(--link-color));
+    box-shadow: $inventory-shadow-hover;
+    color: var(--text-color);
+    transform: translateY(-2px);
+  }
+
+  &.active {
+    box-shadow: inset 0 0 0 1px var(--inventory-nav-accent, var(--link-color)), $inventory-shadow;
+  }
+}
+
+.inventory-page__nav-button--primary {
+  --inventory-nav-accent: var(--primary-color);
+}
+
+.inventory-page__nav-button--success {
+  --inventory-nav-accent: var(--semantic-success);
+}
+
+.inventory-page__nav-button--accent {
+  --inventory-nav-accent: var(--link-color);
+}
+
+.inventory-page__nav-button--info {
+  --inventory-nav-accent: var(--semantic-info);
+}
+
+.inventory-page__nav-button--warning {
+  --inventory-nav-accent: var(--semantic-warning);
+}
+
+.inventory-page__nav-button--danger {
+  --inventory-nav-accent: var(--semantic-danger);
+}
+
+.inventory-page__nav-icon {
+  align-items: center;
+  background-color: color-mix(in srgb, var(--inventory-nav-accent, var(--link-color)) 14%, transparent);
+  border-radius: 0.9rem;
+  color: var(--inventory-nav-accent, var(--link-color));
+  display: inline-flex;
+  flex: 0 0 3rem;
+  height: 3rem;
+  justify-content: center;
+  width: 3rem;
+}
+
+.inventory-page__nav-copy {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.inventory-page__nav-title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.inventory-page__nav-description {
+  color: var(--text-body-secondary);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.inventory-page__content {
+  background-color: var(--card-bg);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: $inventory-card-radius;
+  box-shadow: 0 0.75rem 1.75rem rgba(4, 3, 22, 0.06);
+  min-height: 32rem;
+  overflow: hidden;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+@media (max-width: 1199.98px) {
+  .inventory-page__nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    position: static;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .inventory-page__hero {
+    padding: 1.25rem;
+  }
+
+  .inventory-page__nav {
+    grid-template-columns: 1fr;
+  }
+}
