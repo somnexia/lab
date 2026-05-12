@@ -1,0 +1,463 @@
+@use "sass:color";
+@use "sass:map";
+@use "../abstracts/brand" as brand;
+@use "light" as light;
+@use "dark" as dark;
+@use "tokens" as tokens;
+
+// ---------------------------------------------------------------------------
+// Машина темы: корень (light/dark) → вычисленная карта → токены + разметка UI.
+// ---------------------------------------------------------------------------
+
+@function root-color($root, $key, $fallback) {
+  @if map.has-key($root, $key) {
+    $value: map.get($root, $key);
+    @if $value != null {
+      @return $value;
+    }
+  }
+  @return $fallback;
+}
+
+@function tone($text, $surface, $text-weight: 50%) {
+  @return color.mix($text, $surface, $text-weight, $method: hsl);
+}
+
+@function build-app-theme($root) {
+  $text: map.get($root, text);
+  $bg: map.get($root, background);
+  $primary: map.get($root, primary);
+  $secondary: map.get($root, secondary);
+  $accent: map.get($root, accent);
+
+  $success: root-color(
+    $root,
+    success,
+    if(
+      color.channel($bg, "lightness", $space: hsl) > 42%,
+      #146c43,
+      #75b798
+    )
+  );
+  $warning: root-color(
+    $root,
+    warning,
+    if(
+      color.channel($bg, "lightness", $space: hsl) > 42%,
+      #cc9a06,
+      #ffda6a
+    )
+  );
+  $danger: root-color(
+    $root,
+    danger,
+    if(
+      color.channel($bg, "lightness", $space: hsl) > 42%,
+      #b02a37,
+      #ea868f
+    )
+  );
+  $info: root-color(
+    $root,
+    info,
+    if(
+      color.channel($bg, "lightness", $space: hsl) > 42%,
+      #087990,
+      #6edff6
+    )
+  );
+
+  $is-light: color.channel($bg, "lightness", $space: hsl) > 42%;
+
+  $body-bg: $bg;
+  $content-bg: color.mix($secondary, $bg, 18%, $method: hsl);
+  $card-bg: if(
+    $is-light,
+    $bg,
+    color.mix($primary, $bg, 14%, $method: hsl)
+  );
+  $navbar-bg: $card-bg;
+  $table-bg: $card-bg;
+  $table-striped-bg: color.mix($secondary, $card-bg, 35%, $method: hsl);
+
+  $border: color.mix($text, $secondary, 88%, $method: hsl);
+  $border-strong: color.mix($text, $secondary, 78%, $method: hsl);
+
+  $body-color: tone($text, $bg, 78%);
+  $nav-link-color: tone($text, $bg, 82%);
+  $text-body-secondary: tone($text, $bg, 58%);
+  $quaternary-text-color: tone($text, $bg, 42%);
+  $tertiary-color: tone($text, $secondary, 45%);
+
+  $lab-input-bg: color.mix($secondary, $bg, 28%, $method: hsl);
+  $lab-label-bg: color.mix($secondary, $bg, 38%, $method: hsl);
+  $body-highlight-bg: color.mix($secondary, $card-bg, 45%, $method: hsl);
+
+  $emphasis-bg: if(
+    $is-light,
+    color.mix($text, $bg, 5%, $method: hsl),
+    color.mix($secondary, $primary, 38%, $method: hsl)
+  );
+
+  $primary-soft-bg: color.change($primary, $alpha: 0.35, $space: rgb);
+
+  @return (
+    body-bg: $body-bg,
+    text-color: $text,
+    body-color: $body-color,
+    nav-link-color: $nav-link-color,
+    primary-color: $primary,
+    secondary-color: $secondary,
+    tertiary-color: $tertiary-color,
+    link-color: $accent,
+    text-body-secondary: $text-body-secondary,
+    quaternary-text-color: $quaternary-text-color,
+    secondary-border-color: $border,
+    content-border-color: $border-strong,
+    content-bg: $content-bg,
+    card-bg: $card-bg,
+    navbar-bg: $navbar-bg,
+    table-bg: $table-bg,
+    table-striped-bg: $table-striped-bg,
+    lab-input-bg: $lab-input-bg,
+    lab-label-bg: $lab-label-bg,
+    body-highlight-bg: $body-highlight-bg,
+    emphasis-bg: $emphasis-bg,
+    primary-soft-bg: $primary-soft-bg,
+    success: $success,
+    warning: $warning,
+    danger: $danger,
+    info: $info,
+  );
+}
+
+$light-theme: build-app-theme(light.$root);
+$dark-theme: build-app-theme(dark.$root);
+
+@mixin apply-theme($theme) {
+  @include tokens.emit-theme-vars($theme);
+
+  body {
+    background-color: map.get($theme, body-bg);
+    color: map.get($theme, text-color);
+  }
+
+  .btn-primary {
+    background-color: map.get($theme, primary-color) !important;
+    color: #fff !important;
+
+    &:hover {
+      background-color: color.adjust(map.get($theme, primary-color), $lightness: -5%) !important;
+    }
+  }
+
+  .link-primary {
+    color: map.get($theme, primary-color);
+
+    &:hover {
+      color: color.adjust(map.get($theme, primary-color), $lightness: -5%);
+    }
+  }
+
+  .pagination .page-item {
+    background-color: map.get($theme, body-bg) !important;
+    --bs-pagination-color: map.get($theme, text-color) !important;
+    --bs-pagination-bg: map.get($theme, body-bg) !important;
+    --bs-pagination-border-width: 0px;
+    --bs-pagination-active-bg: map.get($theme, primary-color) !important;
+
+    &:hover {
+      color: map.get($theme, link-color) !important;
+    }
+  }
+
+  .page-link:hover {
+    color: map.get($theme, primary-color) !important;
+    background-color: map.get($theme, tertiary-color) !important;
+  }
+
+  .active > .page-link {
+    background-color: map.get($theme, primary-color) !important;
+    color: map.get($theme, text-color) !important;
+  }
+
+  .disabled > .page-link {
+    background-color: map.get($theme, tertiary-color) !important;
+    color: map.get($theme, text-color) !important;
+  }
+
+  .btn-secondary {
+    background-color: map.get($theme, secondary-color);
+    color: map.get($theme, text-color);
+    border-color: map.get($theme, secondary-border-color);
+
+    &:hover {
+      background-color: color.adjust(map.get($theme, secondary-color), $lightness: 5%);
+    }
+  }
+
+  input,
+  select,
+  textarea {
+    background-color: map.get($theme, lab-input-bg);
+    color: map.get($theme, text-color);
+    border-color: map.get($theme, secondary-border-color);
+  }
+
+  input::placeholder {
+    color: map.get($theme, tertiary-color);
+  }
+
+  form label,
+  .form-floating label {
+    color: map.get($theme, tertiary-color);
+    border: 0;
+
+    &::after {
+      background-color: map.get($theme, lab-label-bg);
+    }
+  }
+
+  form label,
+  .form-floating :focus ~ label,
+  .react-datepicker__input-container :focus ~ label {
+    color: map.get($theme, tertiary-color);
+    border: 0;
+
+    &::after {
+      background-color: map.get($theme, lab-label-bg);
+    }
+  }
+
+  .search-box .form-control {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .form-floating .form-control {
+    padding-top: 1.625rem;
+    padding-bottom: 0.625rem;
+  }
+
+  .form-floating label.active {
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+  }
+
+  .form-label {
+    padding-left: 1rem;
+    line-height: 1.2;
+    text-transform: uppercase;
+    margin-bottom: 0;
+    font-size: 0.64rem;
+    font-weight: 700;
+    color: map.get($theme, tertiary-color);
+  }
+
+  .form-control,
+  .form-select {
+    background-color: map.get($theme, lab-input-bg);
+    color: map.get($theme, text-color);
+  }
+
+  .form-floating > .form-control:not(:placeholder-shown) ~ label::after,
+  .form-floating > .form-select:not(:placeholder-shown) ~ label::after {
+    background-color: map.get($theme, lab-input-bg);
+    color: map.get($theme, tertiary-color);
+  }
+
+  .form-floating > .form-control:not(:placeholder-shown) ~ label,
+  .form-floating > .form-select:not(:placeholder-shown) ~ label {
+    color: color.adjust(map.get($theme, tertiary-color), $lightness: -5%) !important;
+  }
+
+  .form-check-input:checked {
+    background-color: map.get($theme, primary-color);
+    border-color: map.get($theme, primary-color);
+  }
+
+  .btn-lab {
+    border-color: map.get($theme, primary-color);
+    background-color: map.get($theme, primary-color);
+    color: #fff !important;
+  }
+
+  .btn-lab:hover {
+    background-color: transparent;
+    color: map.get($theme, primary-color) !important;
+  }
+
+  .text-body-tertiary {
+    color: map.get($theme, tertiary-color) !important;
+  }
+
+  .table {
+    --bs-table-bg: map.get($theme, table-bg);
+    border-color: map.get($theme, content-border-color);
+    color: map.get($theme, text-color) !important;
+    --bs-table-color: map.get($theme, text-color);
+    --bs-table-striped-color: map.get($theme, text-color);
+
+    &:hover {
+      color: color.adjust(map.get($theme, text-color), $lightness: 5%) !important;
+    }
+  }
+
+  .table.table-striped {
+    --bs-table-striped-bg: map.get($theme, table-striped-bg);
+  }
+
+  table > :not(caption) > * > * {
+    color: map.get($theme, text-color);
+
+    &:hover {
+      color: color.adjust(map.get($theme, text-color), $lightness: 5%) !important;
+    }
+  }
+
+  .table .btn-link {
+    color: map.get($theme, text-color);
+
+    &:hover {
+      color: map.get($theme, link-color);
+    }
+
+    &:active {
+      color: map.get($theme, primary-color);
+    }
+  }
+
+  .card,
+  .offcanvas,
+  .modal-content,
+  .accordion .accordion-item,
+  .accordion .accordion-button {
+    background-color: map.get($theme, card-bg);
+    border-color: map.get($theme, secondary-border-color);
+    color: map.get($theme, text-color);
+  }
+
+  hr {
+    color: map.get($theme, secondary-border-color);
+    opacity: 1;
+  }
+
+  .border-divider {
+    border-color: map.get($theme, secondary-border-color) !important;
+    border-top: 1px solid;
+  }
+
+  .divider-content-center {
+    background-color: map.get($theme, body-bg);
+    color: map.get($theme, body-color);
+  }
+
+  .content:before {
+    background-color: map.get($theme, content-bg);
+    color: map.get($theme, text-color);
+  }
+
+  a.nav-link.btn {
+    color: map.get($theme, body-color);
+
+    &:hover {
+      background-color: color.adjust(map.get($theme, card-bg), $lightness: 5%) !important;
+    }
+  }
+
+  .nav-link {
+    color: map.get($theme, body-color);
+
+    &:hover {
+      color: color.adjust(map.get($theme, link-color), $lightness: 15%) !important;
+    }
+
+    &.active,
+    &:active {
+      color: map.get($theme, link-color) !important;
+
+      &:hover {
+        color: color.adjust(map.get($theme, link-color), $lightness: 15%) !important;
+      }
+    }
+  }
+
+  .nav-link.active {
+    color: map.get($theme, link-color);
+  }
+
+  .breadcrumb-item {
+    color: map.get($theme, quaternary-text-color) !important;
+
+    &:hover {
+      color: color.adjust(map.get($theme, link-color), $lightness: 15%) !important;
+    }
+
+    &:active {
+      color: map.get($theme, secondary-color) !important;
+    }
+  }
+
+  .border-1 {
+    border-color: map.get($theme, content-border-color);
+  }
+
+  .navbar-nav .nav-link,
+  .navbar-nav .btn,
+  .navbar-top .btn {
+    color: map.get($theme, nav-link-color);
+
+    &:hover {
+      background-color: map.get($theme, body-highlight-bg);
+      border-color: map.get($theme, body-color);
+    }
+  }
+
+  .navbar-nav .btn-outline {
+    color: map.get($theme, text-color);
+    border-color: map.get($theme, content-border-color);
+  }
+
+  .link-primary {
+    color: map.get($theme, link-color) !important;
+
+    &:hover {
+      color: color.adjust(map.get($theme, link-color), $lightness: 15%) !important;
+    }
+  }
+
+  .navbar-vertical.navbar,
+  .navbar-top {
+    background-color: map.get($theme, navbar-bg);
+    border-color: map.get($theme, content-border-color);
+  }
+
+  .text-body-secondary {
+    color: map.get($theme, text-body-secondary) !important;
+  }
+
+  .text-body-quaternary {
+    color: map.get($theme, quaternary-text-color) !important;
+  }
+
+  .text-body-primary {
+    color: map.get($theme, primary-color) !important;
+  }
+
+  .bg-body-highlight {
+    background-color: map.get($theme, body-highlight-bg);
+  }
+}
+
+@mixin bg-purple {
+  background-color: brand.$bg-purple;
+  opacity: 1 !important;
+}
+
+@mixin bg-purple-10 {
+  background-color: rgba(brand.$bg-purple, 0.1) !important;
+}
+
+@mixin text-purple {
+  color: brand.$text-purple;
+  opacity: 1 !important;
+}

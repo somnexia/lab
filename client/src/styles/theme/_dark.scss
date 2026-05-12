@@ -1,0 +1,18 @@
+@use "sass:map";
+@use "palette" as paints;
+
+// ---------------------------------------------------------------------------
+// Дизайн-инструкция (тёмная тема)
+// ---------------------------------------------------------------------------
+
+$root: (
+  text: map.get(paints.$palette, frost-100),
+  background: map.get(paints.$palette, void-900),
+  primary: map.get(paints.$palette, violet-550),
+  secondary: map.get(paints.$palette, deep-950),
+  accent: map.get(paints.$palette, blue-800),
+  success: map.get(paints.$palette, green-300),
+  warning: map.get(paints.$palette, amber-300),
+  danger: map.get(paints.$palette, red-300),
+  info: map.get(paints.$palette, cyan-300),
+);

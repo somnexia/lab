@@ -1,0 +1,25 @@
+@use "rfs/rfs/scss" as rfs;
+
+h2 {
+  @include rfs.font-size(3rem);
+}
+
+h3 {
+  @include rfs.font-size(2rem);
+}
+
+.fs-10 {
+  font-size: 0.64rem;
+}
+
+.fs-9 {
+  font-size: 0.72rem;
+}
+
+.fs-8 {
+  font-size: 0.8rem;
+}
+
+.fs-7 {
+  font-size: 0.88rem;
+}

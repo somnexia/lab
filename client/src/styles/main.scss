@@ -1,0 +1,25 @@
+// ---------------------------------------------------------------------------
+// Точка входа стилей: порядок — абстракции → тема → база → компоненты → layout
+// ---------------------------------------------------------------------------
+@use "abstracts/variables" as vars;
+@use "theme/theme" as lab-theme;
+@use "base/typography";
+@use "components/forms";
+@use "components/utilities";
+@use "layout/root";
+
+// До гидрации ThemeContext атрибут data-theme может отсутствовать — считаем светлую тему по умолчанию
+html:not([data-theme]),
+html[data-theme="light"] {
+  @include lab-theme.apply-theme(lab-theme.$light-theme);
+}
+
+html[data-theme="dark"] {
+  @include lab-theme.apply-theme(lab-theme.$dark-theme);
+}
+
+.inventory-offcanvas {
+  @media (min-width: 768px) {
+    bottom: vars.$lab-footer-height;
+  }
+}

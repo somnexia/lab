@@ -1,0 +1,11 @@
+@use "../abstracts/variables" as v;
+
+:root {
+  --lab-navbar-top-height: #{v.$lab-navbar-top-height};
+  --lab-footer-height: #{v.$lab-footer-height};
+  --lab-navbar-vertical-width: #{v.$lab-navbar-vertical-width};
+  --sidebar-width: #{v.$sidebar-width};
+  --lab-breadcrumb-divider: #{v.$lab-breadcrumb-divider};
+  --lab-breadcrumb-height: #{v.$lab-breadcrumb-height};
+  --lab-table-bg-transparent: transparent;
+}

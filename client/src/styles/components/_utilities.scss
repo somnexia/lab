@@ -1,0 +1,13 @@
+@use "../theme/theme" as theme;
+
+.bg-purple {
+  @include theme.bg-purple;
+}
+
+.bg-purple-10 {
+  @include theme.bg-purple-10;
+}
+
+.text-purple {
+  @include theme.text-purple;
+}

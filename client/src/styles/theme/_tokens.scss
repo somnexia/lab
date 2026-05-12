@@ -1,0 +1,40 @@
+@use "sass:map";
+
+// ---------------------------------------------------------------------------
+// Ручки управления: публичные CSS-переменные из собранной темы (runtime API).
+// Имена здесь — контракт для компонентов, инлайнов и legacy-стилей.
+// ---------------------------------------------------------------------------
+
+@mixin emit-theme-vars($theme) {
+  --text-color: #{map.get($theme, text-color)};
+  --body-color: #{map.get($theme, body-color)};
+  --nav-link-color: #{map.get($theme, nav-link-color)};
+  --text-body-secondary: #{map.get($theme, text-body-secondary)};
+  --quaternary-text-color: #{map.get($theme, quaternary-text-color)};
+  --primary-color: #{map.get($theme, primary-color)};
+  --secondary-color: #{map.get($theme, secondary-color)};
+  --tertiary-color: #{map.get($theme, tertiary-color)};
+  --link-color: #{map.get($theme, link-color)};
+  --accent-color: #{map.get($theme, link-color)};
+  --secondary-border-color: #{map.get($theme, secondary-border-color)};
+  --content-border-color: #{map.get($theme, content-border-color)};
+  --content-bg: #{map.get($theme, content-bg)};
+  --card-bg: #{map.get($theme, card-bg)};
+  --navbar-bg: #{map.get($theme, navbar-bg)};
+  --table-bg: #{map.get($theme, table-bg)};
+  --table-striped-bg: #{map.get($theme, table-striped-bg)};
+  --lab-input-bg: #{map.get($theme, lab-input-bg)};
+  --lab-label-bg: #{map.get($theme, lab-label-bg)};
+  --body-highlight-bg: #{map.get($theme, body-highlight-bg)};
+  --lab-body-bg: #{map.get($theme, body-bg)};
+  --lab-emphasis-bg: #{map.get($theme, emphasis-bg)};
+  --lab-primary-bg: #{map.get($theme, primary-soft-bg)};
+  --lab-body-highlight-bg: #{map.get($theme, body-highlight-bg)};
+  --bs-link-color-rgb: #{map.get($theme, link-color)};
+  --bs-btn-bg: #{map.get($theme, primary-color)};
+  --bs-btn-border-color: #{map.get($theme, primary-color)};
+  --semantic-success: #{map.get($theme, success)};
+  --semantic-warning: #{map.get($theme, warning)};
+  --semantic-danger: #{map.get($theme, danger)};
+  --semantic-info: #{map.get($theme, info)};
+}

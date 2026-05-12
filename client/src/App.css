@@ -61,12 +61,11 @@
 }
 
 .inventory-extra-info {
-    background-color: #21283d;
+    background-color: var(--lab-emphasis-bg);
 }
 
 .content:before {
-    /* background-color:#727df52c; */
-    background-color: #0f111a;
+    background-color: var(--content-bg);
     top: calc(var(--lab-navbar-top-height) + 12rem);
     bottom: var(--lab-footer-height);
     content: "";
@@ -82,7 +81,7 @@
     width: 35rem;
     top: var(--lab-navbar-top-height);
     background-color: var(--lab-body-bg);
-    color: white;
+    color: var(--text-color);
 
 }
 
@@ -91,7 +90,7 @@
     width: 25rem;
     top: var(--lab-navbar-top-height);
     background-color: var(--lab-body-bg);
-    color: white;
+    color: var(--text-color);
     max-height: 480px;
     height: max-content;
 
@@ -112,33 +111,10 @@ a {
     color: var(--bs-link-color-rgb);
 }
 
-:root {
-    --lab-navbar-top-height: 5rem;
-    --lab-footer-height: 4rem;
-    --lab-navbar-vertical-width: 16rem;
-    --sidebar-width: 250px;
-    ---main-content-bg: #fff;
-    --lab-breadcrumb-divider: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='10' width='6' fill='%236e7891' viewBox='0 0 256 480'%3E%3Cpath d='M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9 0l-22.6-22.6c-9.4-9.4-9.4-24.6 0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6 0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9 0l136 136c9.5 9.4 9.5 24.6.1 34z'/%3E%3C/svg%3E");
-    --bs-link-color-rgb: #727cf5;
-    --bs-btn-bg: #727cf5;
-    --bs-btn-border-color: #727cf5;
-    color: #e7e7e7;
-    --lab-emphasis-bg: #141824;
-    --lab-primary-bg: #727df575;
-    --lab-body-bg: #0f111a;
-    --lab-breadcrumb-height: 2rem;
-    --lab-table-bg-transparent: transparent;
-    --lab-body-highlight-bg: #424649;
-
-
-
-
-
-
-}
+/* Глобальные размеры: styles/layout/_root.scss. Цвета темы — на html[data-theme] в SCSS. */
 
 .text-lab{
-    color: #727cf5;
+    color: var(--link-color);
     opacity: 1;
 }
 
@@ -169,16 +145,16 @@ a {
 
 
 .btn-lab:hover {
-    border-color: #727cf5;
+    border-color: var(--primary-color);
     background-color: transparent;
 }
 
 .lab-text-primary {
-    color: #727cf5;
+    color: var(--link-color);
 }
 
 .lab-link {
-    color: #727cf5;
+    color: var(--link-color);
 }
 
 
@@ -200,7 +176,7 @@ a {
 }
 
 .inventory-link:hover {
-    background-color: #727cf5;
+    background-color: var(--primary-color);
 }
 
 .inventory-nav-item {
@@ -213,8 +189,8 @@ a {
 
 
 .table-dark {
-    --bs-table-bg: #141824;
-    --bs-table-striped-bg: #21283d;
+    --bs-table-bg: var(--lab-emphasis-bg);
+    --bs-table-striped-bg: var(--table-striped-bg);
 
 }
 
@@ -369,7 +345,7 @@ a {
 
 
 .account-nav .nav-link.show {
-    color: #727cf5;
+    color: var(--link-color);
 }
 
 .account-nav .nav-link {
@@ -587,7 +563,7 @@ header .nav {
 .logo path:nth-child(2) {
     fill: #ffffff;
     /* Заливка второго path */
-    stroke: #727cf5;
+    stroke: var(--link-color);
     /* Обводка второго path */
     stroke-width: 1px;
     /* Толщина обводки */

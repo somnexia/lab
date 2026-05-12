@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useContext, useMemo } from 'react';
+import { ThemeContext } from '../context/ThemeContext';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -21,6 +22,16 @@ ChartJS.register(
 );
 
 const WarehouseChart = ({ warehouses }) => {
+    const { theme } = useContext(ThemeContext);
+
+    const barColor = useMemo(() => {
+        if (typeof window === 'undefined') return '#2f27ce';
+        const v = getComputedStyle(document.documentElement)
+            .getPropertyValue('--primary-color')
+            .trim();
+        return v || '#2f27ce';
+    }, [theme]);
+
     if (!warehouses || warehouses.length === 0) {
         return <p>Нет данных для отображения графика</p>;
     }
@@ -41,7 +52,7 @@ const WarehouseChart = ({ warehouses }) => {
             {
                 label: 'Текущая загрузка',
                 data: warehouses.map((w) => w.current_utilization),
-                backgroundColor: '#727cf5',
+                backgroundColor: barColor,
             },
         ],
     };

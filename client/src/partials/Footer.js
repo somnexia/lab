@@ -10,7 +10,7 @@ class Footer extends React.Component {
                     </div>
 
                     <div className="text-center col-12 col-sm-auto">
-                        <p className="mb-0" style={{color:"#727cf5"}}>v1.5.0</p>
+                        <p className="mb-0 text-lab">v1.5.0</p>
                     </div>
 
                 </div>

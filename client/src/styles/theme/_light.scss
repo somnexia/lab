@@ -1,0 +1,19 @@
+@use "sass:map";
+@use "palette" as paints;
+
+// ---------------------------------------------------------------------------
+// Дизайн-инструкция (светлая тема): какие роли UI какими красками закрашены.
+// Обязательные ключи для сборщика theme: text, background, primary, secondary, accent
+// ---------------------------------------------------------------------------
+
+$root: (
+  text: map.get(paints.$palette, ink-900),
+  background: map.get(paints.$palette, paper-0),
+  primary: map.get(paints.$palette, violet-600),
+  secondary: map.get(paints.$palette, lilac-100),
+  accent: map.get(paints.$palette, violet-500),
+  success: map.get(paints.$palette, green-700),
+  warning: map.get(paints.$palette, amber-700),
+  danger: map.get(paints.$palette, red-700),
+  info: map.get(paints.$palette, cyan-800),
+);
