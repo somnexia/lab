@@ -1,0 +1,505 @@
+diff --git a/client/src/components/StorageTree.js b/client/src/components/StorageTree.js
+index d132f98..4886990 100644
+--- a/client/src/components/StorageTree.js
++++ b/client/src/components/StorageTree.js
+@@ -126,6 +126,7 @@ class StorageTree extends Component {
+     const totalInventory = tree.reduce((total, unit) => total + this.getInventoryCount(unit), 0);
+     const typeOptions = this.getTypeOptions();
+     const stateMessage = this.renderState();
++    const depthLegend = ['Parent', 'Level 2', 'Level 3', 'Level 4', 'Level 5', 'Level 6+'];
+ 
+     return (
+       <section className="storage-tree">
+@@ -182,6 +183,15 @@ class StorageTree extends Component {
+           </select>
+         </div>
+ 
++        <div className="storage-tree__legend" aria-label="Storage tree level colors">
++          {depthLegend.map((label, index) => (
++            <span className={`storage-tree__legend-item storage-tree__legend-item--level-${index}`} key={label}>
++              <i />
++              {label}
++            </span>
++          ))}
++        </div>
++
+         {stateMessage || (
+           <div className="storage-tree__body">
+             {!filteredTree.length ? (
+diff --git a/client/src/components/StorageUnit.js b/client/src/components/StorageUnit.js
+index 8ccac15..dbf3e40 100644
+--- a/client/src/components/StorageUnit.js
++++ b/client/src/components/StorageUnit.js
+@@ -157,13 +157,24 @@ class StorageUnit extends Component {
+     const nestedInventoryCount = this.getNestedInventoryCount(storageUnit);
+     const utilizationPercent = this.getUtilizationPercent();
+     const hasChildren = directChildrenCount > 0;
++    const visualLevel = Math.min(depth, 5);
+ 
+     return (
+       <article
+-        className={`storage-unit-card${depth > 0 ? ' storage-unit-card--nested' : ''}`}
++        className={[
++          'storage-unit-card',
++          `storage-unit-card--level-${visualLevel}`,
++          depth > 0 ? 'storage-unit-card--nested' : 'storage-unit-card--root',
++          isExpanded ? 'storage-unit-card--expanded' : '',
++        ].filter(Boolean).join(' ')}
+         style={{ '--storage-unit-depth': depth }}
+       >
+-        <button className="storage-unit-card__summary" onClick={this.toggleExpanded} type="button">
++        <button
++          aria-expanded={isExpanded}
++          className="storage-unit-card__summary"
++          onClick={this.toggleExpanded}
++          type="button"
++        >
+           <span className="storage-unit-card__expand">
+             {hasChildren ? (
+               isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />
+@@ -179,6 +190,9 @@ class StorageUnit extends Component {
+           <span className="storage-unit-card__main">
+             <span className="storage-unit-card__title-row">
+               <span className="storage-unit-card__title">{storageUnit.unit_name || 'Unnamed storage unit'}</span>
++              <span className="storage-unit-card__level">
++                {depth === 0 ? 'Parent' : `Level ${depth + 1}`}
++              </span>
+               <span className="storage-unit-card__type">{storageUnit.unit_type || 'unknown'}</span>
+               {storageUnit.is_locked && (
+                 <span className="storage-unit-card__lock">
+@@ -235,6 +249,10 @@ class StorageUnit extends Component {
+ 
+             {hasChildren && (
+               <div className="storage-unit-card__children">
++                <div className="storage-unit-card__children-header">
++                  <span>Child units of {storageUnit.unit_name || 'this unit'}</span>
++                  <strong>{directChildrenCount}</strong>
++                </div>
+                 {children.map((child) => (
+                   <StorageUnit
+                     defaultExpanded={false}
+diff --git a/client/src/pages/Inventory.js b/client/src/pages/Inventory.js
+index 859709e..2a20c5f 100644
+--- a/client/src/pages/Inventory.js
++++ b/client/src/pages/Inventory.js
+@@ -3,6 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
+ import {
+     Boxes,
+     Building2,
++    GitBranch,
+     LayoutDashboard,
+     ListTree,
+     MapPin,
+@@ -74,25 +75,39 @@ class Inventory extends Component {
+ 
+                 <div className="row g-4 inventory-page__layout">
+                     <aside className="col-12 col-xl-4 col-xxl-3">
+-                        <nav className="inventory-page__nav" aria-label="Inventory sections">
+-                            {navItems.map(({ to, Icon, title, description, variant }) => (
+-                                <NavLink
+-                                    className={({ isActive }) =>
+-                                        `inventory-page__nav-button inventory-page__nav-button--${variant}${isActive ? " active" : ""}`
+-                                    }
+-                                    key={to}
+-                                    to={to}
+-                                >
+-                                    <span className="inventory-page__nav-icon">
+-                                        <Icon size={24} />
+-                                    </span>
+-                                    <span className="inventory-page__nav-copy">
+-                                        <span className="inventory-page__nav-title">{title}</span>
+-                                        <span className="inventory-page__nav-description">{description}</span>
+-                                    </span>
+-                                </NavLink>
+-                            ))}
+-                        </nav>
++                        <div className="inventory-page__sidebar">
++                            <nav className="inventory-page__nav" aria-label="Inventory sections">
++                                {navItems.map(({ to, Icon, title, description, variant }) => (
++                                    <NavLink
++                                        className={({ isActive }) =>
++                                            `inventory-page__nav-button inventory-page__nav-button--${variant}${isActive ? " active" : ""}`
++                                        }
++                                        key={to}
++                                        to={to}
++                                    >
++                                        <span className="inventory-page__nav-icon">
++                                            <Icon size={24} />
++                                        </span>
++                                        <span className="inventory-page__nav-copy">
++                                            <span className="inventory-page__nav-title">{title}</span>
++                                            <span className="inventory-page__nav-description">{description}</span>
++                                        </span>
++                                    </NavLink>
++                                ))}
++                            </nav>
++
++                            <div className="inventory-page__sidebar-card">
++                                <span className="inventory-page__sidebar-icon">
++                                    <GitBranch size={20} />
++                                </span>
++                                <div>
++                                    <strong>Storage Tree tip</strong>
++                                    <p>
++                                        Use colored levels to read parent and child units faster while scrolling long hierarchies.
++                                    </p>
++                                </div>
++                            </div>
++                        </div>
+                     </aside>
+ 
+                     <div className="col-12 col-xl-8 col-xxl-9">
+diff --git a/client/src/styles/components/_inventory.scss b/client/src/styles/components/_inventory.scss
+index 6bcb8e5..b2b7e19 100644
+--- a/client/src/styles/components/_inventory.scss
++++ b/client/src/styles/components/_inventory.scss
+@@ -49,18 +49,25 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+   align-items: flex-start;
+ }
+ 
+-.inventory-page__nav {
++.inventory-page__sidebar {
+   background-color: var(--card-bg);
+   border: 1px solid var(--secondary-border-color);
+   border-radius: $inventory-card-radius;
+   box-shadow: 0 0.75rem 1.75rem rgba(4, 3, 22, 0.06);
+   display: grid;
+-  gap: 0.85rem;
++  gap: 1rem;
++  grid-template-rows: auto minmax(0, 1fr);
++  min-height: calc(100vh - var(--lab-navbar-top-height) - 2rem);
+   padding: 1rem;
+   position: sticky;
+   top: calc(var(--lab-navbar-top-height) + 1rem);
+ }
+ 
++.inventory-page__nav {
++  display: grid;
++  gap: 0.85rem;
++}
++
+ .inventory-page__nav-button {
+   align-items: center;
+   background-color: var(--body-highlight-bg);
+@@ -142,6 +149,45 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+   line-height: 1.35;
+ }
+ 
++.inventory-page__sidebar-card {
++  align-items: flex-start;
++  align-self: end;
++  background:
++    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--link-color) 18%, transparent), transparent 42%),
++    var(--body-highlight-bg);
++  border: 1px solid var(--secondary-border-color);
++  border-radius: 1rem;
++  color: var(--text-color);
++  display: flex;
++  gap: 0.8rem;
++  padding: 1rem;
++}
++
++.inventory-page__sidebar-icon {
++  align-items: center;
++  background-color: color-mix(in srgb, var(--link-color) 15%, transparent);
++  border-radius: 0.85rem;
++  color: var(--link-color);
++  display: inline-flex;
++  flex: 0 0 2.5rem;
++  height: 2.5rem;
++  justify-content: center;
++  width: 2.5rem;
++}
++
++.inventory-page__sidebar-card strong {
++  display: block;
++  font-size: 0.9rem;
++  margin-bottom: 0.35rem;
++}
++
++.inventory-page__sidebar-card p {
++  color: var(--text-body-secondary);
++  font-size: 0.78rem;
++  line-height: 1.45;
++  margin-bottom: 0;
++}
++
+ .inventory-page__content {
+   background-color: var(--card-bg);
+   border: 1px solid var(--secondary-border-color);
+@@ -513,6 +559,60 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+   padding: 0.65rem 0.9rem;
+ }
+ 
++.storage-tree__legend {
++  align-items: center;
++  border-bottom: 1px solid var(--secondary-border-color);
++  display: flex;
++  flex-wrap: wrap;
++  gap: 0.55rem;
++  padding: 0.8rem clamp(1.25rem, 3vw, 1.75rem);
++}
++
++.storage-tree__legend-item {
++  align-items: center;
++  background-color: var(--body-highlight-bg);
++  border: 1px solid var(--secondary-border-color);
++  border-radius: 999px;
++  color: var(--text-body-secondary);
++  display: inline-flex;
++  font-size: 0.76rem;
++  font-weight: 800;
++  gap: 0.4rem;
++  padding: 0.35rem 0.6rem;
++}
++
++.storage-tree__legend-item i {
++  background-color: var(--storage-tree-legend-color, var(--link-color));
++  border-radius: 999px;
++  display: inline-flex;
++  height: 0.6rem;
++  width: 0.6rem;
++}
++
++.storage-tree__legend-item--level-0 {
++  --storage-tree-legend-color: var(--link-color);
++}
++
++.storage-tree__legend-item--level-1 {
++  --storage-tree-legend-color: color-mix(in srgb, var(--link-color) 88%, var(--semantic-info));
++}
++
++.storage-tree__legend-item--level-2 {
++  --storage-tree-legend-color: var(--semantic-info);
++}
++
++.storage-tree__legend-item--level-3 {
++  --storage-tree-legend-color: var(--semantic-success);
++}
++
++.storage-tree__legend-item--level-4 {
++  --storage-tree-legend-color: var(--semantic-warning);
++}
++
++.storage-tree__legend-item--level-5 {
++  --storage-tree-legend-color: var(--semantic-danger);
++}
++
+ .storage-tree__body {
+   display: grid;
+   gap: 0.85rem;
+@@ -537,8 +637,14 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+ }
+ 
+ .storage-unit-card {
+-  background-color: var(--card-bg);
+-  border: 1px solid var(--secondary-border-color);
++  --storage-unit-level-bg: var(--card-bg);
++  --storage-unit-level-border: var(--secondary-border-color);
++  --storage-unit-level-accent: var(--link-color);
++  --storage-unit-level-soft: color-mix(in srgb, var(--storage-unit-level-accent) 12%, transparent);
++  background:
++    linear-gradient(90deg, var(--storage-unit-level-soft), transparent 34%),
++    var(--storage-unit-level-bg);
++  border: 1px solid var(--storage-unit-level-border);
+   border-radius: 1rem;
+   box-shadow: 0 0.5rem 1.25rem rgba(4, 3, 22, 0.05);
+   margin-left: calc(var(--storage-unit-depth, 0) * 1.25rem);
+@@ -546,15 +652,59 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+   position: relative;
+ }
+ 
++.storage-unit-card--expanded {
++  box-shadow: 0 0.9rem 2rem rgba(4, 3, 22, 0.09);
++}
++
++.storage-unit-card--root {
++  border-left: 5px solid var(--storage-unit-level-accent);
++}
++
++.storage-unit-card--level-0 {
++  --storage-unit-level-bg: var(--card-bg);
++  --storage-unit-level-border: var(--secondary-border-color);
++  --storage-unit-level-accent: var(--link-color);
++}
++
++.storage-unit-card--level-1 {
++  --storage-unit-level-bg: color-mix(in srgb, var(--link-color) 7%, var(--card-bg));
++  --storage-unit-level-border: color-mix(in srgb, var(--link-color) 26%, var(--secondary-border-color));
++  --storage-unit-level-accent: color-mix(in srgb, var(--link-color) 88%, var(--semantic-info));
++}
++
++.storage-unit-card--level-2 {
++  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-info) 12%, var(--card-bg));
++  --storage-unit-level-border: color-mix(in srgb, var(--semantic-info) 34%, var(--secondary-border-color));
++  --storage-unit-level-accent: var(--semantic-info);
++}
++
++.storage-unit-card--level-3 {
++  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-success) 16%, var(--card-bg));
++  --storage-unit-level-border: color-mix(in srgb, var(--semantic-success) 40%, var(--secondary-border-color));
++  --storage-unit-level-accent: var(--semantic-success);
++}
++
++.storage-unit-card--level-4 {
++  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-warning) 18%, var(--card-bg));
++  --storage-unit-level-border: color-mix(in srgb, var(--semantic-warning) 44%, var(--secondary-border-color));
++  --storage-unit-level-accent: var(--semantic-warning);
++}
++
++.storage-unit-card--level-5 {
++  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-danger) 15%, var(--card-bg));
++  --storage-unit-level-border: color-mix(in srgb, var(--semantic-danger) 40%, var(--secondary-border-color));
++  --storage-unit-level-accent: var(--semantic-danger);
++}
++
+ .storage-unit-card--nested::before {
+-  background-color: color-mix(in srgb, var(--link-color) 45%, transparent);
++  background: linear-gradient(180deg, var(--storage-unit-level-accent), transparent);
+   bottom: 1rem;
+   content: "";
+   display: block;
+-  left: -0.75rem;
++  left: -0.85rem;
+   position: absolute;
+   top: 1rem;
+-  width: 2px;
++  width: 3px;
+ }
+ 
+ .storage-unit-card__summary {
+@@ -571,7 +721,7 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+ 
+   &:hover,
+   &:focus-visible {
+-    background-color: var(--body-highlight-bg);
++    background-color: color-mix(in srgb, var(--storage-unit-level-accent) 11%, var(--body-highlight-bg));
+   }
+ }
+ 
+@@ -586,13 +736,13 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+ }
+ 
+ .storage-unit-card__expand {
+-  background-color: var(--body-highlight-bg);
+-  color: var(--link-color);
++  background-color: color-mix(in srgb, var(--storage-unit-level-accent) 14%, var(--body-highlight-bg));
++  color: var(--storage-unit-level-accent);
+ }
+ 
+ .storage-unit-card__icon {
+-  background-color: color-mix(in srgb, var(--link-color) 12%, transparent);
+-  color: var(--link-color);
++  background-color: color-mix(in srgb, var(--storage-unit-level-accent) 18%, transparent);
++  color: var(--storage-unit-level-accent);
+ }
+ 
+ .storage-unit-card__main {
+@@ -613,6 +763,7 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+   font-weight: 800;
+ }
+ 
++.storage-unit-card__level,
+ .storage-unit-card__type,
+ .storage-unit-card__lock {
+   align-items: center;
+@@ -624,9 +775,14 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+   padding: 0.3rem 0.55rem;
+ }
+ 
++.storage-unit-card__level {
++  background-color: var(--storage-unit-level-accent);
++  color: #fff;
++}
++
+ .storage-unit-card__type {
+-  background-color: color-mix(in srgb, var(--link-color) 11%, transparent);
+-  color: var(--link-color);
++  background-color: color-mix(in srgb, var(--storage-unit-level-accent) 13%, transparent);
++  color: var(--storage-unit-level-accent);
+   text-transform: capitalize;
+ }
+ 
+@@ -646,8 +802,8 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+ }
+ 
+ .storage-unit-card__stats span {
+-  background-color: var(--body-highlight-bg);
+-  border: 1px solid var(--secondary-border-color);
++  background-color: color-mix(in srgb, var(--storage-unit-level-accent) 9%, var(--body-highlight-bg));
++  border: 1px solid color-mix(in srgb, var(--storage-unit-level-accent) 20%, var(--secondary-border-color));
+   border-radius: 0.85rem;
+   color: var(--text-body-secondary);
+   display: grid;
+@@ -669,7 +825,7 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+ }
+ 
+ .storage-unit-card__utilization span {
+-  background: linear-gradient(90deg, var(--semantic-success), var(--link-color));
++  background: linear-gradient(90deg, var(--semantic-success), var(--storage-unit-level-accent));
+   display: block;
+   height: 100%;
+ }
+@@ -684,7 +840,7 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+ 
+ .storage-unit-card__badges span {
+   align-items: center;
+-  background-color: var(--body-highlight-bg);
++  background-color: color-mix(in srgb, var(--storage-unit-level-accent) 8%, var(--body-highlight-bg));
+   border-radius: 999px;
+   color: var(--text-body-secondary);
+   display: inline-flex;
+@@ -784,16 +940,51 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
+ }
+ 
+ .storage-unit-card__children {
+-  border-top: 1px solid var(--secondary-border-color);
++  background:
++    linear-gradient(90deg, color-mix(in srgb, var(--storage-unit-level-accent) 10%, transparent), transparent 42%),
++    color-mix(in srgb, var(--storage-unit-level-accent) 5%, var(--card-bg));
++  border-top: 1px solid var(--storage-unit-level-border);
+   display: grid;
+   gap: 0.85rem;
+   padding: 1rem;
+ }
+ 
++.storage-unit-card__children-header {
++  align-items: center;
++  color: var(--text-body-secondary);
++  display: flex;
++  font-size: 0.78rem;
++  font-weight: 800;
++  justify-content: space-between;
++  letter-spacing: 0.05em;
++  text-transform: uppercase;
++}
++
++.storage-unit-card__children-header strong {
++  align-items: center;
++  background-color: var(--storage-unit-level-accent);
++  border-radius: 999px;
++  color: #fff;
++  display: inline-flex;
++  font-size: 0.75rem;
++  justify-content: center;
++  min-width: 1.75rem;
++  padding: 0.25rem 0.5rem;
++}
++
+ @media (max-width: 1199.98px) {
++  .inventory-page__sidebar {
++    grid-template-rows: auto;
++    min-height: auto;
++    position: static;
++  }
++
+   .inventory-page__nav {
+     grid-template-columns: repeat(2, minmax(0, 1fr));
+-    position: static;
++  }
++
++  .inventory-page__sidebar-card {
++    align-self: stretch;
+   }
+ }
+ 

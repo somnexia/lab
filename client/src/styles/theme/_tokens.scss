@@ -35,4 +35,5 @@
   --semantic-warning: #{map.get($theme, warning)};
   --semantic-danger: #{map.get($theme, danger)};
   --semantic-info: #{map.get($theme, info)};
+  --semantic-accent: #{map.get($theme, accent)};
 }
