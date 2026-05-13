@@ -594,7 +594,7 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
 }
 
 .storage-tree__legend-item--level-1 {
-  --storage-tree-legend-color: var(--semantic-accent);
+  --storage-tree-legend-color:  var(--semantic-accent);
 }
 
 .storage-tree__legend-item--level-2 {
@@ -667,26 +667,26 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
 }
 
 .storage-unit-card--level-1 {
-  --storage-unit-level-bg: color-mix(in srgb, var(--link-color) 7%, var(--card-bg));
-  --storage-unit-level-border: color-mix(in srgb, var(--link-color) 26%, var(--secondary-border-color));
-  --storage-unit-level-accent: color-mix(in srgb, var(--link-color) 88%, var(--semantic-info));
+  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-accent) 15%, var(--card-bg));
+  --storage-unit-level-border: color-mix(in srgb, var(--semantic-accent) 40%, var(--secondary-border-color));
+  --storage-unit-level-accent: var(--semantic-accent);
 }
 
 .storage-unit-card--level-2 {
-  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-info) 12%, var(--card-bg));
-  --storage-unit-level-border: color-mix(in srgb, var(--semantic-info) 34%, var(--secondary-border-color));
+  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-info) 15%, var(--card-bg));
+  --storage-unit-level-border: color-mix(in srgb, var(--semantic-info) 40%, var(--secondary-border-color));
   --storage-unit-level-accent: var(--semantic-info);
 }
 
 .storage-unit-card--level-3 {
-  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-success) 16%, var(--card-bg));
+  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-success) 15%, var(--card-bg));
   --storage-unit-level-border: color-mix(in srgb, var(--semantic-success) 40%, var(--secondary-border-color));
   --storage-unit-level-accent: var(--semantic-success);
 }
 
 .storage-unit-card--level-4 {
-  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-warning) 18%, var(--card-bg));
-  --storage-unit-level-border: color-mix(in srgb, var(--semantic-warning) 44%, var(--secondary-border-color));
+  --storage-unit-level-bg: color-mix(in srgb, var(--semantic-warning) 15%, var(--card-bg));
+  --storage-unit-level-border: color-mix(in srgb, var(--semantic-warning) 40%, var(--secondary-border-color));
   --storage-unit-level-accent: var(--semantic-warning);
 }
 

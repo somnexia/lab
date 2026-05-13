@@ -1,0 +1,24 @@
+diff --git a/client/src/styles/theme/_theme.scss b/client/src/styles/theme/_theme.scss
+index 717333c..a914bc0 100644
+--- a/client/src/styles/theme/_theme.scss
++++ b/client/src/styles/theme/_theme.scss
+@@ -107,6 +107,7 @@
+     nav-link-color: $nav-link-color,
+     primary-color: $primary,
+     secondary-color: $secondary,
++    accent-color: $accent,
+     tertiary-color: $tertiary-color,
+     link-color: $primary,
+     text-body-secondary: $text-body-secondary,
+diff --git a/client/src/styles/theme/_tokens.scss b/client/src/styles/theme/_tokens.scss
+index 2127a9a..c8b4691 100644
+--- a/client/src/styles/theme/_tokens.scss
++++ b/client/src/styles/theme/_tokens.scss
+@@ -15,6 +15,7 @@
+   --secondary-color: #{map.get($theme, secondary-color)};
+   --tertiary-color: #{map.get($theme, tertiary-color)};
+   --link-color: #{map.get($theme, link-color)};
++  --semantic-accent: #{map.get($theme, accent-color)};
+   --secondary-border-color: #{map.get($theme, secondary-border-color)};
+   --content-border-color: #{map.get($theme, content-border-color)};
+   --content-bg: #{map.get($theme, content-bg)};
