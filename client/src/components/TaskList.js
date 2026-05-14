@@ -15,7 +15,7 @@ import {
     FaCalendarAlt,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import TaskDetailsModal from './TaskDetailsOffcanvas';
+import TaskDetailsModal from './TaskDetailsModal';
 
 class TaskList extends Component {
     state = {
@@ -389,7 +389,7 @@ class TaskList extends Component {
         <div className='card border-0 shadow-sm mb-5'>
             <div className="table-responsive">
                 <table className="table table-hover align-middle mb-0">
-                    <thead className="table-light">
+                    <thead>
                         <tr>
                             <th className="ps-4">
                                 <button
