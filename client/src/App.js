@@ -2,21 +2,18 @@
 import "./App.scss";
 import './App.css';
 import React from 'react';
-import ChemElementList from './components/ChemElementList';
-import Home from "./pages/Home";
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import Header from './partials/Header';
-import Footer from './partials/Footer';
 import Aside from './partials/Aside';
 import Main from './partials/Main';
 import Settings from "./components/Settings";
 import Account from "./components/Account";
-import Inventory from "./pages/Inventory";
 import CartOffcanvas from "./components/CartOffcanvas";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import SignOut from "./components/SignOut";
 import { ThemeProvider } from "./context/ThemeContext";
+import { PanelProvider, usePanel } from "./context/PanelContext";
 //
 
 
@@ -30,7 +27,9 @@ function App() {
     return (
         <ThemeProvider>
             <Router>
-                <PageWrapper />
+                <PanelProvider>
+                    <PageWrapper />
+                </PanelProvider>
             </Router>
         </ThemeProvider>
     );
@@ -38,6 +37,7 @@ function App() {
 
 const PageWrapper = () => {
     const location = useLocation();
+    const { activePanel, closePanel } = usePanel();
 
     // Список путей, где не отображаются общие компоненты
     const noCommonComponentsPaths = ["/management/signin", "/management/signup", "/management/signout"];
@@ -45,6 +45,14 @@ const PageWrapper = () => {
 
     return (
         <div className="page-wrapper">
+            {activePanel && !isSpecialPage ? (
+                <button
+                    type="button"
+                    className="lab-panel-backdrop"
+                    aria-label="Close panel"
+                    onClick={closePanel}
+                />
+            ) : null}
             {/* Показываем общие компоненты, если это не специальная страница */}
             {!isSpecialPage && (
                 <>

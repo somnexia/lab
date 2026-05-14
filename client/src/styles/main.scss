@@ -10,6 +10,7 @@
 @use "components/tasks";
 @use "components/utilities";
 @use "components/taskList";
+@use "components/participantList";
 @use "layout/root";
 
 // До гидрации ThemeContext атрибут data-theme может отсутствовать — считаем светлую тему по умолчанию
