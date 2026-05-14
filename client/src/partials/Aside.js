@@ -190,7 +190,7 @@ class Aside extends React.Component {
                                             </button>
                                             <div className="collapse" id="projects-collapse">
                                                 <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</a></li>
+                                                    <li><Link to="/projects/overview" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</Link></li>
                                                     <li><Link to="/projects/research-list" className="nav-link btn   d-inline-flex text-decoration-none rounded">Researches</Link></li>
                                                     <li><Link to="/projects/research-create" className="nav-link btn   d-inline-flex text-decoration-none rounded">Create new</Link></li>
                                                     <li><Link to="/projects/task-list" className="nav-link btn   d-inline-flex text-decoration-none rounded">Todo list</Link></li>
@@ -213,7 +213,7 @@ class Aside extends React.Component {
                                             </button>
                                             <div className="collapse" id="inventory-collapse">
                                                 <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><Link to="/inventory" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</Link></li>
+                                                    <li><Link to="/inventory/overview" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</Link></li>
                                                     <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Profile</a></li>
                                                     <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Settings</a></li>
                                                     <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
