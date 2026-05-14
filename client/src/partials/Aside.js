@@ -9,6 +9,7 @@ import { IoGameController } from "react-icons/io5";
 import { FaRegUserCircle } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
 import { usePanel } from "../context/PanelContext";
+import { useAsideLayout } from "../context/AsideLayoutContext";
 
 function subLinkClass({ isActive }) {
     return `lab-aside__sublink${isActive ? " lab-aside__sublink--active" : ""}`;
@@ -46,7 +47,7 @@ function NavGroup({ id, title, icon: Icon, expanded, onToggle, children }) {
 function Aside() {
     const location = useLocation();
     const { openPanel } = usePanel();
-    const [railCollapsed, setRailCollapsed] = useState(false);
+    const { asideCollapsed, toggleAsideCollapsed } = useAsideLayout();
     const [expanded, setExpanded] = useState(() => ({
         inventory: false,
         projects: false,
@@ -74,7 +75,7 @@ function Aside() {
         }));
     }, []);
 
-    const asideClass = useMemo(() => `lab-aside${railCollapsed ? " lab-aside--collapsed" : ""}`, [railCollapsed]);
+    const asideClass = useMemo(() => `lab-aside${asideCollapsed ? " lab-aside--collapsed" : ""}`, [asideCollapsed]);
 
     return (
         <aside className={asideClass}>
@@ -223,13 +224,13 @@ function Aside() {
                         <button
                             type="button"
                             className="lab-aside__rail-toggle navbar-vertical-toggle fw-semibold white-space-nowrap"
-                            onClick={() => setRailCollapsed((c) => !c)}
-                            aria-pressed={railCollapsed}
+                            onClick={toggleAsideCollapsed}
+                            aria-pressed={asideCollapsed}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="mb-1" aria-hidden>
                                 <path d="M21,11H9.41l2.3-2.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0-.21.33,1,1,0,0,0,0,.76,1,1,0,0,0,.21.33l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42L9.41,13H21a1,1,0,0,0,0-2ZM3,3A1,1,0,0,0,2,4V20a1,1,0,0,0,2,0V4A1,1,0,0,0,3,3Z" />
                             </svg>
-                            <span>{railCollapsed ? "Expand" : "Compact sidebar"}</span>
+                            <span>{asideCollapsed ? "Expand" : "Compact sidebar"}</span>
                         </button>
                     </div>
                 </div>

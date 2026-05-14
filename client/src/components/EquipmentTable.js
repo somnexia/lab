@@ -63,7 +63,7 @@ class EquipmentTable extends Component {
         this.props.onAddToCart(equipment); // Передаем оборудование в родительский компонент
     };
 
-    handleOffcanvasOpen = (offcanvasId, equipment) => {
+    handleOffcanvasOpen = (_offcanvasId, equipment) => {
         this.setState({
             isOffcanvasOpen: true,
             selectedEquipment: equipment,

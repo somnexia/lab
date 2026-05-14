@@ -42,7 +42,7 @@ class StorageUnitList extends Component {
         }
     };
 
-    handleOffcanvasOpen = (offcanvasId, storageUnit) => {
+    handleOffcanvasOpen = (_offcanvasId, storageUnit) => {
         this.setState({ selectedStorageUnit: storageUnit });
         this.fetchInventory(storageUnit.id);
     };

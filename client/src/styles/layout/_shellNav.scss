@@ -287,9 +287,11 @@
   }
 }
 
-.lab-aside--collapsed {
+.page-wrapper--aside-collapsed {
   --lab-navbar-vertical-width: 4.25rem;
+}
 
+.lab-aside--collapsed {
   .lab-aside__section-label,
   .lab-aside__chev,
   .lab-aside__nav-text,

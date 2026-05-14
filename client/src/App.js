@@ -14,6 +14,7 @@ import SignUp from "./components/SignUp";
 import SignOut from "./components/SignOut";
 import { ThemeProvider } from "./context/ThemeContext";
 import { PanelProvider, usePanel } from "./context/PanelContext";
+import { AsideLayoutProvider, useAsideLayout } from "./context/AsideLayoutContext";
 //
 
 
@@ -28,7 +29,9 @@ function App() {
         <ThemeProvider>
             <Router>
                 <PanelProvider>
-                    <PageWrapper />
+                    <AsideLayoutProvider>
+                        <PageWrapper />
+                    </AsideLayoutProvider>
                 </PanelProvider>
             </Router>
         </ThemeProvider>
@@ -38,13 +41,16 @@ function App() {
 const PageWrapper = () => {
     const location = useLocation();
     const { activePanel, closePanel } = usePanel();
+    const { asideCollapsed } = useAsideLayout();
 
     // Список путей, где не отображаются общие компоненты
     const noCommonComponentsPaths = ["/management/signin", "/management/signup", "/management/signout"];
     const isSpecialPage = noCommonComponentsPaths.includes(location.pathname);
 
+    const pageWrapperClass = `page-wrapper${asideCollapsed ? " page-wrapper--aside-collapsed" : ""}`;
+
     return (
-        <div className="page-wrapper">
+        <div className={pageWrapperClass}>
             {activePanel && !isSpecialPage ? (
                 <button
                     type="button"
