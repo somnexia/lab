@@ -12,6 +12,7 @@
 @use "components/taskList";
 @use "components/participantList";
 @use "layout/root";
+@use "layout/shellNav";
 
 // До гидрации ThemeContext атрибут data-theme может отсутствовать — считаем светлую тему по умолчанию
 html:not([data-theme]),
