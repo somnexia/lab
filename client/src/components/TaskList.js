@@ -2,25 +2,25 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import {
-    FaSearch,
-    FaPlus,
-    FaTasks,
-    FaSpinner,
+    FaCalendarAlt,
     FaCheckCircle,
     FaExclamationTriangle,
-    FaTable,
-    FaThLarge,
     FaEye,
+    FaPlus,
+    FaSearch,
+    FaSpinner,
+    FaTable,
+    FaTasks,
+    FaThLarge,
     FaUser,
-    FaCalendarAlt,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import TaskDetailsModal from './TaskDetailsOffcanvas';
+import TaskDetailsModal from './TaskDetailsModal';
 
 class TaskList extends Component {
     state = {
-        tasks: [],  // Храним список исследований
-        statusCounts: {},  // Храним количество исследований по статусам
+        tasks: [],
+        statusCounts: {},
         selectedStatus: "All",
         loading: true,
         error: null,
@@ -32,9 +32,7 @@ class TaskList extends Component {
             direction: "asc",
         },
         viewMode: "table",
-
     };
-
 
     componentDidMount() {
         this.fetchTasks();
@@ -47,7 +45,6 @@ class TaskList extends Component {
             const response = await axios.get('http://localhost:3000/api/tasks');
             const tasks = response.data;
 
-            // Подсчитываем количество исследований в каждом статусе
             const statusCounts = tasks.reduce((acc, task) => {
                 acc[task.status] = (acc[task.status] || 0) + 1;
                 return acc;
@@ -63,6 +60,7 @@ class TaskList extends Component {
             this.setState({ loading: false });
         }
     };
+
     handleStatusFilter = (status) => {
         this.setState({ selectedStatus: status });
     };
@@ -77,6 +75,13 @@ class TaskList extends Component {
 
     openTaskDetails = (task) => {
         this.setState({ isModalOpen: true, selectedTask: task });
+    };
+
+    closeTaskDetails = () => {
+        this.setState({
+            isModalOpen: false,
+            selectedTask: null,
+        });
     };
 
     clearSearch = () => {
@@ -120,7 +125,7 @@ class TaskList extends Component {
             return "";
         }
 
-        return sortConfig.direction === "asc" ? " (asc)" : " (desc)";
+        return sortConfig.direction === "asc" ? " asc" : " desc";
     };
 
     getTaskSortValue = (task, key) => {
@@ -140,12 +145,12 @@ class TaskList extends Component {
         }
     };
 
-    getDescriptionPreview = (description) => {
+    getDescriptionPreview = (description, maxLength = 90) => {
         if (!description) {
-            return "-";
+            return "No description";
         }
 
-        return description.length > 60 ? `${description.slice(0, 60)}...` : description;
+        return description.length > maxLength ? `${description.slice(0, maxLength)}...` : description;
     };
 
     formatDate = (dateString) => dateString ? dateString.split('T')[0] : "-";
@@ -173,7 +178,7 @@ class TaskList extends Component {
         if (!task.due_date) {
             return {
                 label: "No due date",
-                className: "text-body-tertiary",
+                tone: "muted",
                 isOverdue: false,
             };
         }
@@ -186,7 +191,7 @@ class TaskList extends Component {
 
         return {
             label: this.formatDate(task.due_date),
-            className: isOverdue ? "text-danger fw-semibold" : "text-body",
+            tone: isOverdue ? "danger" : "default",
             isOverdue,
         };
     };
@@ -280,45 +285,61 @@ class TaskList extends Component {
         return this.sortTasks(filteredBySearch);
     };
 
+    getStatusTone = (status) => {
+        switch (status) {
+            case "Pending": return "secondary";
+            case "Ongoing": return "warning";
+            case "Completed": return "success";
+            case "Draft": return "info";
+            case "Canceled": return "dark";
+            case "Critical": return "danger";
+            default: return "neutral";
+        }
+    };
+
+    renderStatusPill = (status) => (
+        <span className={`task-status task-status--${this.getStatusTone(status)}`}>
+            {status || "Unknown"}
+        </span>
+    );
+
+    renderPrimaryAction = () => (
+        <Link className="task-button task-button--primary" to="/projects/task-create">
+            <FaPlus />
+            <span>Add new task</span>
+        </Link>
+    );
+
     renderLoadingState = () => (
-        <div className="card border-0 shadow-sm mb-5">
-            <div className="card-body text-center py-5">
-                <div className="spinner-border text-primary" role="status" aria-label="Loading tasks"></div>
-                <h5 className="mt-3 mb-1">Loading tasks...</h5>
-                <p className="text-body-tertiary mb-0">Please wait while we fetch the latest task list.</p>
-            </div>
-        </div>
+        <section className="task-empty task-empty--loading" aria-live="polite">
+            <div className="task-spinner" aria-hidden="true"></div>
+            <h3>Loading tasks...</h3>
+            <p>Please wait while we fetch the latest task list.</p>
+        </section>
     );
 
     renderErrorState = () => (
-        <div className="card border-0 shadow-sm mb-5">
-            <div className="card-body text-center py-5">
-                <div className="bg-danger-subtle text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: "52px", height: "52px" }}>
-                    <FaExclamationTriangle />
-                </div>
-                <h5 className="mb-2">Unable to load tasks</h5>
-                <p className="text-body-tertiary mb-4">{this.state.error}</p>
-                <button type="button" className="btn btn-primary" onClick={this.fetchTasks}>
-                    Try again
-                </button>
-            </div>
-        </div>
+        <section className="task-empty task-empty--error" aria-live="assertive">
+            <span className="task-empty__icon task-empty__icon--danger">
+                <FaExclamationTriangle />
+            </span>
+            <h3>Unable to load tasks</h3>
+            <p>{this.state.error}</p>
+            <button type="button" className="task-button task-button--primary" onClick={this.fetchTasks}>
+                Try again
+            </button>
+        </section>
     );
 
     renderEmptyState = () => (
-        <div className="card border-0 shadow-sm mb-5">
-            <div className="card-body text-center py-5">
-                <div className="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: "52px", height: "52px" }}>
-                    <FaTasks />
-                </div>
-                <h5 className="mb-2">No tasks yet</h5>
-                <p className="text-body-tertiary mb-4">Create your first task to start tracking project work.</p>
-                <Link className="btn btn-primary" to="/projects/task-create">
-                    <span className='nav-link-icon'><FaPlus /></span>
-                    <span>Add new task</span>
-                </Link>
-            </div>
-        </div>
+        <section className="task-empty">
+            <span className="task-empty__icon task-empty__icon--primary">
+                <FaTasks />
+            </span>
+            <h3>No tasks yet</h3>
+            <p>Create your first task to start tracking project work.</p>
+            {this.renderPrimaryAction()}
+        </section>
     );
 
     renderNoResultsState = () => {
@@ -327,53 +348,117 @@ class TaskList extends Component {
         const hasStatusFilter = selectedStatus !== "All";
 
         return (
-            <div className="card border-0 shadow-sm mb-5">
-                <div className="card-body text-center py-5">
-                    <div className="bg-secondary-subtle text-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: "52px", height: "52px" }}>
-                        <FaSearch />
-                    </div>
-                    <h5 className="mb-2">No tasks found</h5>
-                    <p className="text-body-tertiary mb-4">
-                        {hasSearch && <>No tasks match "{searchQuery.trim()}". </>}
-                        {hasStatusFilter && <>Current status filter is "{selectedStatus}". </>}
-                        Try another keyword or reset filters.
-                    </p>
-                    <div className="d-flex flex-wrap gap-2 justify-content-center">
-                        {hasSearch && (
-                            <button type="button" className="btn btn-outline-secondary" onClick={this.clearSearch}>
-                                Clear search
-                            </button>
-                        )}
-                        {this.hasActiveFilters() && (
-                            <button type="button" className="btn btn-primary" onClick={this.resetFilters}>
-                                Reset filters
-                            </button>
-                        )}
-                    </div>
+            <section className="task-empty">
+                <span className="task-empty__icon">
+                    <FaSearch />
+                </span>
+                <h3>No tasks found</h3>
+                <p>
+                    {hasSearch && <>No tasks match "{searchQuery.trim()}". </>}
+                    {hasStatusFilter && <>Current status filter is "{selectedStatus}". </>}
+                    Try another keyword or reset filters.
+                </p>
+                <div className="task-empty__actions">
+                    {hasSearch && (
+                        <button type="button" className="task-button task-button--ghost" onClick={this.clearSearch}>
+                            Clear search
+                        </button>
+                    )}
+                    {this.hasActiveFilters() && (
+                        <button type="button" className="task-button task-button--primary" onClick={this.resetFilters}>
+                            Reset filters
+                        </button>
+                    )}
                 </div>
-            </div>
+            </section>
         );
     };
+
+    renderStats = (taskStats) => {
+        const stats = [
+            { label: "Total tasks", value: taskStats.total, icon: <FaTasks />, tone: "primary" },
+            { label: "Active", value: taskStats.active, icon: <FaSpinner />, tone: "warning" },
+            { label: "Completed", value: taskStats.completed, icon: <FaCheckCircle />, tone: "success" },
+            { label: "Overdue", value: taskStats.overdue, icon: <FaExclamationTriangle />, tone: "danger" },
+        ];
+
+        return (
+            <section className="task-stats" aria-label="Task statistics">
+                {stats.map((item) => (
+                    <article className="task-stat" key={item.label}>
+                        <div>
+                            <p>{item.label}</p>
+                            <strong>{item.value}</strong>
+                        </div>
+                        <span className={`task-stat__icon task-stat__icon--${item.tone}`}>
+                            {item.icon}
+                        </span>
+                    </article>
+                ))}
+            </section>
+        );
+    };
+
+    renderFilters = (statusCounts, tasksCount, searchQuery) => (
+        <section className="task-toolbar" aria-label="Task filters and search">
+            <nav className="task-tabs" aria-label="Task status filters">
+                <button
+                    type="button"
+                    className={`task-tab ${this.state.selectedStatus === "All" ? "task-tab--active" : ""}`}
+                    onClick={() => this.handleStatusFilter("All")}
+                >
+                    All <span>{tasksCount}</span>
+                </button>
+
+                {Object.entries(statusCounts).map(([status, count]) => (
+                    <button
+                        type="button"
+                        key={status}
+                        className={`task-tab ${this.state.selectedStatus === status ? "task-tab--active" : ""}`}
+                        onClick={() => this.handleStatusFilter(status)}
+                    >
+                        {status} <span>{count}</span>
+                    </button>
+                ))}
+            </nav>
+
+            <div className="task-search">
+                <FaSearch className="task-search__icon" />
+                <input
+                    type="search"
+                    placeholder="Search by title, description, user or status"
+                    aria-label="Search tasks"
+                    value={searchQuery}
+                    onChange={this.handleSearchChange}
+                />
+                {searchQuery.trim() !== "" && (
+                    <button type="button" onClick={this.clearSearch}>
+                        Clear
+                    </button>
+                )}
+            </div>
+        </section>
+    );
 
     renderViewToggle = () => {
         const { viewMode } = this.state;
 
         return (
-            <div className="btn-group" role="group" aria-label="Task view mode">
+            <div className="task-view-toggle" role="group" aria-label="Task view mode">
                 <button
                     type="button"
-                    className={`btn btn-sm ${viewMode === "table" ? "btn-primary" : "btn-outline-primary"}`}
+                    className={viewMode === "table" ? "task-view-toggle__button task-view-toggle__button--active" : "task-view-toggle__button"}
                     onClick={() => this.handleViewModeChange("table")}
                 >
-                    <FaTable className="me-1" />
+                    <FaTable />
                     Table
                 </button>
                 <button
                     type="button"
-                    className={`btn btn-sm ${viewMode === "cards" ? "btn-primary" : "btn-outline-primary"}`}
+                    className={viewMode === "cards" ? "task-view-toggle__button task-view-toggle__button--active" : "task-view-toggle__button"}
                     onClick={() => this.handleViewModeChange("cards")}
                 >
-                    <FaThLarge className="me-1" />
+                    <FaThLarge />
                     Cards
                 </button>
             </div>
@@ -381,157 +466,122 @@ class TaskList extends Component {
     };
 
     renderTaskViewButton = (task) => (
-        <button className="btn btn-sm btn-outline-primary" onClick={() => this.openTaskDetails(task)}>
-            <FaEye className="me-1" />
-            View
+        <button className="task-button task-button--ghost task-button--compact" onClick={() => this.openTaskDetails(task)}>
+            <FaEye />
+            <span>View</span>
         </button>
     );
 
     renderTaskTable = (tasks) => (
-        <div className='card border-0 shadow-sm mb-5'>
-            <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0">
-                    <thead className="table-light">
-                        <tr>
-                            <th className="ps-4">
-                                <button
-                                    type="button"
-                                    className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                    onClick={() => this.handleSort("title")}
-                                >
-                                    Title{this.getSortIndicator("title")}
-                                </button>
-                            </th>
-                            <th>Description</th>
-                            <th>
-                                <button
-                                    type="button"
-                                    className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                    onClick={() => this.handleSort("user")}
-                                >
-                                    Assigned User{this.getSortIndicator("user")}
-                                </button>
-                            </th>
-                            <th>
-                                <button
-                                    type="button"
-                                    className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                    onClick={() => this.handleSort("status")}
-                                >
-                                    Status{this.getSortIndicator("status")}
-                                </button>
-                            </th>
-                            <th>
-                                <button
-                                    type="button"
-                                    className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                    onClick={() => this.handleSort("start_date")}
-                                >
-                                    Start{this.getSortIndicator("start_date")}
-                                </button>
-                            </th>
-                            <th>
-                                <button
-                                    type="button"
-                                    className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                    onClick={() => this.handleSort("due_date")}
-                                >
-                                    Due{this.getSortIndicator("due_date")}
-                                </button>
-                            </th>
-                            <th className="text-end pe-4">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {tasks.map(task => {
-                            const dueDateInfo = this.getDueDateInfo(task);
+        <section className="task-table-shell" aria-label="Task table">
+            <table className="task-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <button type="button" onClick={() => this.handleSort("title")}>
+                                Title{this.getSortIndicator("title")}
+                            </button>
+                        </th>
+                        <th>Description</th>
+                        <th>
+                            <button type="button" onClick={() => this.handleSort("user")}>
+                                Assigned User{this.getSortIndicator("user")}
+                            </button>
+                        </th>
+                        <th>
+                            <button type="button" onClick={() => this.handleSort("status")}>
+                                Status{this.getSortIndicator("status")}
+                            </button>
+                        </th>
+                        <th>
+                            <button type="button" onClick={() => this.handleSort("start_date")}>
+                                Start{this.getSortIndicator("start_date")}
+                            </button>
+                        </th>
+                        <th>
+                            <button type="button" onClick={() => this.handleSort("due_date")}>
+                                Due{this.getSortIndicator("due_date")}
+                            </button>
+                        </th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {tasks.map(task => {
+                        const dueDateInfo = this.getDueDateInfo(task);
 
-                            return (
-                                <tr key={task.id}>
-                                    <td className="ps-4">
-                                        <div className="fw-semibold">{task.title}</div>
-                                    </td>
-                                    <td className="text-body-secondary" style={{ maxWidth: "320px" }}>
-                                        {this.getDescriptionPreview(task.description)}
-                                    </td>
-                                    <td>
-                                        <span className="d-inline-flex align-items-center gap-2">
-                                            <FaUser className="text-body-tertiary" />
-                                            {task.user?.name || "Unknown"}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span className={`badge bg-${this.getBadgeColor(task.status)}`}>{task.status}</span>
-                                    </td>
-                                    <td>{this.formatDate(task.start_date)}</td>
-                                    <td>
-                                        <span className={dueDateInfo.className}>{dueDateInfo.label}</span>
-                                        {dueDateInfo.isOverdue && <span className="badge bg-danger-subtle text-danger ms-2">Overdue</span>}
-                                    </td>
-                                    <td className="text-end pe-4">
-                                        {this.renderTaskViewButton(task)}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                        return (
+                            <tr key={task.id}>
+                                <td>
+                                    <strong>{task.title || "Untitled task"}</strong>
+                                </td>
+                                <td>
+                                    <span className="task-table__description">
+                                        {this.getDescriptionPreview(task.description, 70)}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span className="task-meta-line">
+                                        <FaUser />
+                                        {task.user?.name || "Unknown"}
+                                    </span>
+                                </td>
+                                <td>{this.renderStatusPill(task.status)}</td>
+                                <td>{this.formatDate(task.start_date)}</td>
+                                <td>
+                                    <span className={`task-date task-date--${dueDateInfo.tone}`}>
+                                        {dueDateInfo.label}
+                                    </span>
+                                    {dueDateInfo.isOverdue && <span className="task-status task-status--danger">Overdue</span>}
+                                </td>
+                                <td>{this.renderTaskViewButton(task)}</td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </section>
     );
 
     renderTaskCards = (tasks) => (
-        <div className="row g-3 mb-5">
+        <section className="task-card-grid" aria-label="Task cards">
             {tasks.map(task => {
                 const dueDateInfo = this.getDueDateInfo(task);
 
                 return (
-                    <div className="col-md-6 col-xl-4" key={task.id}>
-                        <div className="card border-0 shadow-sm h-100">
-                            <div className="card-body d-flex flex-column">
-                                <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
-                                    <h5 className="mb-0">{task.title}</h5>
-                                    <span className={`badge bg-${this.getBadgeColor(task.status)}`}>{task.status}</span>
-                                </div>
-
-                                <p className="text-body-secondary flex-grow-1 mb-4">
-                                    {this.getDescriptionPreview(task.description)}
-                                </p>
-
-                                <div className="d-flex flex-column gap-2 mb-4">
-                                    <div className="d-flex align-items-center gap-2 text-body-secondary">
-                                        <FaUser />
-                                        <span>{task.user?.name || "Unknown"}</span>
-                                    </div>
-                                    <div className="d-flex align-items-center gap-2">
-                                        <FaCalendarAlt className="text-body-secondary" />
-                                        <span className={dueDateInfo.className}>{dueDateInfo.label}</span>
-                                        {dueDateInfo.isOverdue && <span className="badge bg-danger-subtle text-danger">Overdue</span>}
-                                    </div>
-                                </div>
-
-                                <div className="d-flex justify-content-end">
-                                    {this.renderTaskViewButton(task)}
-                                </div>
-                            </div>
+                    <article className="task-card" key={task.id}>
+                        <div className="task-card__header">
+                            <h3>{task.title || "Untitled task"}</h3>
+                            {this.renderStatusPill(task.status)}
                         </div>
-                    </div>
+
+                        <p className="task-card__description">
+                            {this.getDescriptionPreview(task.description, 120)}
+                        </p>
+
+                        <div className="task-card__meta">
+                            <span className="task-meta-line">
+                                <FaUser />
+                                {task.user?.name || "Unknown"}
+                            </span>
+                            <span className="task-meta-line">
+                                <FaCalendarAlt />
+                                <span className={`task-date task-date--${dueDateInfo.tone}`}>
+                                    {dueDateInfo.label}
+                                </span>
+                                {dueDateInfo.isOverdue && <span className="task-status task-status--danger">Overdue</span>}
+                            </span>
+                        </div>
+
+                        <div className="task-card__footer">
+                            {this.renderTaskViewButton(task)}
+                        </div>
+                    </article>
                 );
             })}
-        </div>
+        </section>
     );
 
-    getBadgeColor = (status) => {
-        switch (status) {
-            case "Pending": return "secondary";
-            case "Ongoing": return "warning";
-            case "Completed": return "success";
-            case "Draft": return "info";
-            case "Canceled": return "dark";
-            case "Critical": return "danger";
-            default: return "light";
-        }
-    }
     render() {
         const { tasks, statusCounts, selectedTask, isModalOpen, loading, error, searchQuery, viewMode } = this.state;
 
@@ -540,77 +590,19 @@ class TaskList extends Component {
         const hasNoTasks = !loading && !error && tasks.length === 0;
         const hasNoResults = !loading && !error && tasks.length > 0 && filteredTasks.length === 0;
         const shouldShowTaskContent = !loading && !error && tasks.length > 0;
+
         return (
             <>
-                <div>
-                    <div className="d-flex flex-wrap mb-4 gap-3 gap-sm-5 align-items-center">
-                        <h2 className="mb-0">
-                            <span className="me-3">Tasks</span>
-                            <span className="fw-normal text-body-tertiary">({tasks.length})</span>
-                        </h2>
-                        <Link className="btn btn-primary px-5 d-flex align-items-center" to="/projects/task-create">
-                            <span className='nav-link-icon'><FaPlus /></span>
-                            <span>Add new task</span>
-                        </Link>
-                    </div>
-                    <hr />
-
-                    {shouldShowTaskContent && (
-                        <div className="row g-3 mb-4">
-                            <div className="col-sm-6 col-xl-3">
-                                <div className="card border-0 shadow-sm h-100">
-                                    <div className="card-body d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <p className="text-body-tertiary mb-1">Total tasks</p>
-                                            <h3 className="mb-0">{taskStats.total}</h3>
-                                        </div>
-                                        <div className="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
-                                            <FaTasks />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-sm-6 col-xl-3">
-                                <div className="card border-0 shadow-sm h-100">
-                                    <div className="card-body d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <p className="text-body-tertiary mb-1">Active</p>
-                                            <h3 className="mb-0">{taskStats.active}</h3>
-                                        </div>
-                                        <div className="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
-                                            <FaSpinner />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-sm-6 col-xl-3">
-                                <div className="card border-0 shadow-sm h-100">
-                                    <div className="card-body d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <p className="text-body-tertiary mb-1">Completed</p>
-                                            <h3 className="mb-0">{taskStats.completed}</h3>
-                                        </div>
-                                        <div className="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
-                                            <FaCheckCircle />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-sm-6 col-xl-3">
-                                <div className="card border-0 shadow-sm h-100">
-                                    <div className="card-body d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <p className="text-body-tertiary mb-1">Overdue</p>
-                                            <h3 className="mb-0">{taskStats.overdue}</h3>
-                                        </div>
-                                        <div className="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
-                                            <FaExclamationTriangle />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                <main className="task-list">
+                    <header className="task-list__header">
+                        <div>
+                            <p className="task-list__eyebrow">Project workspace</p>
+                            <h1>Tasks <span>{tasks.length}</span></h1>
                         </div>
-                    )}
+                        {this.renderPrimaryAction()}
+                    </header>
+
+                    {shouldShowTaskContent && this.renderStats(taskStats)}
 
                     {loading && this.renderLoadingState()}
                     {!loading && error && this.renderErrorState()}
@@ -618,65 +610,19 @@ class TaskList extends Component {
 
                     {shouldShowTaskContent && (
                         <>
-                            {/* Фильтры и поиск */}
-                            <div className='g-3 justify-content-between align-items-center mb-4 row'>
-                                <div className='col-sm-auto col-12'>
-                                    <div className="nav nav-links mx-2 nav">
-                                        <div className="nav-item">
-                                            <a role="button" className={`px-2 py-1 nav-link ${this.state.selectedStatus === "All" ? "active" : ""}`}
-                                                onClick={() => this.handleStatusFilter("All")}>
-                                                All <span className="text-body-tertiary fw-semibold">({this.state.tasks.length})</span>
-                                            </a>
-                                        </div>
-                                        {Object.entries(statusCounts).map(([status, count]) => (
-                                            <div key={status} className="nav-item">
-                                                <a
-                                                    role="button"
-                                                    className={`px-2 py-1 nav-link ${this.state.selectedStatus === status ? "active" : ""}`}
-                                                    onClick={() => this.handleStatusFilter(status)}
-                                                >
-                                                    {status} <span className="text-body-tertiary fw-semibold">({count})</span>
-                                                </a>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className='col-sm-auto col-12'>
-                                    <div className='d-flex align-items-center gap-2'>
-                                        <div className='search-box me-2'>
-                                            <form className="d-flex align-items-center position-relative" role="search" onSubmit={(event) => event.preventDefault()}>
-                                                <input
-                                                    className="form-control me-2 search-input"
-                                                    type="search"
-                                                    placeholder="Search by title, description, user or status"
-                                                    aria-label="Search tasks"
-                                                    value={searchQuery}
-                                                    onChange={this.handleSearchChange}
-                                                />
-                                                <FaSearch className='search-box-icon' />
-                                            </form>
-                                        </div>
-                                        {searchQuery.trim() !== "" && (
-                                            <button type="button" className="btn btn-outline-secondary" onClick={this.clearSearch}>
-                                                Clear
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                                <span className="text-body-tertiary">
-                                    Showing {filteredTasks.length} of {tasks.length} tasks
-                                </span>
-                                <div className="d-flex flex-wrap align-items-center gap-2">
+                            {this.renderFilters(statusCounts, tasks.length, searchQuery)}
+
+                            <section className="task-list__summary">
+                                <p>Showing {filteredTasks.length} of {tasks.length} tasks</p>
+                                <div>
                                     {this.renderViewToggle()}
                                     {this.hasActiveFilters() && (
-                                        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={this.resetFilters}>
+                                        <button type="button" className="task-button task-button--ghost task-button--compact" onClick={this.resetFilters}>
                                             Reset filters
                                         </button>
                                     )}
                                 </div>
-                            </div>
+                            </section>
 
                             {hasNoResults ? this.renderNoResultsState() : (
                                 viewMode === "table"
@@ -685,16 +631,12 @@ class TaskList extends Component {
                             )}
                         </>
                     )}
-                </div>
+                </main>
+
                 <TaskDetailsModal
                     isOpen={isModalOpen}
                     task={selectedTask}
-                    onClose={() =>
-                        this.setState({
-                            isModalOpen: false,
-                            selectedTask: null
-                        })
-                    }
+                    onClose={this.closeTaskDetails}
                 />
             </>
         );
