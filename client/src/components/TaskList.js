@@ -10,7 +10,7 @@ class TaskList extends Component {
         tasks: [],  // Храним список исследований
         statusCounts: {},  // Храним количество исследований по статусам
         selectedStatus: "All",
-        modalLoading: false,
+        loading: true,
         error: null,
         isModalOpen: false,
         selectedTask: null,
@@ -28,6 +28,8 @@ class TaskList extends Component {
     }
 
     fetchTasks = async () => {
+        this.setState({ loading: true, error: null });
+
         try {
             const response = await axios.get('http://localhost:3000/api/tasks');
             const tasks = response.data;
@@ -38,10 +40,14 @@ class TaskList extends Component {
                 return acc;
             }, {});
 
-            this.setState({ tasks, statusCounts });
-            console.log("tasks", tasks)
+            this.setState({ tasks, statusCounts, error: null });
         } catch (error) {
             console.error("Ошибка загрузки данных:", error);
+            this.setState({
+                error: "Unable to load tasks. Please check the server connection and try again.",
+            });
+        } finally {
+            this.setState({ loading: false });
         }
     };
     handleStatusFilter = (status) => {
@@ -50,6 +56,27 @@ class TaskList extends Component {
 
     handleSearchChange = (event) => {
         this.setState({ searchQuery: event.target.value });
+    };
+
+    clearSearch = () => {
+        this.setState({ searchQuery: "" });
+    };
+
+    resetFilters = () => {
+        this.setState({
+            selectedStatus: "All",
+            searchQuery: "",
+            sortConfig: {
+                key: null,
+                direction: "asc",
+            },
+        });
+    };
+
+    hasActiveFilters = () => {
+        const { selectedStatus, searchQuery, sortConfig } = this.state;
+
+        return selectedStatus !== "All" || searchQuery.trim() !== "" || Boolean(sortConfig.key);
     };
 
     handleSort = (key) => {
@@ -208,6 +235,81 @@ class TaskList extends Component {
         return this.sortTasks(filteredBySearch);
     };
 
+    renderLoadingState = () => (
+        <div className="card border-0 shadow-sm mb-5">
+            <div className="card-body text-center py-5">
+                <div className="spinner-border text-primary" role="status" aria-label="Loading tasks"></div>
+                <h5 className="mt-3 mb-1">Loading tasks...</h5>
+                <p className="text-body-tertiary mb-0">Please wait while we fetch the latest task list.</p>
+            </div>
+        </div>
+    );
+
+    renderErrorState = () => (
+        <div className="card border-0 shadow-sm mb-5">
+            <div className="card-body text-center py-5">
+                <div className="bg-danger-subtle text-danger rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: "52px", height: "52px" }}>
+                    <FaExclamationTriangle />
+                </div>
+                <h5 className="mb-2">Unable to load tasks</h5>
+                <p className="text-body-tertiary mb-4">{this.state.error}</p>
+                <button type="button" className="btn btn-primary" onClick={this.fetchTasks}>
+                    Try again
+                </button>
+            </div>
+        </div>
+    );
+
+    renderEmptyState = () => (
+        <div className="card border-0 shadow-sm mb-5">
+            <div className="card-body text-center py-5">
+                <div className="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: "52px", height: "52px" }}>
+                    <FaTasks />
+                </div>
+                <h5 className="mb-2">No tasks yet</h5>
+                <p className="text-body-tertiary mb-4">Create your first task to start tracking project work.</p>
+                <Link className="btn btn-primary" to="/projects/task-create">
+                    <span className='nav-link-icon'><FaPlus /></span>
+                    <span>Add new task</span>
+                </Link>
+            </div>
+        </div>
+    );
+
+    renderNoResultsState = () => {
+        const { searchQuery, selectedStatus } = this.state;
+        const hasSearch = searchQuery.trim() !== "";
+        const hasStatusFilter = selectedStatus !== "All";
+
+        return (
+            <div className="card border-0 shadow-sm mb-5">
+                <div className="card-body text-center py-5">
+                    <div className="bg-secondary-subtle text-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style={{ width: "52px", height: "52px" }}>
+                        <FaSearch />
+                    </div>
+                    <h5 className="mb-2">No tasks found</h5>
+                    <p className="text-body-tertiary mb-4">
+                        {hasSearch && <>No tasks match "{searchQuery.trim()}". </>}
+                        {hasStatusFilter && <>Current status filter is "{selectedStatus}". </>}
+                        Try another keyword or reset filters.
+                    </p>
+                    <div className="d-flex flex-wrap gap-2 justify-content-center">
+                        {hasSearch && (
+                            <button type="button" className="btn btn-outline-secondary" onClick={this.clearSearch}>
+                                Clear search
+                            </button>
+                        )}
+                        {this.hasActiveFilters() && (
+                            <button type="button" className="btn btn-primary" onClick={this.resetFilters}>
+                                Reset filters
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     getBadgeColor = (status) => {
         switch (status) {
             case "Pending": return "secondary";
@@ -220,11 +322,14 @@ class TaskList extends Component {
         }
     }
     render() {
-        const { tasks, statusCounts, selectedTask, isModalOpen } = this.state;
+        const { tasks, statusCounts, selectedTask, isModalOpen, loading, error, searchQuery } = this.state;
         const formatDate = (dateString) => dateString ? dateString.split('T')[0] : "-";
 
         const taskStats = this.getTaskStats();
         const filteredTasks = this.getFilteredTasks();
+        const hasNoTasks = !loading && !error && tasks.length === 0;
+        const hasNoResults = !loading && !error && tasks.length > 0 && filteredTasks.length === 0;
+        const shouldShowTaskContent = !loading && !error && tasks.length > 0;
         return (
             <>
                 <div>
@@ -240,188 +345,204 @@ class TaskList extends Component {
                     </div>
                     <hr />
 
-                    <div className="row g-3 mb-4">
-                        <div className="col-sm-6 col-xl-3">
-                            <div className="card border-0 shadow-sm h-100">
-                                <div className="card-body d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <p className="text-body-tertiary mb-1">Total tasks</p>
-                                        <h3 className="mb-0">{taskStats.total}</h3>
+                    {shouldShowTaskContent && (
+                        <div className="row g-3 mb-4">
+                            <div className="col-sm-6 col-xl-3">
+                                <div className="card border-0 shadow-sm h-100">
+                                    <div className="card-body d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p className="text-body-tertiary mb-1">Total tasks</p>
+                                            <h3 className="mb-0">{taskStats.total}</h3>
+                                        </div>
+                                        <div className="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                            <FaTasks />
+                                        </div>
                                     </div>
-                                    <div className="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
-                                        <FaTasks />
+                                </div>
+                            </div>
+                            <div className="col-sm-6 col-xl-3">
+                                <div className="card border-0 shadow-sm h-100">
+                                    <div className="card-body d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p className="text-body-tertiary mb-1">Active</p>
+                                            <h3 className="mb-0">{taskStats.active}</h3>
+                                        </div>
+                                        <div className="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                            <FaSpinner />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-sm-6 col-xl-3">
+                                <div className="card border-0 shadow-sm h-100">
+                                    <div className="card-body d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p className="text-body-tertiary mb-1">Completed</p>
+                                            <h3 className="mb-0">{taskStats.completed}</h3>
+                                        </div>
+                                        <div className="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                            <FaCheckCircle />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-sm-6 col-xl-3">
+                                <div className="card border-0 shadow-sm h-100">
+                                    <div className="card-body d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p className="text-body-tertiary mb-1">Overdue</p>
+                                            <h3 className="mb-0">{taskStats.overdue}</h3>
+                                        </div>
+                                        <div className="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                            <FaExclamationTriangle />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="col-sm-6 col-xl-3">
-                            <div className="card border-0 shadow-sm h-100">
-                                <div className="card-body d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <p className="text-body-tertiary mb-1">Active</p>
-                                        <h3 className="mb-0">{taskStats.active}</h3>
-                                    </div>
-                                    <div className="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
-                                        <FaSpinner />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-sm-6 col-xl-3">
-                            <div className="card border-0 shadow-sm h-100">
-                                <div className="card-body d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <p className="text-body-tertiary mb-1">Completed</p>
-                                        <h3 className="mb-0">{taskStats.completed}</h3>
-                                    </div>
-                                    <div className="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
-                                        <FaCheckCircle />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="col-sm-6 col-xl-3">
-                            <div className="card border-0 shadow-sm h-100">
-                                <div className="card-body d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <p className="text-body-tertiary mb-1">Overdue</p>
-                                        <h3 className="mb-0">{taskStats.overdue}</h3>
-                                    </div>
-                                    <div className="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
-                                        <FaExclamationTriangle />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    )}
 
-                    {/* Фильтры и поиск */}
-                    <div className='g-3 justify-content-between align-items-center mb-4 row'>
-                        <div className='col-sm-auto col-12'>
-                            <div className="nav nav-links mx-2 nav">
-                                <div className="nav-item">
-                                    <a role="button" className={`px-2 py-1 nav-link ${this.state.selectedStatus === "All" ? "active" : ""}`}
-                                        onClick={() => this.handleStatusFilter("All")}>
-                                        All <span className="text-body-tertiary fw-semibold">({this.state.tasks.length})</span>
-                                    </a>
-                                </div>
-                                {Object.entries(statusCounts).map(([status, count]) => (
-                                    <div key={status} className="nav-item">
-                                        <a
-                                            role="button"
-                                            className={`px-2 py-1 nav-link ${this.state.selectedStatus === status ? "active" : ""}`}
-                                            onClick={() => this.handleStatusFilter(status)}
-                                        >
-                                            {status} <span className="text-body-tertiary fw-semibold">({count})</span>
-                                        </a>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className='col-sm-auto col-12'>
-                            <div className='d-flex align-items-center gap-1'>
-                                <div className='search-box me-3'>
-                                    <form className="d-flex align-items-center position-relative" role="search" onSubmit={(event) => event.preventDefault()}>
-                                        <input
-                                            className="form-control me-2 search-input"
-                                            type="search"
-                                            placeholder="Search by title, description, user or status"
-                                            aria-label="Search tasks"
-                                            value={this.state.searchQuery}
-                                            onChange={this.handleSearchChange}
-                                        />
-                                        <FaSearch className='search-box-icon' />
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="d-flex justify-content-between align-items-center mb-3">
-                        <span className="text-body-tertiary">
-                            Showing {filteredTasks.length} of {tasks.length} tasks
-                        </span>
-                    </div>
-                    {/* Список исследований */}
-                    <div className='mb-5'>
-                        <div className="table-responsive">
-                            <table className="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            <button
-                                                type="button"
-                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                                onClick={() => this.handleSort("title")}
-                                            >
-                                                Title{this.getSortIndicator("title")}
-                                            </button>
-                                        </th>
-                                        <th>Description</th>
-                                        <th>
-                                            <button
-                                                type="button"
-                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                                onClick={() => this.handleSort("user")}
-                                            >
-                                                Assigned User{this.getSortIndicator("user")}
-                                            </button>
-                                        </th>
-                                        <th>
-                                            <button
-                                                type="button"
-                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                                onClick={() => this.handleSort("status")}
-                                            >
-                                                Status{this.getSortIndicator("status")}
-                                            </button>
-                                        </th>
-                                        <th>
-                                            <button
-                                                type="button"
-                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                                onClick={() => this.handleSort("start_date")}
-                                            >
-                                                Start{this.getSortIndicator("start_date")}
-                                            </button>
-                                        </th>
-                                        <th>
-                                            <button
-                                                type="button"
-                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                                onClick={() => this.handleSort("due_date")}
-                                            >
-                                                Due{this.getSortIndicator("due_date")}
-                                            </button>
-                                        </th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredTasks.length === 0 && (
-                                        <tr>
-                                            <td colSpan="7" className="text-center">No tasks found</td>
-                                        </tr>
-                                    )}
-                                    {filteredTasks.map(task => (
-                                        <tr key={task.id}>
-                                            <td>{task.title}</td>
-                                            <td>{this.getDescriptionPreview(task.description)}</td>
-                                            <td>{task.user?.name || "Unknown"}</td>
-                                            <td><span className={`badge bg-${this.getBadgeColor(task.status)}`}>{task.status}</span></td>
-                                            <td>{formatDate(task.start_date)}</td>
-                                            <td>{formatDate(task.due_date)}</td>
-                                            <td>
-                                                <button className="btn btn-sm btn-outline-primary" onClick={() => this.setState({ isModalOpen: true, selectedTask: task })}>
-                                                    View
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                    {loading && this.renderLoadingState()}
+                    {!loading && error && this.renderErrorState()}
+                    {hasNoTasks && this.renderEmptyState()}
 
-                    </div>
+                    {shouldShowTaskContent && (
+                        <>
+                            {/* Фильтры и поиск */}
+                            <div className='g-3 justify-content-between align-items-center mb-4 row'>
+                                <div className='col-sm-auto col-12'>
+                                    <div className="nav nav-links mx-2 nav">
+                                        <div className="nav-item">
+                                            <a role="button" className={`px-2 py-1 nav-link ${this.state.selectedStatus === "All" ? "active" : ""}`}
+                                                onClick={() => this.handleStatusFilter("All")}>
+                                                All <span className="text-body-tertiary fw-semibold">({this.state.tasks.length})</span>
+                                            </a>
+                                        </div>
+                                        {Object.entries(statusCounts).map(([status, count]) => (
+                                            <div key={status} className="nav-item">
+                                                <a
+                                                    role="button"
+                                                    className={`px-2 py-1 nav-link ${this.state.selectedStatus === status ? "active" : ""}`}
+                                                    onClick={() => this.handleStatusFilter(status)}
+                                                >
+                                                    {status} <span className="text-body-tertiary fw-semibold">({count})</span>
+                                                </a>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className='col-sm-auto col-12'>
+                                    <div className='d-flex align-items-center gap-2'>
+                                        <div className='search-box me-2'>
+                                            <form className="d-flex align-items-center position-relative" role="search" onSubmit={(event) => event.preventDefault()}>
+                                                <input
+                                                    className="form-control me-2 search-input"
+                                                    type="search"
+                                                    placeholder="Search by title, description, user or status"
+                                                    aria-label="Search tasks"
+                                                    value={searchQuery}
+                                                    onChange={this.handleSearchChange}
+                                                />
+                                                <FaSearch className='search-box-icon' />
+                                            </form>
+                                        </div>
+                                        {searchQuery.trim() !== "" && (
+                                            <button type="button" className="btn btn-outline-secondary" onClick={this.clearSearch}>
+                                                Clear
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                <span className="text-body-tertiary">
+                                    Showing {filteredTasks.length} of {tasks.length} tasks
+                                </span>
+                                {this.hasActiveFilters() && (
+                                    <button type="button" className="btn btn-sm btn-outline-secondary" onClick={this.resetFilters}>
+                                        Reset filters
+                                    </button>
+                                )}
+                            </div>
+
+                            {hasNoResults ? this.renderNoResultsState() : (
+                                <div className='mb-5'>
+                                    <div className="table-responsive">
+                                        <table className="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                            onClick={() => this.handleSort("title")}
+                                                        >
+                                                            Title{this.getSortIndicator("title")}
+                                                        </button>
+                                                    </th>
+                                                    <th>Description</th>
+                                                    <th>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                            onClick={() => this.handleSort("user")}
+                                                        >
+                                                            Assigned User{this.getSortIndicator("user")}
+                                                        </button>
+                                                    </th>
+                                                    <th>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                            onClick={() => this.handleSort("status")}
+                                                        >
+                                                            Status{this.getSortIndicator("status")}
+                                                        </button>
+                                                    </th>
+                                                    <th>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                            onClick={() => this.handleSort("start_date")}
+                                                        >
+                                                            Start{this.getSortIndicator("start_date")}
+                                                        </button>
+                                                    </th>
+                                                    <th>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                            onClick={() => this.handleSort("due_date")}
+                                                        >
+                                                            Due{this.getSortIndicator("due_date")}
+                                                        </button>
+                                                    </th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {filteredTasks.map(task => (
+                                                    <tr key={task.id}>
+                                                        <td>{task.title}</td>
+                                                        <td>{this.getDescriptionPreview(task.description)}</td>
+                                                        <td>{task.user?.name || "Unknown"}</td>
+                                                        <td><span className={`badge bg-${this.getBadgeColor(task.status)}`}>{task.status}</span></td>
+                                                        <td>{formatDate(task.start_date)}</td>
+                                                        <td>{formatDate(task.due_date)}</td>
+                                                        <td>
+                                                            <button className="btn btn-sm btn-outline-primary" onClick={() => this.setState({ isModalOpen: true, selectedTask: task })}>
+                                                                View
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
                 <TaskDetailsModal
                     isOpen={isModalOpen}
