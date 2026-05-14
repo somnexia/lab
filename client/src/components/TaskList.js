@@ -1,22 +1,25 @@
 // client\src\components\TaskList.js
 import React, { Component } from 'react';
 import axios from 'axios';
-import { FaSearch, FaPlus, FaChevronRight } from "react-icons/fa";
+import { FaSearch, FaPlus, FaTasks, FaSpinner, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import TaskDetailsModal from './TaskDetailsOffcanvas';
 
 class TaskList extends Component {
     state = {
-        tasks: [],  // Храним список исследований
-        statusCounts: {},  // Храним количество исследований по статусам
+        tasks: [],
+        statusCounts: {},
         selectedStatus: "All",
         modalLoading: false,
         error: null,
         isModalOpen: false,
         selectedTask: null,
-
+        searchQuery: "",
+        sortConfig: {
+            key: null,
+            direction: "asc",
+        },
     };
-
 
     componentDidMount() {
         this.fetchTasks();
@@ -27,7 +30,6 @@ class TaskList extends Component {
             const response = await axios.get('http://localhost:3000/api/tasks');
             const tasks = response.data;
 
-            // Подсчитываем количество исследований в каждом статусе
             const statusCounts = tasks.reduce((acc, task) => {
                 acc[task.status] = (acc[task.status] || 0) + 1;
                 return acc;
@@ -39,9 +41,171 @@ class TaskList extends Component {
             console.error("Ошибка загрузки данных:", error);
         }
     };
+
     handleStatusFilter = (status) => {
         this.setState({ selectedStatus: status });
     };
+
+    handleSearchChange = (event) => {
+        this.setState({ searchQuery: event.target.value });
+    };
+
+    handleSort = (key) => {
+        this.setState((prevState) => {
+            const isSameColumn = prevState.sortConfig.key === key;
+
+            return {
+                sortConfig: {
+                    key,
+                    direction: isSameColumn && prevState.sortConfig.direction === "asc" ? "desc" : "asc",
+                },
+            };
+        });
+    };
+
+    getSortIndicator = (key) => {
+        const { sortConfig } = this.state;
+
+        if (sortConfig.key !== key) {
+            return "";
+        }
+
+        return sortConfig.direction === "asc" ? " (asc)" : " (desc)";
+    };
+
+    getTaskSortValue = (task, key) => {
+        switch (key) {
+            case "title":
+                return task.title || "";
+            case "status":
+                return task.status || "";
+            case "user":
+                return task.user?.name || "";
+            case "start_date":
+                return task.start_date ? new Date(task.start_date).getTime() : null;
+            case "due_date":
+                return task.due_date ? new Date(task.due_date).getTime() : null;
+            default:
+                return "";
+        }
+    };
+
+    getDescriptionPreview = (description) => {
+        if (!description) {
+            return "-";
+        }
+
+        return description.length > 60 ? `${description.slice(0, 60)}...` : description;
+    };
+
+    getDateWithoutTime = (dateString) => {
+        if (!dateString) {
+            return null;
+        }
+
+        const date = new Date(dateString);
+
+        if (Number.isNaN(date.getTime())) {
+            return null;
+        }
+
+        date.setHours(0, 0, 0, 0);
+        return date;
+    };
+
+    isTaskClosed = (task) => {
+        return ["Completed", "Canceled"].includes(task.status);
+    };
+
+    getTaskStats = () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return this.state.tasks.reduce((stats, task) => {
+            const dueDate = this.getDateWithoutTime(task.due_date);
+            const isClosed = this.isTaskClosed(task);
+
+            stats.total += 1;
+
+            if (!isClosed) {
+                stats.active += 1;
+            }
+
+            if (task.status === "Completed") {
+                stats.completed += 1;
+            }
+
+            if (!isClosed && dueDate && dueDate < today) {
+                stats.overdue += 1;
+            }
+
+            return stats;
+        }, {
+            total: 0,
+            active: 0,
+            completed: 0,
+            overdue: 0,
+        });
+    };
+
+    sortTasks = (tasks) => {
+        const { sortConfig } = this.state;
+
+        if (!sortConfig.key) {
+            return tasks;
+        }
+
+        return [...tasks].sort((a, b) => {
+            const firstValue = this.getTaskSortValue(a, sortConfig.key);
+            const secondValue = this.getTaskSortValue(b, sortConfig.key);
+
+            if (firstValue === null && secondValue === null) return 0;
+            if (firstValue === null) return 1;
+            if (secondValue === null) return -1;
+
+            if (typeof firstValue === "number" && typeof secondValue === "number") {
+                return sortConfig.direction === "asc"
+                    ? firstValue - secondValue
+                    : secondValue - firstValue;
+            }
+
+            const comparison = String(firstValue).localeCompare(String(secondValue), undefined, {
+                sensitivity: "base",
+            });
+
+            return sortConfig.direction === "asc" ? comparison : -comparison;
+        });
+    };
+
+    getFilteredTasks = () => {
+        const { tasks, selectedStatus, searchQuery } = this.state;
+        const normalizedQuery = searchQuery.trim().toLowerCase();
+
+        const filteredByStatus = selectedStatus === "All"
+            ? tasks
+            : tasks.filter(task => task.status === selectedStatus);
+
+        if (!normalizedQuery) {
+            return this.sortTasks(filteredByStatus);
+        }
+
+        const filteredBySearch = filteredByStatus.filter((task) => {
+            const searchableText = [
+                task.title,
+                task.description,
+                task.user?.name,
+                task.status,
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+            return searchableText.includes(normalizedQuery);
+        });
+
+        return this.sortTasks(filteredBySearch);
+    };
+
     getBadgeColor = (status) => {
         switch (status) {
             case "Pending": return "secondary";
@@ -53,16 +217,56 @@ class TaskList extends Component {
             default: return "light";
         }
     }
-    render() {
-        const { tasks, statusCounts, selectedTask, loading,
-            modalLoading,
-            error,
-            isModalOpen } = this.state;
-        const formatDate = (dateString) => dateString.split('T')[0];
+    getDeadlineStatus = (dueDate) => {
 
-        const filteredTasks = this.state.selectedStatus === "All"
-            ? this.state.tasks
-            : this.state.tasks.filter(task => task.status === this.state.selectedStatus);
+        if (!dueDate) {
+            return null;
+        }
+
+        const today = new Date();
+
+        // убираем время
+        today.setHours(0, 0, 0, 0);
+
+        const deadline = new Date(dueDate);
+        deadline.setHours(0, 0, 0, 0);
+
+        if (deadline < today) {
+            return "overdue";
+        }
+
+        if (deadline.getTime() === today.getTime()) {
+            return "today";
+
+        }
+
+        return "upcoming";
+    };
+    getDeadlineBadgeClass = (deadlineStatus) => {
+
+        switch (deadlineStatus) {
+
+            case "overdue":
+                return "task-deadline-overdue";
+
+            case "today":
+                return "task-deadline-today";
+
+            case "upcoming":
+                return "task-deadline-upcoming";
+
+            default:
+                return "";
+        }
+    }
+
+    render() {
+        const { tasks, statusCounts, selectedTask, isModalOpen } = this.state;
+        const formatDate = (dateString) => dateString ? dateString.split('T')[0] : "-";
+
+        const taskStats = this.getTaskStats();
+        const filteredTasks = this.getFilteredTasks();
+
         return (
             <>
                 <div>
@@ -77,6 +281,64 @@ class TaskList extends Component {
                         </Link>
                     </div>
                     <hr />
+
+                    <div className="row g-3 mb-4">
+                        <div className="col-sm-6 col-xl-3">
+                            <div className="card border-0 shadow-sm h-100">
+                                <div className="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p className="text-body-tertiary mb-1">Total tasks</p>
+                                        <h3 className="mb-0">{taskStats.total}</h3>
+                                    </div>
+                                    <div className="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                        <FaTasks />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-sm-6 col-xl-3">
+                            <div className="card border-0 shadow-sm h-100">
+                                <div className="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p className="text-body-tertiary mb-1">Active</p>
+                                        <h3 className="mb-0">{taskStats.active}</h3>
+                                    </div>
+                                    <div className="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                        <FaSpinner />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-sm-6 col-xl-3">
+                            <div className="card border-0 shadow-sm h-100">
+                                <div className="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p className="text-body-tertiary mb-1">Completed</p>
+                                        <h3 className="mb-0">{taskStats.completed}</h3>
+                                    </div>
+                                    <div className="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                        <FaCheckCircle />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-sm-6 col-xl-3">
+                            <div className="card border-0 shadow-sm h-100">
+                                <div className="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p className="text-body-tertiary mb-1">Overdue</p>
+                                        <h3 className="mb-0">{taskStats.overdue}</h3>
+                                    </div>
+                                    <div className="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                        <FaExclamationTriangle />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Фильтры и поиск */}
                     <div className='g-3 justify-content-between align-items-center mb-4 row'>
@@ -101,29 +363,83 @@ class TaskList extends Component {
                                 ))}
                             </div>
                         </div>
+
                         <div className='col-sm-auto col-12'>
                             <div className='d-flex align-items-center gap-1'>
                                 <div className='search-box me-3'>
-                                    <form className="d-flex align-items-center position-relative" role="search">
-                                        <input className="form-control me-2 search-input" type="search" placeholder="Search tasks" aria-label="Search tasks"></input>
+                                    <form className="d-flex align-items-center position-relative" role="search" onSubmit={(event) => event.preventDefault()}>
+                                        <input
+                                            className="form-control me-2 search-input"
+                                            type="search"
+                                            placeholder="Search by title, description, user or status"
+                                            aria-label="Search tasks"
+                                            value={this.state.searchQuery}
+                                            onChange={this.handleSearchChange}
+                                        />
                                         <FaSearch className='search-box-icon' />
                                     </form>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {/* Список исследований */}
+
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <span className="text-body-tertiary">
+                            Showing {filteredTasks.length} of {tasks.length} tasks
+                        </span>
+                    </div>
+
                     <div className='mb-5'>
                         <div className="table-responsive">
                             <table className="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Title</th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                onClick={() => this.handleSort("title")}
+                                            >
+                                                Title{this.getSortIndicator("title")}
+                                            </button>
+                                        </th>
                                         <th>Description</th>
-                                        <th>Assigned User</th>
-                                        <th>Status</th>
-                                        <th>Start</th>
-                                        <th>Due</th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                onClick={() => this.handleSort("user")}
+                                            >
+                                                Assigned User{this.getSortIndicator("user")}
+                                            </button>
+                                        </th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                onClick={() => this.handleSort("status")}
+                                            >
+                                                Status{this.getSortIndicator("status")}
+                                            </button>
+                                        </th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                onClick={() => this.handleSort("start_date")}
+                                            >
+                                                Start{this.getSortIndicator("start_date")}
+                                            </button>
+                                        </th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                onClick={() => this.handleSort("due_date")}
+                                            >
+                                                Due{this.getSortIndicator("due_date")}
+                                            </button>
+                                        </th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -136,11 +452,27 @@ class TaskList extends Component {
                                     {filteredTasks.map(task => (
                                         <tr key={task.id}>
                                             <td>{task.title}</td>
-                                            <td>{task.description?.slice(0, 60)}...</td>
+                                            <td>{this.getDescriptionPreview(task.description)}</td>
                                             <td>{task.user?.name || "Unknown"}</td>
                                             <td><span className={`badge bg-${this.getBadgeColor(task.status)}`}>{task.status}</span></td>
                                             <td>{formatDate(task.start_date)}</td>
-                                            <td>{task.due_date ? formatDate(task.due_date) : "-"}</td>
+                                            <td>
+
+                                                {task.due_date && (
+
+                                                    <span
+                                                        className={`badge ${this.getDeadlineBadgeClass(
+                                                            this.getDeadlineStatus(task.due_date)
+                                                        )}`}
+                                                    >
+                                                        {formatDate(task.due_date)}
+                                                    </span>
+
+                                                )}
+
+                                                {!task.due_date && "-"}
+
+                                            </td>
                                             <td>
                                                 <button className="btn btn-sm btn-outline-primary" onClick={() => this.setState({ isModalOpen: true, selectedTask: task })}>
                                                     View
@@ -151,9 +483,9 @@ class TaskList extends Component {
                                 </tbody>
                             </table>
                         </div>
-
                     </div>
                 </div>
+
                 <TaskDetailsModal
                     isOpen={isModalOpen}
                     task={selectedTask}

@@ -1,0 +1,14 @@
+.task-deadline-overdue {
+    background-color: var(--semantic-danger);
+    color: white;
+}
+
+.task-deadline-today {
+    background-color: var(--semantic-warning);
+    color: black;
+}
+
+.task-deadline-upcoming {
+    background-color: var(--semantic-accent);
+    color: var(--text-color);
+}

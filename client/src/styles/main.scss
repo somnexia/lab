@@ -8,6 +8,7 @@
 @use "components/forms";
 @use "components/inventory";
 @use "components/utilities";
+@use "components/taskList";
 @use "layout/root";
 
 // До гидрации ThemeContext атрибут data-theme может отсутствовать — считаем светлую тему по умолчанию
