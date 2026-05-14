@@ -1,22 +1,21 @@
 import React from "react";
 
 const InventoryOffcanvas = ({ isLoading, inventories, storageUnit, onClose }) => {
+    const isOpen = Boolean(storageUnit);
     return (
-        <div className="offcanvas inventory-offcanvas offcanvas-end " id="offcanvasInventory"
-            tabIndex="-1" aria-labelledby="offcanvasInventoryLabel"
-            style={{ visibility: storageUnit ? 'visible' : 'hidden' }}>
+        <div
+            className={`offcanvas inventory-offcanvas offcanvas-end${isOpen ? " show" : ""}`}
+            id="offcanvasInventory"
+            tabIndex={-1}
+            aria-labelledby="offcanvasInventoryLabel"
+            aria-hidden={!isOpen}
+        >
             <div className="p-2 ">
                 <div className="offcanvas-header">
                     {/* <h5 className="offcanvas-title" id="offcanvasInventoryLabel">
                         <span>{storageUnit?.unit_name || 'Неизвестный блок'}</span>
                     </h5> */}
-                    <button
-                        type="button"
-                        className="btn-close btn-close-white"
-                        onClick={onClose}
-                        data-bs-dismiss="offcanvas"
-                        aria-label="Close"
-                    ></button>
+                    <button type="button" className="btn-close btn-close-white" onClick={onClose} aria-label="Close" />
                 </div>
                 <div className="offcanvas-body">
                     {isLoading ? (

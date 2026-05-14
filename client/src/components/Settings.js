@@ -1,23 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { FaSun, FaMoon } from "react-icons/fa";
 import { usePanel } from "../context/PanelContext";
+import { ThemeContext } from "../context/ThemeContext";
 
 const Settings = () => {
-    const [theme, setTheme] = useState("light");
+    const { theme, toggleTheme } = useContext(ThemeContext);
     const { activePanel, closePanel } = usePanel();
     const isOpen = activePanel === "settings";
-
-    const toggleTheme = (next) => {
-        setTheme(next);
-        document.documentElement.setAttribute("data-theme", next);
-        localStorage.setItem("theme", next);
-    };
-
-    useEffect(() => {
-        const savedTheme = localStorage.getItem("theme") || "light";
-        setTheme(savedTheme);
-        document.documentElement.setAttribute("data-theme", savedTheme);
-    }, []);
 
     return (
         <div

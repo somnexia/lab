@@ -235,6 +235,12 @@
     transform: rotate(90deg);
   }
 
+  a.lab-aside__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
   a.lab-aside__trigger.is-active {
     background: rgba(110, 168, 254, 0.12);
     border-radius: 0.4rem;

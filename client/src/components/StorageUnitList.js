@@ -42,13 +42,7 @@ class StorageUnitList extends Component {
         }
     };
 
-    handleOffcanvasOpen = (offcanvasId,storageUnit) => {
-        const offcanvasElement = document.getElementById(offcanvasId);
-        if (offcanvasElement) {
-            const bootstrap = require("bootstrap");
-            const offcanvasInstance = new bootstrap.Offcanvas(offcanvasElement);
-            offcanvasInstance.show();
-        }
+    handleOffcanvasOpen = (offcanvasId, storageUnit) => {
         this.setState({ selectedStorageUnit: storageUnit });
         this.fetchInventory(storageUnit.id);
     };

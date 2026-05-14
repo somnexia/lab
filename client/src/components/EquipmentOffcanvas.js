@@ -70,28 +70,23 @@ class EquipmentOffcanvas extends Component {
 
     render() {
         const { storageUnits, loading, error, } = this.state;
-        const { onClose, selectedEquipment, } = this.props;
+        const { onClose, selectedEquipment, isOffcanvasOpen } = this.props;
         // const { addToCart } = this.context;
 
         return (
             <div
-                className="offcanvas inventory-offcanvas offcanvas-end"
+                className={`offcanvas inventory-offcanvas offcanvas-end${isOffcanvasOpen ? " show" : ""}`}
                 id="offcanvasEquipmentDetails"
-                tabIndex="-1"
+                tabIndex={-1}
                 aria-labelledby="offcanvasEquipmentDetailsLabel"
-                style={{ display: loading ? "none" : "block" }}>
+                aria-hidden={!isOffcanvasOpen}
+            >
                 <div className="offcanvas-header justify-content-end">
                     {/* <div className="offcanvas-title" id="offcanvasEquipmentDetailsLabel">
                         <h4>{selectedEquipment ? selectedEquipment.name : "Equipment Details"}</h4>
                     </div> */}
                     <div>
-                        <button
-                            type="button"
-                            className="btn-close"
-                            onClick={onClose}
-                            data-bs-dismiss="offcanvas"
-                            aria-label="Close"
-                        ></button>
+                        <button type="button" className="btn-close" onClick={onClose} aria-label="Close" />
                     </div>
                 </div>
                 <div className="offcanvas-body">
