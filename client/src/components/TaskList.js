@@ -1,7 +1,7 @@
 // client\src\components\TaskList.js
 import React, { Component } from 'react';
 import axios from 'axios';
-import { FaSearch, FaPlus } from "react-icons/fa";
+import { FaSearch, FaPlus, FaTasks, FaSpinner, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import TaskDetailsModal from './TaskDetailsOffcanvas';
 
@@ -100,6 +100,56 @@ class TaskList extends Component {
         return description.length > 60 ? `${description.slice(0, 60)}...` : description;
     };
 
+    getDateWithoutTime = (dateString) => {
+        if (!dateString) {
+            return null;
+        }
+
+        const date = new Date(dateString);
+
+        if (Number.isNaN(date.getTime())) {
+            return null;
+        }
+
+        date.setHours(0, 0, 0, 0);
+        return date;
+    };
+
+    isTaskClosed = (task) => {
+        return ["Completed", "Canceled"].includes(task.status);
+    };
+
+    getTaskStats = () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return this.state.tasks.reduce((stats, task) => {
+            const dueDate = this.getDateWithoutTime(task.due_date);
+            const isClosed = this.isTaskClosed(task);
+
+            stats.total += 1;
+
+            if (!isClosed) {
+                stats.active += 1;
+            }
+
+            if (task.status === "Completed") {
+                stats.completed += 1;
+            }
+
+            if (!isClosed && dueDate && dueDate < today) {
+                stats.overdue += 1;
+            }
+
+            return stats;
+        }, {
+            total: 0,
+            active: 0,
+            completed: 0,
+            overdue: 0,
+        });
+    };
+
     sortTasks = (tasks) => {
         const { sortConfig } = this.state;
 
@@ -173,6 +223,7 @@ class TaskList extends Component {
         const { tasks, statusCounts, selectedTask, isModalOpen } = this.state;
         const formatDate = (dateString) => dateString ? dateString.split('T')[0] : "-";
 
+        const taskStats = this.getTaskStats();
         const filteredTasks = this.getFilteredTasks();
         return (
             <>
@@ -188,6 +239,61 @@ class TaskList extends Component {
                         </Link>
                     </div>
                     <hr />
+
+                    <div className="row g-3 mb-4">
+                        <div className="col-sm-6 col-xl-3">
+                            <div className="card border-0 shadow-sm h-100">
+                                <div className="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p className="text-body-tertiary mb-1">Total tasks</p>
+                                        <h3 className="mb-0">{taskStats.total}</h3>
+                                    </div>
+                                    <div className="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                        <FaTasks />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-sm-6 col-xl-3">
+                            <div className="card border-0 shadow-sm h-100">
+                                <div className="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p className="text-body-tertiary mb-1">Active</p>
+                                        <h3 className="mb-0">{taskStats.active}</h3>
+                                    </div>
+                                    <div className="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                        <FaSpinner />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-sm-6 col-xl-3">
+                            <div className="card border-0 shadow-sm h-100">
+                                <div className="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p className="text-body-tertiary mb-1">Completed</p>
+                                        <h3 className="mb-0">{taskStats.completed}</h3>
+                                    </div>
+                                    <div className="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                        <FaCheckCircle />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-sm-6 col-xl-3">
+                            <div className="card border-0 shadow-sm h-100">
+                                <div className="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p className="text-body-tertiary mb-1">Overdue</p>
+                                        <h3 className="mb-0">{taskStats.overdue}</h3>
+                                    </div>
+                                    <div className="bg-danger-subtle text-danger rounded-circle d-flex align-items-center justify-content-center" style={{ width: "44px", height: "44px" }}>
+                                        <FaExclamationTriangle />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Фильтры и поиск */}
                     <div className='g-3 justify-content-between align-items-center mb-4 row'>
