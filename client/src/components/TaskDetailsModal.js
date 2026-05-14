@@ -70,7 +70,7 @@ class TaskDetailsModal extends Component {
         return !this.isTaskClosed(task) && dueDate && dueDate < today;
     };
 
-    getBadgeColor = (status) => {
+    getStatusTone = (status) => {
         switch (status) {
             case "Pending": return "secondary";
             case "Ongoing": return "warning";
@@ -78,14 +78,20 @@ class TaskDetailsModal extends Component {
             case "Draft": return "info";
             case "Canceled": return "dark";
             case "Critical": return "danger";
-            default: return "light";
+            default: return "neutral";
         }
     };
 
-    renderActionButton = ({ label, icon, className, onClick, disabled }) => (
+    renderStatusPill = (status) => (
+        <span className={`task-status task-status--${this.getStatusTone(status)}`}>
+            {status || "Unknown"}
+        </span>
+    );
+
+    renderActionButton = ({ label, icon, tone, onClick, disabled }) => (
         <button
             type="button"
-            className={className}
+            className={`task-modal__action task-modal__action--${tone}`}
             onClick={onClick}
             disabled={disabled}
             title={disabled ? "Connect this action handler when the API is ready" : undefined}
@@ -118,135 +124,114 @@ class TaskDetailsModal extends Component {
 
         return (
             <div
-                className="modal d-block"
+                className="task-modal"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="task-details-title"
                 onMouseDown={this.handleBackdropClick}
-                style={{ backgroundColor: "rgba(15, 23, 42, 0.55)" }}
             >
-                <div className="modal-dialog modal-dialog-centered modal-xl">
-                    <div className="modal-content border-0 shadow-lg overflow-hidden">
-                        <div className="modal-header border-0 bg-light px-4 py-4">
-                            <div className="d-flex flex-column gap-2">
-                                <div className="d-flex flex-wrap align-items-center gap-2">
-                                    <span className={`badge bg-${this.getBadgeColor(task.status)}`}>
-                                        {task.status || "Unknown"}
+                <section className="task-modal__panel" onMouseDown={(event) => event.stopPropagation()}>
+                    <header className="task-modal__header">
+                        <div>
+                            <div className="task-modal__status-line">
+                                {this.renderStatusPill(task.status)}
+                                {isOverdue && (
+                                    <span className="task-status task-status--danger">
+                                        <FaExclamationTriangle />
+                                        Overdue
                                     </span>
-                                    {isOverdue && (
-                                        <span className="badge bg-danger-subtle text-danger">
-                                            <FaExclamationTriangle className="me-1" />
-                                            Overdue
-                                        </span>
-                                    )}
-                                </div>
-                                <h3 id="task-details-title" className="modal-title mb-0">
-                                    {task.title || "Untitled task"}
-                                </h3>
+                                )}
                             </div>
-                            <button type="button" className="btn btn-light rounded-circle" aria-label="Close" onClick={onClose}>
-                                <FaTimes />
-                            </button>
+                            <h2 id="task-details-title">{task.title || "Untitled task"}</h2>
                         </div>
+                        <button type="button" className="task-modal__close" aria-label="Close" onClick={onClose}>
+                            <FaTimes />
+                        </button>
+                    </header>
 
-                        <div className="modal-body p-4">
-                            <div className="row g-4">
-                                <div className="col-lg-8">
-                                    <div className="card border-0 bg-light h-100">
-                                        <div className="card-body p-4">
-                                            <div className="d-flex align-items-center gap-2 mb-3">
-                                                <FaAlignLeft className="text-primary" />
-                                                <h5 className="mb-0">Description</h5>
-                                            </div>
-                                            <p className="text-body-secondary mb-0" style={{ whiteSpace: "pre-wrap" }}>
-                                                {task.description || "No description provided for this task."}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+                    <div className="task-modal__body">
+                        <article className="task-modal__description">
+                            <div className="task-modal__section-title">
+                                <FaAlignLeft />
+                                <h3>Description</h3>
+                            </div>
+                            <p>{task.description || "No description provided for this task."}</p>
+                        </article>
 
-                                <div className="col-lg-4">
-                                    <div className="card border-0 shadow-sm h-100">
-                                        <div className="card-body p-4">
-                                            <h5 className="mb-4">Task information</h5>
+                        <aside className="task-modal__info" aria-label="Task information">
+                            <h3>Task information</h3>
 
-                                            <div className="d-flex align-items-start gap-3 mb-4">
-                                                <div className="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: "40px", height: "40px" }}>
-                                                    <FaUser />
-                                                </div>
-                                                <div>
-                                                    <div className="text-body-tertiary small">Assigned user</div>
-                                                    <div className="fw-semibold">{task.user?.name || "Unknown"}</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="d-flex align-items-start gap-3 mb-4">
-                                                <div className="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: "40px", height: "40px" }}>
-                                                    <FaCalendarAlt />
-                                                </div>
-                                                <div>
-                                                    <div className="text-body-tertiary small">Start date</div>
-                                                    <div className="fw-semibold">{this.formatDate(task.start_date)}</div>
-                                                </div>
-                                            </div>
-
-                                            <div className="d-flex align-items-start gap-3">
-                                                <div className={`${isOverdue ? "bg-danger-subtle text-danger" : "bg-warning-subtle text-warning"} rounded-circle d-flex align-items-center justify-content-center flex-shrink-0`} style={{ width: "40px", height: "40px" }}>
-                                                    <FaRegClock />
-                                                </div>
-                                                <div>
-                                                    <div className="text-body-tertiary small">Due date</div>
-                                                    <div className={isOverdue ? "fw-semibold text-danger" : "fw-semibold"}>
-                                                        {this.formatDate(task.due_date)}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div className="task-modal__info-item">
+                                <span className="task-modal__info-icon task-modal__info-icon--primary">
+                                    <FaUser />
+                                </span>
+                                <div>
+                                    <p>Assigned user</p>
+                                    <strong>{task.user?.name || "Unknown"}</strong>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="modal-footer border-0 bg-light px-4 py-3">
-                            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
-                                <button type="button" className="btn btn-outline-secondary" onClick={onClose}>
-                                    Close
-                                </button>
-
-                                <div className="d-flex flex-wrap gap-2">
-                                    {this.renderActionButton({
-                                        label: "Edit",
-                                        icon: <FaEdit className="me-1" />,
-                                        className: "btn btn-outline-primary d-inline-flex align-items-center",
-                                        onClick: onEdit ? () => onEdit(task) : undefined,
-                                        disabled: !onEdit,
-                                    })}
-                                    {this.renderActionButton({
-                                        label: "Mark completed",
-                                        icon: <FaCheckCircle className="me-1" />,
-                                        className: "btn btn-outline-success d-inline-flex align-items-center",
-                                        onClick: onMarkComplete ? () => onMarkComplete(task) : undefined,
-                                        disabled: !onMarkComplete || !canComplete,
-                                    })}
-                                    {this.renderActionButton({
-                                        label: "Cancel task",
-                                        icon: <FaBan className="me-1" />,
-                                        className: "btn btn-outline-warning d-inline-flex align-items-center",
-                                        onClick: onCancelTask ? () => onCancelTask(task) : undefined,
-                                        disabled: !onCancelTask || !canCancel,
-                                    })}
-                                    {this.renderActionButton({
-                                        label: "Delete",
-                                        icon: <FaTrashAlt className="me-1" />,
-                                        className: "btn btn-outline-danger d-inline-flex align-items-center",
-                                        onClick: onDeleteTask ? () => onDeleteTask(task) : undefined,
-                                        disabled: !onDeleteTask,
-                                    })}
+                            <div className="task-modal__info-item">
+                                <span className="task-modal__info-icon task-modal__info-icon--success">
+                                    <FaCalendarAlt />
+                                </span>
+                                <div>
+                                    <p>Start date</p>
+                                    <strong>{this.formatDate(task.start_date)}</strong>
                                 </div>
                             </div>
-                        </div>
+
+                            <div className="task-modal__info-item">
+                                <span className={isOverdue ? "task-modal__info-icon task-modal__info-icon--danger" : "task-modal__info-icon task-modal__info-icon--warning"}>
+                                    <FaRegClock />
+                                </span>
+                                <div>
+                                    <p>Due date</p>
+                                    <strong className={isOverdue ? "task-modal__danger-text" : ""}>
+                                        {this.formatDate(task.due_date)}
+                                    </strong>
+                                </div>
+                            </div>
+                        </aside>
                     </div>
-                </div>
+
+                    <footer className="task-modal__footer">
+                        <button type="button" className="task-modal__secondary" onClick={onClose}>
+                            Close
+                        </button>
+
+                        <div className="task-modal__actions">
+                            {this.renderActionButton({
+                                label: "Edit",
+                                icon: <FaEdit />,
+                                tone: "primary",
+                                onClick: onEdit ? () => onEdit(task) : undefined,
+                                disabled: !onEdit,
+                            })}
+                            {this.renderActionButton({
+                                label: "Mark completed",
+                                icon: <FaCheckCircle />,
+                                tone: "success",
+                                onClick: onMarkComplete ? () => onMarkComplete(task) : undefined,
+                                disabled: !onMarkComplete || !canComplete,
+                            })}
+                            {this.renderActionButton({
+                                label: "Cancel task",
+                                icon: <FaBan />,
+                                tone: "warning",
+                                onClick: onCancelTask ? () => onCancelTask(task) : undefined,
+                                disabled: !onCancelTask || !canCancel,
+                            })}
+                            {this.renderActionButton({
+                                label: "Delete",
+                                icon: <FaTrashAlt />,
+                                tone: "danger",
+                                onClick: onDeleteTask ? () => onDeleteTask(task) : undefined,
+                                disabled: !onDeleteTask,
+                            })}
+                        </div>
+                    </footer>
+                </section>
             </div>
         );
     }
