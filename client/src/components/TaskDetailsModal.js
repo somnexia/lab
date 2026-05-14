@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-class TaskDetailsOffcanvas extends Component {
+class TaskDetailsModal extends Component {
 
     render() {
 
@@ -90,4 +90,4 @@ class TaskDetailsOffcanvas extends Component {
     }
 }
 
-export default TaskDetailsOffcanvas;
+export default TaskDetailsModal;
