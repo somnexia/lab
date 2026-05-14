@@ -1,7 +1,19 @@
 // client\src\components\TaskList.js
 import React, { Component } from 'react';
 import axios from 'axios';
-import { FaSearch, FaPlus, FaTasks, FaSpinner, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
+import {
+    FaSearch,
+    FaPlus,
+    FaTasks,
+    FaSpinner,
+    FaCheckCircle,
+    FaExclamationTriangle,
+    FaTable,
+    FaThLarge,
+    FaEye,
+    FaUser,
+    FaCalendarAlt,
+} from "react-icons/fa";
 import { Link } from "react-router-dom";
 import TaskDetailsModal from './TaskDetailsOffcanvas';
 
@@ -19,6 +31,7 @@ class TaskList extends Component {
             key: null,
             direction: "asc",
         },
+        viewMode: "table",
 
     };
 
@@ -56,6 +69,14 @@ class TaskList extends Component {
 
     handleSearchChange = (event) => {
         this.setState({ searchQuery: event.target.value });
+    };
+
+    handleViewModeChange = (viewMode) => {
+        this.setState({ viewMode });
+    };
+
+    openTaskDetails = (task) => {
+        this.setState({ isModalOpen: true, selectedTask: task });
     };
 
     clearSearch = () => {
@@ -127,6 +148,8 @@ class TaskList extends Component {
         return description.length > 60 ? `${description.slice(0, 60)}...` : description;
     };
 
+    formatDate = (dateString) => dateString ? dateString.split('T')[0] : "-";
+
     getDateWithoutTime = (dateString) => {
         if (!dateString) {
             return null;
@@ -144,6 +167,28 @@ class TaskList extends Component {
 
     isTaskClosed = (task) => {
         return ["Completed", "Canceled"].includes(task.status);
+    };
+
+    getDueDateInfo = (task) => {
+        if (!task.due_date) {
+            return {
+                label: "No due date",
+                className: "text-body-tertiary",
+                isOverdue: false,
+            };
+        }
+
+        const dueDate = this.getDateWithoutTime(task.due_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const isOverdue = !this.isTaskClosed(task) && dueDate && dueDate < today;
+
+        return {
+            label: this.formatDate(task.due_date),
+            className: isOverdue ? "text-danger fw-semibold" : "text-body",
+            isOverdue,
+        };
     };
 
     getTaskStats = () => {
@@ -310,6 +355,172 @@ class TaskList extends Component {
         );
     };
 
+    renderViewToggle = () => {
+        const { viewMode } = this.state;
+
+        return (
+            <div className="btn-group" role="group" aria-label="Task view mode">
+                <button
+                    type="button"
+                    className={`btn btn-sm ${viewMode === "table" ? "btn-primary" : "btn-outline-primary"}`}
+                    onClick={() => this.handleViewModeChange("table")}
+                >
+                    <FaTable className="me-1" />
+                    Table
+                </button>
+                <button
+                    type="button"
+                    className={`btn btn-sm ${viewMode === "cards" ? "btn-primary" : "btn-outline-primary"}`}
+                    onClick={() => this.handleViewModeChange("cards")}
+                >
+                    <FaThLarge className="me-1" />
+                    Cards
+                </button>
+            </div>
+        );
+    };
+
+    renderTaskViewButton = (task) => (
+        <button className="btn btn-sm btn-outline-primary" onClick={() => this.openTaskDetails(task)}>
+            <FaEye className="me-1" />
+            View
+        </button>
+    );
+
+    renderTaskTable = (tasks) => (
+        <div className='card border-0 shadow-sm mb-5'>
+            <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                    <thead className="table-light">
+                        <tr>
+                            <th className="ps-4">
+                                <button
+                                    type="button"
+                                    className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                    onClick={() => this.handleSort("title")}
+                                >
+                                    Title{this.getSortIndicator("title")}
+                                </button>
+                            </th>
+                            <th>Description</th>
+                            <th>
+                                <button
+                                    type="button"
+                                    className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                    onClick={() => this.handleSort("user")}
+                                >
+                                    Assigned User{this.getSortIndicator("user")}
+                                </button>
+                            </th>
+                            <th>
+                                <button
+                                    type="button"
+                                    className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                    onClick={() => this.handleSort("status")}
+                                >
+                                    Status{this.getSortIndicator("status")}
+                                </button>
+                            </th>
+                            <th>
+                                <button
+                                    type="button"
+                                    className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                    onClick={() => this.handleSort("start_date")}
+                                >
+                                    Start{this.getSortIndicator("start_date")}
+                                </button>
+                            </th>
+                            <th>
+                                <button
+                                    type="button"
+                                    className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                    onClick={() => this.handleSort("due_date")}
+                                >
+                                    Due{this.getSortIndicator("due_date")}
+                                </button>
+                            </th>
+                            <th className="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {tasks.map(task => {
+                            const dueDateInfo = this.getDueDateInfo(task);
+
+                            return (
+                                <tr key={task.id}>
+                                    <td className="ps-4">
+                                        <div className="fw-semibold">{task.title}</div>
+                                    </td>
+                                    <td className="text-body-secondary" style={{ maxWidth: "320px" }}>
+                                        {this.getDescriptionPreview(task.description)}
+                                    </td>
+                                    <td>
+                                        <span className="d-inline-flex align-items-center gap-2">
+                                            <FaUser className="text-body-tertiary" />
+                                            {task.user?.name || "Unknown"}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`badge bg-${this.getBadgeColor(task.status)}`}>{task.status}</span>
+                                    </td>
+                                    <td>{this.formatDate(task.start_date)}</td>
+                                    <td>
+                                        <span className={dueDateInfo.className}>{dueDateInfo.label}</span>
+                                        {dueDateInfo.isOverdue && <span className="badge bg-danger-subtle text-danger ms-2">Overdue</span>}
+                                    </td>
+                                    <td className="text-end pe-4">
+                                        {this.renderTaskViewButton(task)}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+
+    renderTaskCards = (tasks) => (
+        <div className="row g-3 mb-5">
+            {tasks.map(task => {
+                const dueDateInfo = this.getDueDateInfo(task);
+
+                return (
+                    <div className="col-md-6 col-xl-4" key={task.id}>
+                        <div className="card border-0 shadow-sm h-100">
+                            <div className="card-body d-flex flex-column">
+                                <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
+                                    <h5 className="mb-0">{task.title}</h5>
+                                    <span className={`badge bg-${this.getBadgeColor(task.status)}`}>{task.status}</span>
+                                </div>
+
+                                <p className="text-body-secondary flex-grow-1 mb-4">
+                                    {this.getDescriptionPreview(task.description)}
+                                </p>
+
+                                <div className="d-flex flex-column gap-2 mb-4">
+                                    <div className="d-flex align-items-center gap-2 text-body-secondary">
+                                        <FaUser />
+                                        <span>{task.user?.name || "Unknown"}</span>
+                                    </div>
+                                    <div className="d-flex align-items-center gap-2">
+                                        <FaCalendarAlt className="text-body-secondary" />
+                                        <span className={dueDateInfo.className}>{dueDateInfo.label}</span>
+                                        {dueDateInfo.isOverdue && <span className="badge bg-danger-subtle text-danger">Overdue</span>}
+                                    </div>
+                                </div>
+
+                                <div className="d-flex justify-content-end">
+                                    {this.renderTaskViewButton(task)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+
     getBadgeColor = (status) => {
         switch (status) {
             case "Pending": return "secondary";
@@ -322,8 +533,7 @@ class TaskList extends Component {
         }
     }
     render() {
-        const { tasks, statusCounts, selectedTask, isModalOpen, loading, error, searchQuery } = this.state;
-        const formatDate = (dateString) => dateString ? dateString.split('T')[0] : "-";
+        const { tasks, statusCounts, selectedTask, isModalOpen, loading, error, searchQuery, viewMode } = this.state;
 
         const taskStats = this.getTaskStats();
         const filteredTasks = this.getFilteredTasks();
@@ -458,88 +668,20 @@ class TaskList extends Component {
                                 <span className="text-body-tertiary">
                                     Showing {filteredTasks.length} of {tasks.length} tasks
                                 </span>
-                                {this.hasActiveFilters() && (
-                                    <button type="button" className="btn btn-sm btn-outline-secondary" onClick={this.resetFilters}>
-                                        Reset filters
-                                    </button>
-                                )}
+                                <div className="d-flex flex-wrap align-items-center gap-2">
+                                    {this.renderViewToggle()}
+                                    {this.hasActiveFilters() && (
+                                        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={this.resetFilters}>
+                                            Reset filters
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {hasNoResults ? this.renderNoResultsState() : (
-                                <div className='mb-5'>
-                                    <div className="table-responsive">
-                                        <table className="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                                            onClick={() => this.handleSort("title")}
-                                                        >
-                                                            Title{this.getSortIndicator("title")}
-                                                        </button>
-                                                    </th>
-                                                    <th>Description</th>
-                                                    <th>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                                            onClick={() => this.handleSort("user")}
-                                                        >
-                                                            Assigned User{this.getSortIndicator("user")}
-                                                        </button>
-                                                    </th>
-                                                    <th>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                                            onClick={() => this.handleSort("status")}
-                                                        >
-                                                            Status{this.getSortIndicator("status")}
-                                                        </button>
-                                                    </th>
-                                                    <th>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                                            onClick={() => this.handleSort("start_date")}
-                                                        >
-                                                            Start{this.getSortIndicator("start_date")}
-                                                        </button>
-                                                    </th>
-                                                    <th>
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
-                                                            onClick={() => this.handleSort("due_date")}
-                                                        >
-                                                            Due{this.getSortIndicator("due_date")}
-                                                        </button>
-                                                    </th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {filteredTasks.map(task => (
-                                                    <tr key={task.id}>
-                                                        <td>{task.title}</td>
-                                                        <td>{this.getDescriptionPreview(task.description)}</td>
-                                                        <td>{task.user?.name || "Unknown"}</td>
-                                                        <td><span className={`badge bg-${this.getBadgeColor(task.status)}`}>{task.status}</span></td>
-                                                        <td>{formatDate(task.start_date)}</td>
-                                                        <td>{formatDate(task.due_date)}</td>
-                                                        <td>
-                                                            <button className="btn btn-sm btn-outline-primary" onClick={() => this.setState({ isModalOpen: true, selectedTask: task })}>
-                                                                View
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                                viewMode === "table"
+                                    ? this.renderTaskTable(filteredTasks)
+                                    : this.renderTaskCards(filteredTasks)
                             )}
                         </>
                     )}
