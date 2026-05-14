@@ -1,7 +1,7 @@
 // client\src\components\TaskList.js
 import React, { Component } from 'react';
 import axios from 'axios';
-import { FaSearch, FaPlus, FaChevronRight } from "react-icons/fa";
+import { FaSearch, FaPlus } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import TaskDetailsModal from './TaskDetailsOffcanvas';
 
@@ -14,6 +14,11 @@ class TaskList extends Component {
         error: null,
         isModalOpen: false,
         selectedTask: null,
+        searchQuery: "",
+        sortConfig: {
+            key: null,
+            direction: "asc",
+        },
 
     };
 
@@ -42,6 +47,117 @@ class TaskList extends Component {
     handleStatusFilter = (status) => {
         this.setState({ selectedStatus: status });
     };
+
+    handleSearchChange = (event) => {
+        this.setState({ searchQuery: event.target.value });
+    };
+
+    handleSort = (key) => {
+        this.setState((prevState) => {
+            const isSameColumn = prevState.sortConfig.key === key;
+
+            return {
+                sortConfig: {
+                    key,
+                    direction: isSameColumn && prevState.sortConfig.direction === "asc" ? "desc" : "asc",
+                },
+            };
+        });
+    };
+
+    getSortIndicator = (key) => {
+        const { sortConfig } = this.state;
+
+        if (sortConfig.key !== key) {
+            return "";
+        }
+
+        return sortConfig.direction === "asc" ? " (asc)" : " (desc)";
+    };
+
+    getTaskSortValue = (task, key) => {
+        switch (key) {
+            case "title":
+                return task.title || "";
+            case "status":
+                return task.status || "";
+            case "user":
+                return task.user?.name || "";
+            case "start_date":
+                return task.start_date ? new Date(task.start_date).getTime() : null;
+            case "due_date":
+                return task.due_date ? new Date(task.due_date).getTime() : null;
+            default:
+                return "";
+        }
+    };
+
+    getDescriptionPreview = (description) => {
+        if (!description) {
+            return "-";
+        }
+
+        return description.length > 60 ? `${description.slice(0, 60)}...` : description;
+    };
+
+    sortTasks = (tasks) => {
+        const { sortConfig } = this.state;
+
+        if (!sortConfig.key) {
+            return tasks;
+        }
+
+        return [...tasks].sort((a, b) => {
+            const firstValue = this.getTaskSortValue(a, sortConfig.key);
+            const secondValue = this.getTaskSortValue(b, sortConfig.key);
+
+            if (firstValue === null && secondValue === null) return 0;
+            if (firstValue === null) return 1;
+            if (secondValue === null) return -1;
+
+            if (typeof firstValue === "number" && typeof secondValue === "number") {
+                return sortConfig.direction === "asc"
+                    ? firstValue - secondValue
+                    : secondValue - firstValue;
+            }
+
+            const comparison = String(firstValue).localeCompare(String(secondValue), undefined, {
+                sensitivity: "base",
+            });
+
+            return sortConfig.direction === "asc" ? comparison : -comparison;
+        });
+    };
+
+    getFilteredTasks = () => {
+        const { tasks, selectedStatus, searchQuery } = this.state;
+        const normalizedQuery = searchQuery.trim().toLowerCase();
+
+        const filteredByStatus = selectedStatus === "All"
+            ? tasks
+            : tasks.filter(task => task.status === selectedStatus);
+
+        if (!normalizedQuery) {
+            return this.sortTasks(filteredByStatus);
+        }
+
+        const filteredBySearch = filteredByStatus.filter((task) => {
+            const searchableText = [
+                task.title,
+                task.description,
+                task.user?.name,
+                task.status,
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+            return searchableText.includes(normalizedQuery);
+        });
+
+        return this.sortTasks(filteredBySearch);
+    };
+
     getBadgeColor = (status) => {
         switch (status) {
             case "Pending": return "secondary";
@@ -54,15 +170,10 @@ class TaskList extends Component {
         }
     }
     render() {
-        const { tasks, statusCounts, selectedTask, loading,
-            modalLoading,
-            error,
-            isModalOpen } = this.state;
-        const formatDate = (dateString) => dateString.split('T')[0];
+        const { tasks, statusCounts, selectedTask, isModalOpen } = this.state;
+        const formatDate = (dateString) => dateString ? dateString.split('T')[0] : "-";
 
-        const filteredTasks = this.state.selectedStatus === "All"
-            ? this.state.tasks
-            : this.state.tasks.filter(task => task.status === this.state.selectedStatus);
+        const filteredTasks = this.getFilteredTasks();
         return (
             <>
                 <div>
@@ -104,13 +215,25 @@ class TaskList extends Component {
                         <div className='col-sm-auto col-12'>
                             <div className='d-flex align-items-center gap-1'>
                                 <div className='search-box me-3'>
-                                    <form className="d-flex align-items-center position-relative" role="search">
-                                        <input className="form-control me-2 search-input" type="search" placeholder="Search tasks" aria-label="Search tasks"></input>
+                                    <form className="d-flex align-items-center position-relative" role="search" onSubmit={(event) => event.preventDefault()}>
+                                        <input
+                                            className="form-control me-2 search-input"
+                                            type="search"
+                                            placeholder="Search by title, description, user or status"
+                                            aria-label="Search tasks"
+                                            value={this.state.searchQuery}
+                                            onChange={this.handleSearchChange}
+                                        />
                                         <FaSearch className='search-box-icon' />
                                     </form>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <span className="text-body-tertiary">
+                            Showing {filteredTasks.length} of {tasks.length} tasks
+                        </span>
                     </div>
                     {/* Список исследований */}
                     <div className='mb-5'>
@@ -118,12 +241,52 @@ class TaskList extends Component {
                             <table className="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Title</th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                onClick={() => this.handleSort("title")}
+                                            >
+                                                Title{this.getSortIndicator("title")}
+                                            </button>
+                                        </th>
                                         <th>Description</th>
-                                        <th>Assigned User</th>
-                                        <th>Status</th>
-                                        <th>Start</th>
-                                        <th>Due</th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                onClick={() => this.handleSort("user")}
+                                            >
+                                                Assigned User{this.getSortIndicator("user")}
+                                            </button>
+                                        </th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                onClick={() => this.handleSort("status")}
+                                            >
+                                                Status{this.getSortIndicator("status")}
+                                            </button>
+                                        </th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                onClick={() => this.handleSort("start_date")}
+                                            >
+                                                Start{this.getSortIndicator("start_date")}
+                                            </button>
+                                        </th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="btn btn-link p-0 text-body text-decoration-none fw-semibold"
+                                                onClick={() => this.handleSort("due_date")}
+                                            >
+                                                Due{this.getSortIndicator("due_date")}
+                                            </button>
+                                        </th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -136,11 +299,11 @@ class TaskList extends Component {
                                     {filteredTasks.map(task => (
                                         <tr key={task.id}>
                                             <td>{task.title}</td>
-                                            <td>{task.description?.slice(0, 60)}...</td>
+                                            <td>{this.getDescriptionPreview(task.description)}</td>
                                             <td>{task.user?.name || "Unknown"}</td>
                                             <td><span className={`badge bg-${this.getBadgeColor(task.status)}`}>{task.status}</span></td>
                                             <td>{formatDate(task.start_date)}</td>
-                                            <td>{task.due_date ? formatDate(task.due_date) : "-"}</td>
+                                            <td>{formatDate(task.due_date)}</td>
                                             <td>
                                                 <button className="btn btn-sm btn-outline-primary" onClick={() => this.setState({ isModalOpen: true, selectedTask: task })}>
                                                     View
