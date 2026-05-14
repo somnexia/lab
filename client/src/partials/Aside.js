@@ -1,407 +1,241 @@
-
-import { IoHomeOutline } from "react-icons/io5";
-import { FaFlask } from "react-icons/fa6";
-import { IoFlask } from "react-icons/io5";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { IoHome } from "react-icons/io5";
 import { BsBoxes } from "react-icons/bs";
-import { FaRegClipboard } from "react-icons/fa";
-import { LuClipboardList } from "react-icons/lu";
 import { FaRegFolderClosed } from "react-icons/fa6";
-import { IoFlaskSharp } from "react-icons/io5";
-import { TbReportSearch } from "react-icons/tb";
-import { FaRegNewspaper } from "react-icons/fa6";
-import { LuNewspaper } from "react-icons/lu";
-import { IoNewspaperOutline } from "react-icons/io5";
-import { RxDashboard } from "react-icons/rx";
-import { FaRegUserCircle } from "react-icons/fa";
+import { FaFlask } from "react-icons/fa6";
 import { GrGroup } from "react-icons/gr";
-import { HiOutlineUserGroup } from "react-icons/hi";
-import { IoSettingsOutline } from "react-icons/io5";
-import { RiGraduationCapLine } from "react-icons/ri";
-import { LuGraduationCap } from "react-icons/lu";
-import { Link } from "react-router-dom";
-import React from "react";
 import { IoGameController } from "react-icons/io5";
-import { FaLock } from "react-icons/fa";
+import { FaRegUserCircle } from "react-icons/fa";
+import { IoSettingsOutline } from "react-icons/io5";
+import { usePanel } from "../context/PanelContext";
 
+function subLinkClass({ isActive }) {
+    return `lab-aside__sublink${isActive ? " lab-aside__sublink--active" : ""}`;
+}
 
+function topLinkClass({ isActive }) {
+    return `lab-aside__trigger text-decoration-none${isActive ? " is-active" : ""}`;
+}
 
+function NavGroup({ id, title, icon: Icon, expanded, onToggle, children }) {
+    const open = Boolean(expanded[id]);
+    return (
+        <li className="lab-aside__group">
+            <button
+                type="button"
+                className={`lab-aside__trigger${open ? " is-open" : ""}`}
+                aria-expanded={open}
+                onClick={() => onToggle(id)}
+            >
+                <span className="lab-aside__trigger-main">
+                    {Icon ? (
+                        <span className="nav-link-icon">
+                            <Icon />
+                        </span>
+                    ) : null}
+                    <span className="nav-link-text lab-aside__nav-text">{title}</span>
+                </span>
+                <span className="lab-aside__chev">▸</span>
+            </button>
+            {open ? <ul className="lab-aside__sub">{children}</ul> : null}
+        </li>
+    );
+}
 
-class Aside extends React.Component {
-    state = {}
+function Aside() {
+    const location = useLocation();
+    const { openPanel } = usePanel();
+    const [railCollapsed, setRailCollapsed] = useState(false);
+    const [expanded, setExpanded] = useState(() => ({
+        inventory: false,
+        projects: false,
+        management: false,
+    }));
 
-    // handleOffcanvasSettingsOpen = () => {
-    //     const offcanvasElement = document.getElementById("offcanvasSettings");
-    //     if (offcanvasElement) {
-    //         const bootstrap = require("bootstrap");
-    //         const offcanvasInstance = new bootstrap.Offcanvas(offcanvasElement);
-    //         offcanvasInstance.show();
-    //     }
-    // };
-    // handleOffcanvasAccountOpen = () => {
-    //     const offcanvasElement = document.getElementById("offcanvasAccount");
-    //     if (offcanvasElement) {
-    //         const bootstrap = require("bootstrap");
-    //         const offcanvasInstance = new bootstrap.Offcanvas(offcanvasElement);
-    //         offcanvasInstance.show();
-    //     }
-    // };
-    handleOffcanvasOpen = (offcanvasId) => {
-        const offcanvasElement = document.getElementById(offcanvasId);
-        if (offcanvasElement) {
-            const bootstrap = require("bootstrap");
-            const offcanvasInstance = new bootstrap.Offcanvas(offcanvasElement);
-            offcanvasInstance.show();
-        }
-    };
-    render() {
-        return (
-            <aside>
-                <div className="navbar-vertical navbar navbar-expand-lg" id='navId'>
-                    <div className="navbar-collapse collapse " id="navbarToggler">
-                        <div className="navbar-vertical-content ">
-                            <div className="vertical-nav-scroll py-3 pe-3" data-bs-spy="scroll" data-bs-target="#navId">
+    const syncExpanded = useCallback((pathname) => {
+        setExpanded((prev) => {
+            const next = { ...prev };
+            if (pathname.startsWith("/inventory")) next.inventory = true;
+            if (pathname.startsWith("/projects")) next.projects = true;
+            if (pathname.startsWith("/management")) next.management = true;
+            return next;
+        });
+    }, []);
 
-                                <ul className="flex-column navbar-nav" id="navbarVerticalNav" >
-                                    <ul className="nav nav-pills">
-                                        <li className="mb-1 ps-2 lab-nav-item ">
-                                            <button className="btn dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#home-collapse" aria-expanded="false">
+    useEffect(() => {
+        syncExpanded(location.pathname);
+    }, [location.pathname, syncExpanded]);
 
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <IoHome />
+    const toggle = useCallback((id) => {
+        setExpanded((prev) => ({
+            ...prev,
+            [id]: !prev[id],
+        }));
+    }, []);
 
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Home
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="home-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Updates</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Reports</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li className="mb-1 ps-2 lab-nav-item ">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#managment-collapse" aria-expanded="false">
+    const asideClass = useMemo(() => `lab-aside${railCollapsed ? " lab-aside--collapsed" : ""}`, [railCollapsed]);
 
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <IoGameController />
+    return (
+        <aside className={asideClass}>
+            <nav className="navbar-vertical navbar navbar-expand-lg" aria-label="Основная навигация">
+                <div className="lab-aside__inner w-100 d-flex flex-column">
+                    <div className="lab-aside__scroll vertical-nav-scroll py-3 pe-3">
+                        <h6 className="lab-aside__section-label navbar-heading text-secondary">Main</h6>
+                        <ul className="lab-aside__list navbar-nav flex-column">
+                            <li className="mb-1 ps-2">
+                                <NavLink to="/" end className={topLinkClass}>
+                                    <span className="lab-aside__trigger-main">
+                                        <span className="nav-link-icon">
+                                            <IoHome />
+                                        </span>
+                                        <span className="nav-link-text lab-aside__nav-text">Dashboard</span>
+                                    </span>
+                                </NavLink>
+                            </li>
 
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Managment
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="managment-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li className="mb-1 lab-nav-item ">
-                                                        <a className="btn dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#authentication-collapse" aria-expanded="false">
+                            <NavGroup id="inventory" title="Inventory" icon={BsBoxes} expanded={expanded} onToggle={toggle}>
+                                <li>
+                                    <NavLink to="/inventory/overview" className={subLinkClass}>
+                                        Overview
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/inventory/warehouses" className={subLinkClass}>
+                                        Warehouses
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/inventory/storage-units" className={subLinkClass}>
+                                        Storage units
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/inventory/ladder" className={subLinkClass}>
+                                        Storage tree
+                                    </NavLink>
+                                </li>
+                            </NavGroup>
 
-                                                            <div className='d-flex align-items-center'>
-                                                                <span className="nav-link-icon">
-                                                                    <FaLock />
+                            <NavGroup id="projects" title="Projects" icon={FaRegFolderClosed} expanded={expanded} onToggle={toggle}>
+                                <li>
+                                    <NavLink to="/projects" end className={subLinkClass}>
+                                        Overview
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/projects/research-list" className={subLinkClass}>
+                                        Researches
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/projects/research-create" className={subLinkClass}>
+                                        New research
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/projects/task-list" className={subLinkClass}>
+                                        Tasks
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/projects/task-create" className={subLinkClass}>
+                                        New task
+                                    </NavLink>
+                                </li>
+                            </NavGroup>
 
-                                                                </span>
-                                                                <span className="nav-link-text">
-                                                                    Authentication
-                                                                </span>
-                                                            </div>
-                                                        </a>
-                                                        <div className="collapse" id="authentication-collapse">
-                                                            <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                                <li><Link to="/management/signin" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign In</Link></li>
-                                                                <li><Link to="/management/signup" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign Up</Link></li>
-                                                                <li><Link to="/management/signout" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign Out</Link></li>
-                                                            </ul>
-                                                        </div>
-                                                    </li>
-                                                    <li><Link to="/management/userlog" className="nav-link btn   d-inline-flex text-decoration-none rounded">User log</Link></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Reports</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <hr></hr>
-                                        <h6 className="navbar-heading text-secondary">Documentation</h6>
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="false">
+                            <li className="mb-1 ps-2">
+                                <NavLink to="/equipment" className={topLinkClass}>
+                                    <span className="lab-aside__trigger-main">
+                                        <span className="nav-link-icon">
+                                            <FaFlask />
+                                        </span>
+                                        <span className="nav-link-text lab-aside__nav-text">Equipment</span>
+                                    </span>
+                                </NavLink>
+                            </li>
 
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <FaRegClipboard />
+                            <li className="mb-1 ps-2">
+                                <NavLink to="/teams/participants" className={topLinkClass}>
+                                    <span className="lab-aside__trigger-main">
+                                        <span className="nav-link-icon">
+                                            <GrGroup />
+                                        </span>
+                                        <span className="nav-link-text lab-aside__nav-text">Teams</span>
+                                    </span>
+                                </NavLink>
+                            </li>
+                        </ul>
 
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Dashboard
-                                                    </span>
-                                                </div>
+                        <h6 className="lab-aside__section-label navbar-heading text-secondary">Management</h6>
+                        <ul className="lab-aside__list navbar-nav flex-column">
+                            <NavGroup id="management" title="Management" icon={IoGameController} expanded={expanded} onToggle={toggle}>
+                                <li>
+                                    <NavLink to="/management/signin" className={subLinkClass}>
+                                        Sign in
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/management/signup" className={subLinkClass}>
+                                        Sign up
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/management/signout" className={subLinkClass}>
+                                        Sign out
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/management/userlog" className={subLinkClass}>
+                                        User log
+                                    </NavLink>
+                                </li>
+                            </NavGroup>
+                        </ul>
 
-                                            </button>
-                                            <div className="collapse" id="dashboard-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Weekly</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Monthly</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Annually</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#tests-collapse" aria-expanded="false">
-
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <IoFlaskSharp />
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Tests
-
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="tests-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">New</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Processed</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Shipped</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Returned</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#projects-collapse" aria-expanded="false">
-
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <FaRegFolderClosed />
-
-
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Projects
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="projects-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><Link to="/projects/overview" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</Link></li>
-                                                    <li><Link to="/projects/research-list" className="nav-link btn   d-inline-flex text-decoration-none rounded">Researches</Link></li>
-                                                    <li><Link to="/projects/research-create" className="nav-link btn   d-inline-flex text-decoration-none rounded">Create new</Link></li>
-                                                    <li><Link to="/projects/task-list" className="nav-link btn   d-inline-flex text-decoration-none rounded">Todo list</Link></li>
-                                                    <li><Link to="/projects/task-create" className="nav-link btn   d-inline-flex text-decoration-none rounded"></Link></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#inventory-collapse" aria-expanded="false">
-
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <BsBoxes />
-
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Inventory
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="inventory-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><Link to="/inventory/overview" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</Link></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#equipment-collapse" aria-expanded="false">
-
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <BsBoxes />
-
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Equipment
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="equipment-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><Link to="/equipment" className="nav-link btn   d-inline-flex text-decoration-none rounded">Overview</Link></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#orders-collapse" aria-expanded="false">
-
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <LuClipboardList />
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Orders
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="orders-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">New...</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#reports-collapse" aria-expanded="false">
-
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <IoNewspaperOutline />
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Reports
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="reports-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">New...</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link btn   d-inline-flex text-decoration-none rounded">Sign out</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                    <hr></hr>
-                                    <h6 className="navbar-heading text-secondary">Documentation</h6>
-
-                                    <ul className="nav nav-bottom nav-pills">
-
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#activities-collapse" aria-expanded="false">
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <RxDashboard />
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Activities
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="activities-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">New...</a></li>
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Sign out</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#teams-collapse" aria-expanded="false">
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <GrGroup />
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Teams
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="teams-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><Link to="/teams/participants" className="nav-link  d-inline-flex text-decoration-none rounded">Participants</Link></li>
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Sign out</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  dropdown-toggle collapsed" data-bs-toggle="collapse" data-bs-target="#tutorials-collapse" aria-expanded="false">
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <RiGraduationCapLine />
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Tutorials
-                                                    </span>
-                                                </div>
-                                            </button>
-                                            <div className="collapse" id="tutorials-collapse">
-                                                <ul className=" d-flex flex-wrap d-inline-flex list-unstyled fw-normal pb-1 small">
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">New...</a></li>
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Profile</a></li>
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Settings</a></li>
-                                                    <li><a href="#" className="nav-link  d-inline-flex text-decoration-none rounded">Sign out</a></li>
-                                                </ul>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                    <div className='mt-auto'></div>
-                                    <ul className="nav nav-pills pt-3 pb-2">
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  collapsed" role="button"
-                                                onClick={() => this.handleOffcanvasOpen("offcanvasAccount")}>
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <FaRegUserCircle />
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Account
-                                                    </span>
-                                                </div>
-                                            </button>
-                                        </li>
-                                        <li className="mb-1 ps-2 lab-nav-item">
-                                            <button className="btn  collapsed" role="button"
-                                                onClick={() => this.handleOffcanvasOpen("offcanvasSettings")}>
-                                                <div className='d-flex align-items-center'>
-                                                    <span className="nav-link-icon">
-                                                        <IoSettingsOutline />
-                                                    </span>
-                                                    <span className="nav-link-text">
-                                                        Settings
-                                                    </span>
-                                                </div>
-                                            </button>
-
-                                        </li>
-
-
-
-                                    </ul>
-                                </ul>
-                            </div>
-                        </div>
+                        <h6 className="lab-aside__section-label navbar-heading text-secondary">Panels</h6>
+                        <ul className="lab-aside__list navbar-nav flex-column">
+                            <li className="mb-1 ps-2">
+                                <button type="button" className="lab-aside__trigger w-100 border-0 bg-transparent" onClick={() => openPanel("account")}>
+                                    <span className="lab-aside__trigger-main">
+                                        <span className="nav-link-icon">
+                                            <FaRegUserCircle />
+                                        </span>
+                                        <span className="nav-link-text lab-aside__nav-text">Account</span>
+                                    </span>
+                                </button>
+                            </li>
+                            <li className="mb-1 ps-2">
+                                <button type="button" className="lab-aside__trigger w-100 border-0 bg-transparent" onClick={() => openPanel("settings")}>
+                                    <span className="lab-aside__trigger-main">
+                                        <span className="nav-link-icon">
+                                            <IoSettingsOutline />
+                                        </span>
+                                        <span className="nav-link-text lab-aside__nav-text">Settings</span>
+                                    </span>
+                                </button>
+                            </li>
+                        </ul>
                     </div>
+
                     <div className="navbar-vertical-footer">
-                        <button type="button" className="btn  navbar-vertical-toggle fw-semibold  white-space-nowrap d-flex align-items-center" typeof='button' data-bs-toggle="collapse" data-bs-target="#navbarToggler" aria-expanded="false" aria-controls="navbarToggler">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="mb-1">
-                                <path d="M21,11H9.41l2.3-2.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0-.21.33,1,1,0,0,0,0,.76,1,1,0,0,0,.21.33l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42L9.41,13H21a1,1,0,0,0,0-2ZM3,3A1,1,0,0,0,2,4V20a1,1,0,0,0,2,0V4A1,1,0,0,0,3,3Z"></path>
-                            </svg><span className="ms-2">Collapsed View</span>
+                        <button
+                            type="button"
+                            className="lab-aside__rail-toggle navbar-vertical-toggle fw-semibold white-space-nowrap"
+                            onClick={() => setRailCollapsed((c) => !c)}
+                            aria-pressed={railCollapsed}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="mb-1" aria-hidden>
+                                <path d="M21,11H9.41l2.3-2.29a1,1,0,1,0-1.42-1.42l-4,4a1,1,0,0,0-.21.33,1,1,0,0,0,0,.76,1,1,0,0,0,.21.33l4,4a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42L9.41,13H21a1,1,0,0,0,0-2ZM3,3A1,1,0,0,0,2,4V20a1,1,0,0,0,2,0V4A1,1,0,0,0,3,3Z" />
+                            </svg>
+                            <span>{railCollapsed ? "Expand" : "Compact sidebar"}</span>
                         </button>
                     </div>
                 </div>
-
-            </aside>
-
-        );
-
-    }
+            </nav>
+        </aside>
+    );
 }
 
 export default Aside;

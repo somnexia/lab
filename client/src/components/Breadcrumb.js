@@ -12,7 +12,7 @@ const Breadcrumb = () => {
             <ol className="breadcrumb lab-breadcrumb">
                 {/* Главная страница */}
                 <li className="breadcrumb-item" >
-                    <Link to="/">Home</Link>
+                    <Link to="/">Dashboard</Link>
                 </li>
 
                 {/* Динамические элементы пути */}

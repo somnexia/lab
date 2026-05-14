@@ -1,70 +1,80 @@
-import React from 'react';
-import { IoIosSunny } from "react-icons/io";
-import { IoIosMoon } from "react-icons/io";
-import { FaSun } from "react-icons/fa";
-import { FaMoon } from "react-icons/fa";
-class Settings extends React.Component {
-    state = {theme: "light",}
+import React, { useEffect, useState } from "react";
+import { FaSun, FaMoon } from "react-icons/fa";
+import { usePanel } from "../context/PanelContext";
 
-    toggleTheme = (theme) => {
-        this.setState({ theme });
-        document.documentElement.setAttribute("data-theme", theme);// Установить атрибут темы на корневом элементе
-        localStorage.setItem("theme", theme); 
+const Settings = () => {
+    const [theme, setTheme] = useState("light");
+    const { activePanel, closePanel } = usePanel();
+    const isOpen = activePanel === "settings";
+
+    const toggleTheme = (next) => {
+        setTheme(next);
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
     };
 
-    componentDidMount() {
+    useEffect(() => {
         const savedTheme = localStorage.getItem("theme") || "light";
-        this.setState({ theme: savedTheme });
+        setTheme(savedTheme);
         document.documentElement.setAttribute("data-theme", savedTheme);
-    }
+    }, []);
 
-    render() {
-        const { theme } = this.state;
-        return (
-            <div className="offcanvas settings-offcanvas offcanvas-end" id="offcanvasSettings" tabIndex={"-1"} aria-labelledby="offcanvasSettingsLabel">
-                <div className="offcanvas-header"></div>
-                <div className="offcanvas-body">
-                    <a className="btn-close" href="#" data-bs-dismiss="offcanvas" aria-label="Close"></a>
-                    <div className="text-center">
-                        <img src="/designer-life.svg" alt="" />
+    return (
+        <div
+            className={`offcanvas settings-offcanvas offcanvas-end${isOpen ? " show" : ""}`}
+            id="offcanvasSettings"
+            tabIndex={-1}
+            aria-hidden={!isOpen}
+            aria-labelledby="offcanvasSettingsLabel"
+        >
+            <div className="offcanvas-header" />
+            <div className="offcanvas-body position-relative">
+                <button type="button" className="btn-close position-absolute top-0 end-0 m-3" aria-label="Close" onClick={closePanel} />
+                <div className="text-center pt-2">
+                    <img src="/designer-life.svg" alt="" />
+                </div>
+                <h2 className="text-center mb-2" id="offcanvasSettingsLabel">
+                    Appearance
+                </h2>
+                <p className="text-center mb-4 text-body-secondary small">Theme is stored in the browser for this app.</p>
+                <hr className="mb-4" />
+                <h4 className="mb-1">Color scheme</h4>
+                <p className="small text-body-secondary mb-3">Overall light or dark presentation.</p>
+                <div className="btn-group-toggle row gx-2 mb-4">
+                    <div className="col">
+                        <input
+                            className="btn-check"
+                            checked={theme === "light"}
+                            onChange={() => toggleTheme("light")}
+                            name="colorScheme"
+                            id="colorSchemeLight"
+                            type="radio"
+                            value="light"
+                        />
+                        <label className="btn w-100 btn-dark btn-outline-light" htmlFor="colorSchemeLight">
+                            <FaSun className="me-1" />
+                            Light
+                        </label>
                     </div>
-                    <h2 className="text-center mb-2">
-                        Make Dashkit Your Own
-                    </h2>
-                    <p className="text-center mb-4">
-                        Set preferences that will be cookied for your live preview demonstration.
-                    </p>
-                    <hr className="mb-4"></hr>
-                    <h4 className="mb-1">
-                        Color Scheme
-                    </h4>
-                    <p className="small text-body-secondary mb-3">
-                        Overall light or dark presentation.
-                    </p>
-                    <div className="btn-group-toggle row gx-2 mb-4">
-                        <div className="col">
-                            <input className="btn-check" checked={theme === "light"}
-                                onChange={() => this.toggleTheme("light")} name="colorScheme" id="colorSchemeLight" type="radio" value="light"></input>
-                            <label className="btn w-100 btn-dark btn-outline-light" htmlFor="colorSchemeLight">
-                                <FaSun />
-                                Light Mode
-                            </label>
-                        </div>
-                        <div className="col">
-                            <input className="btn-check" checked={theme === "dark"}
-                                onChange={() => this.toggleTheme("dark")} name="colorScheme" id="colorSchemeDark" type="radio" value="dark"></input>
-                            <label className="btn w-100 btn-dark btn-outline-light" htmlFor="colorSchemeDark">
-                                <FaMoon />
-                                Dark Mode
-                            </label>
-                        </div>
+                    <div className="col">
+                        <input
+                            className="btn-check"
+                            checked={theme === "dark"}
+                            onChange={() => toggleTheme("dark")}
+                            name="colorScheme"
+                            id="colorSchemeDark"
+                            type="radio"
+                            value="dark"
+                        />
+                        <label className="btn w-100 btn-dark btn-outline-light" htmlFor="colorSchemeDark">
+                            <FaMoon className="me-1" />
+                            Dark
+                        </label>
                     </div>
                 </div>
-
-
             </div>
-        );
-    }
-}
+        </div>
+    );
+};
 
 export default Settings;
