@@ -30,24 +30,39 @@ btc-price-script/
 └── README.md
 ```
 
-## Local setup
+## Local setup (Windows / Linux)
 
-1. Copy environment template:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Edit `.env` with your MySQL and Discord values.
-
-3. Create the database table (see `schema.sql`) in phpMyAdmin or MySQL CLI.
-
-4. Install dependencies and run once:
+1. Install dependencies:
 
    ```bash
    pip install -r requirements.txt
-   cd src && python main.py
    ```
+
+2. Create local env file (never commit it):
+
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+3. Edit `.env.local`:
+
+   | Variable | Local value |
+   |----------|-------------|
+   | `MYSQL_HOST` | `127.0.0.1` (not the Coolify internal hostname) |
+   | `MYSQL_PORT` | `3306` (or your forwarded port) |
+   | `MYSQL_USER` | user you created in MySQL |
+   | `MYSQL_PASSWORD` | your local password |
+   | `MYSQL_DATABASE` | `btc` |
+
+4. Create DB and table (`schema.sql`) in local MySQL or phpMyAdmin.
+
+5. Run from project root:
+
+   ```bash
+   python src/main.py
+   ```
+
+`.env.local` overrides `.env` when both exist. On Coolify only dashboard env vars are used (`.env.local` is not in the image).
 
 ## Coolify environment variables
 
