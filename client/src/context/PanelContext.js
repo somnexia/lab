@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 
-const PanelContext = createContext(null);
+export const PanelContext = createContext(null);
 
 export function PanelProvider({ children }) {
     const [activePanel, setActivePanel] = useState(null);

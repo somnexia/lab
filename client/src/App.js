@@ -8,7 +8,7 @@ import Aside from './partials/Aside';
 import Main from './partials/Main';
 import Settings from "./components/Settings";
 import Account from "./components/Account";
-import CartOffcanvas from "./components/CartOffcanvas";
+import CartDrawer from "./components/CartDrawer";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import SignOut from "./components/SignOut";
@@ -66,7 +66,7 @@ const PageWrapper = () => {
                     <Aside />
                     <Settings />
                     <Account />
-                    <CartOffcanvas />
+                    <CartDrawer />
                 </>
             )}
 
