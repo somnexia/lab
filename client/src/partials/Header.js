@@ -336,19 +336,19 @@ function Header() {
                                 <ul className="lab-header__dropdown lab-header__dropdown--end" role="menu">
                                     <li>
                                         <Link to="/customer/profile" className="lab-header__dropdown-item" onClick={closeMenus}>
-                                            <FaRegUserCircle style={{ marginRight: "0.35rem", verticalAlign: "text-bottom" }} />
+                                            <FaRegUserCircle style={{ width: "2rem",height: "2rem", marginRight: "0.35rem", verticalAlign: "text-bottom" }} />
                                             Profile
                                         </Link>
                                     </li>
                                     <li>
                                         <Link to="/" className="lab-header__dropdown-item" onClick={closeMenus}>
-                                            <FiPieChart style={{ marginRight: "0.35rem", verticalAlign: "text-bottom" }} />
+                                            <FiPieChart style={{ width: "2rem", height: "2rem", marginRight: "0.35rem", verticalAlign: "text-bottom" }} />
                                             Dashboard
                                         </Link>
                                     </li>
                                     <li>
                                         <Link to="/customer/profile" className="lab-header__dropdown-item" onClick={closeMenus}>
-                                            <FaEnvelope style={{ marginRight: "0.35rem", verticalAlign: "text-bottom" }} />
+                                            <FaEnvelope style={{ width: "2rem", height: "2rem", marginRight: "0.35rem", verticalAlign: "text-bottom" }} />
                                             Activity
                                         </Link>
                                     </li>

@@ -55,6 +55,29 @@ class AuthProvider extends Component {
         }
     };
 
+    updateProfile = async (data) => {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            return { success: false, message: 'Необходима авторизация' };
+        }
+
+        try {
+            const response = await axios.put(
+                'http://localhost:3000/api/users/profile',
+                data,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            this.setState({ user: response.data, error: null });
+            return { success: true, user: response.data };
+        } catch (error) {
+            const message =
+                error.response?.data?.message ||
+                error.response?.data?.error ||
+                'Не удалось обновить профиль';
+            return { success: false, message };
+        }
+    };
+
     logout = async () => {
         const token = localStorage.getItem('authToken');
 
@@ -79,7 +102,16 @@ class AuthProvider extends Component {
         const { user, loading } = this.state;
 
         return (
-            <AuthContext.Provider value={{ user, loading, login: this.login, logout: this.logout, loadUser: this.loadUser }}>
+            <AuthContext.Provider
+                value={{
+                    user,
+                    loading,
+                    login: this.login,
+                    logout: this.logout,
+                    loadUser: this.loadUser,
+                    updateProfile: this.updateProfile,
+                }}
+            >
                 {children}
             </AuthContext.Provider>
         );

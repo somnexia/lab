@@ -1,247 +1,256 @@
-import React, { useContext, Component } from 'react';
-import axios from 'axios';
-import { FaFacebook } from "react-icons/fa6";
-import { FaGoogle } from "react-icons/fa6";
-import { FaLinkedin } from "react-icons/fa";
-import { FaFacebookSquare } from "react-icons/fa";
-import { AuthContext } from '../context/AuthContext';
+import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import { FaPen } from "react-icons/fa";
+import { AuthContext } from "../context/AuthContext";
+import ProfileEdit from "./ProfileEdit";
 
+function initialsFromName(name) {
+    if (!name || typeof name !== "string") return "?";
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "?";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
+function formatDate(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+    return date.toLocaleDateString();
+}
 
+function employeeDisplayName(employee) {
+    if (!employee) return null;
+    const parts = [employee.name, employee.surname].filter(Boolean);
+    return parts.join(" ").trim() || null;
+}
+
+const TABS = [
+    { id: "overview", label: "Overview" },
+    { id: "personal", label: "Edit profile" },
+];
 
 class Profile extends Component {
     static contextType = AuthContext;
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            user: null,
-            loading: true,
-        };
-    }
-
-    componentDidMount() {
-        this.setState({ loading: true });
-        this.fetchUserProfile();
-    }
-
-    fetchUserProfile = async () => {
-        try {
-            const userId = 1; // Замените на реальный id пользователя
-            const response = await axios.get(`http://localhost:3000/api/users/${userId}`);
-            this.setState({ user: response.data, isLoading: false });
-        } catch (error) {
-            console.error('Ошибка при загрузке профиля:', error);
-            this.setState({ error: 'Ошибка при загрузке профиля', isLoading: false });
-        }
+    state = {
+        activeTab: "overview",
+        feedback: null,
     };
 
-    handleUpdateUser = async (updatedData) => {
-        try {
-            const userId = this.state.user.id;
-            const response = await axios.put(`http://localhost:3000/api/users/${userId}`, updatedData);
-            this.setState({ user: response.data });
-            alert('Профиль обновлен успешно!');
-        } catch (error) {
-            console.error('Ошибка при обновлении профиля:', error);
-            alert('Ошибка при обновлении профиля');
-        }
+    componentWillUnmount() {
+        window.clearTimeout(this._feedbackTimer);
+    }
+
+    setActiveTab = (tabId) => {
+        this.setState({ activeTab: tabId });
     };
+
+    showFeedback = (message, isError = false) => {
+        this.setState({ feedback: { message, isError } });
+        window.clearTimeout(this._feedbackTimer);
+        this._feedbackTimer = window.setTimeout(() => {
+            this.setState({ feedback: null });
+        }, 5000);
+    };
+
+    handleProfileSaved = (message) => {
+        this.showFeedback(message, false);
+        this.setState({ activeTab: "overview" });
+    };
+
+    renderOverview(user) {
+        return (
+            <div className="lab-profile__panel">
+                <div className="lab-profile__card">
+                    <h3 className="lab-profile__card-title">Account details</h3>
+                    <div className="lab-profile__detail-row">
+                        <p className="lab-profile__detail-label">Full name</p>
+                        <p className="lab-profile__detail-value">{user.name || "—"}</p>
+                    </div>
+                    <div className="lab-profile__detail-row">
+                        <p className="lab-profile__detail-label">Email</p>
+                        <p className="lab-profile__detail-value">
+                            {user.email ? (
+                                <a href={`mailto:${user.email}`}>{user.email}</a>
+                            ) : (
+                                "—"
+                            )}
+                        </p>
+                    </div>
+                    <div className="lab-profile__detail-row">
+                        <p className="lab-profile__detail-label">Member since</p>
+                        <p className="lab-profile__detail-value">{formatDate(user.createdAt)}</p>
+                    </div>
+                    <div className="lab-profile__detail-row">
+                        <p className="lab-profile__detail-label">Last updated</p>
+                        <p className="lab-profile__detail-value">{formatDate(user.updatedAt)}</p>
+                    </div>
+                    <div className="lab-profile__actions">
+                        <button
+                            type="button"
+                            className="lab-profile__btn-primary"
+                            onClick={() => this.setActiveTab("personal")}
+                        >
+                            <FaPen aria-hidden />
+                            Edit profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    renderEmployeeCard(employee) {
+        if (!employee) {
+            return (
+                <div className="lab-profile__card">
+                    <h3 className="lab-profile__card-title">Lab member</h3>
+                    <p className="lab-profile__meta">
+                        No employee record is linked to this account yet.
+                    </p>
+                </div>
+            );
+        }
+
+        const name = employeeDisplayName(employee);
+        const labName = employee.laboratory?.lab_name;
+
+        return (
+            <div className="lab-profile__card">
+                <h3 className="lab-profile__card-title">Lab member</h3>
+                <div className="lab-profile__detail-row">
+                    <p className="lab-profile__detail-label">Name</p>
+                    <p className="lab-profile__detail-value">{name || "—"}</p>
+                </div>
+                {employee.position ? (
+                    <div className="lab-profile__detail-row">
+                        <p className="lab-profile__detail-label">Position</p>
+                        <p className="lab-profile__detail-value">{employee.position}</p>
+                    </div>
+                ) : null}
+                {employee.department ? (
+                    <div className="lab-profile__detail-row">
+                        <p className="lab-profile__detail-label">Department</p>
+                        <p className="lab-profile__detail-value">{employee.department}</p>
+                    </div>
+                ) : null}
+                {employee.specialization ? (
+                    <div className="lab-profile__detail-row">
+                        <p className="lab-profile__detail-label">Specialization</p>
+                        <p className="lab-profile__detail-value">{employee.specialization}</p>
+                    </div>
+                ) : null}
+                {labName ? (
+                    <div className="lab-profile__detail-row">
+                        <p className="lab-profile__detail-label">Laboratory</p>
+                        <p className="lab-profile__detail-value">{labName}</p>
+                    </div>
+                ) : null}
+            </div>
+        );
+    }
 
     render() {
         const { user, loading } = this.context;
+        const { activeTab, feedback } = this.state;
 
         if (loading) {
-            return <div>Загрузка...</div>;
+            return (
+                <section className="lab-profile" aria-busy="true">
+                    <p className="lab-profile__loading">Loading profile…</p>
+                </section>
+            );
         }
 
         if (!user) {
-            return( 
-
-            <div>
-                 <h2>Profile</h2>
-                 <hr />
-                <p>You are not authorized. Please authorize to see your profile.</p>
-                <p>
-                    Click{" "}
-                    <a className="text-decoration-none" href="/management/signin">
-                        here
-                    </a>{" "}
-                    to sign in...
-                </p>
-            </div>
-            )
+            return (
+                <section className="lab-profile">
+                    <header className="lab-profile__header">
+                        <p className="lab-profile__eyebrow">Account</p>
+                        <h2 className="lab-profile__title">Profile</h2>
+                    </header>
+                    <p className="lab-profile__signin">
+                        You are not signed in.{" "}
+                        <Link to="/management/signin">Sign in</Link> to view and edit your profile.
+                    </p>
+                </section>
+            );
         }
 
+        const employee = user.employee;
+
         return (
-            <div>
-                <h2>Profile</h2>
-                <hr />
-                <div className='container'>
+            <section className="lab-profile" aria-labelledby="lab-profile-title">
+                <header className="lab-profile__header">
+                    <p className="lab-profile__eyebrow">Account</p>
+                    <h2 id="lab-profile-title" className="lab-profile__title">
+                        Profile
+                    </h2>
+                    <p className="lab-profile__subtitle">
+                        View your account information and update your name, email, or password.
+                    </p>
+                </header>
 
-                    {user ? (
-                        <div></div>
-                    ) : (
-                        <div>
-                            <p>You are not authorized. Please authorize to see your profile.</p>
-                            <p>
-                                Click{" "}
-                                <a className="text-decoration-none" href="/management/signin">
-                                    here
-                                </a>{" "}
-                                to sign in...
-                            </p>
-                        </div>
-                    )}
+                {feedback ? (
+                    <p
+                        className={`lab-profile__feedback lab-profile__feedback--${
+                            feedback.isError ? "error" : "success"
+                        }`}
+                        role="status"
+                    >
+                        {feedback.message}
+                    </p>
+                ) : null}
 
-                    <div className='g-3 mb-5 row'>
-                        <div className='col-lg-8 col-12'>
-                            <div className="h-100 card">
-                                <div className="card-body">
-                                    <div className="border-bottom border-dashed pb-4">
-                                        <div className="align-items-center g-3 g-sm-5 text-center text-sm-start row">
-                                            <div className="col-sm-auto col-12">
-                                                <div className="d-inline-flex">
-                                                    <input className="d-none" id="avatarFile" type="file" accept="image/*"></input>
-                                                    <label className="cursor-pointer hover-actions-trigger" htmlFor="avatarFile">
-                                                        <div className="avatar avatar-5xl">
-
-                                                        </div>
-
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            <div className="flex-1 col-sm-auto col-12">
-                                                <h3>{user.name}</h3>
-                                                <p className="text-body-secondary">Email: {user.email}</p>
-                                                <p className="text-body-secondary">Дата присоединения: {new Date(user.createdAt).toLocaleDateString()}</p>
-                                                <div className='social-media-icons'>
-
-                                                    <FaLinkedin />
-                                                    <FaFacebook />
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="d-flex flex-between-center pt-4"><div>
-                                        <h6 className="mb-2 text-body-secondary">Total Spent</h6>
-                                        <h4 className="fs-7 text-body-highlight mb-0">${user.totalSpent || 0}</h4>
-                                    </div>
-                                        <div className="text-end">
-                                            <h6 className="mb-2 text-body-secondary">Last Order</h6>
-                                            <h4 className="fs-7 text-body-highlight mb-0">{user.lastOrder || 'Недоступно'}</h4>
-                                        </div>
-                                        <div className="text-end">
-                                            <h6 className="mb-2 text-body-secondary">Total Orders</h6>
-                                            <h4 className="fs-7 text-body-highlight mb-0">97</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                        <div className='col-lg-4 col-12'>
-                            <div className="h-100 card">
-                                <div className="card-body">
-                                    <div className="border-bottom border-dashed mb-4">
-                                        <h4 className="mb-3 lh-sm lh-xl-1">Default Address
-                                            <button type="button" className="p-0 ms-3 btn btn-link">
-                                            </button>
-                                        </h4>
-                                    </div>
-                                    <div className="pb-7 pb-lg-4 pb-xl-7 mb-4 border-bottom border-dashed">
-                                        <div className="d-flex flex-wrap justify-content-between">
-                                            <h5 className="text-body-highlight">Address</h5>
-                                            <p className="text-body-secondary">Vancouver, British Columbia
-                                                <br></br>
-                                                Canada</p>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="d-flex justify-content-between gap-2 mb-3">
-                                            <h5 className="text-body-highlight mb-0">Email</h5>
-                                            <a className="lh-1" href="mailto:shatinon@jeemail.com">shatinon@jeemail.com</a>
-                                        </div>
-                                        <div className="d-flex justify-content-between align-items-center gap-2">
-                                            <h5 className="text-body-highlight mb-0">Phone</h5>
-                                            <a href="tel:+1234567890">+1234567890</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div className='mb-3 pb-1 gap-3 nav-underline flex-nowrap scrollbar nav' id="nav-tab" role="tablist">
-                        <div className='nav-item'>
-                            <a className="nav-link active" aria-current="page" href="#">Orders</a>
-                        </div>
-                        <div className='nav-item'>
-                            <a className="nav-link" href="#">Returns</a>
-                        </div>
-                        <div className='nav-item'>
-                            <a className="nav-link" href="#">Reviews</a>
-                        </div>
-                        <div className='nav-item'>
-                            <a className="nav-link" href="#">Wishlist</a>
-                        </div>
-                        <div className='nav-item'>
-                            <a className="nav-link" href="#">Personal Info</a>
-                        </div>
-
-                    </div>
-                    <div className="tab-content" id="nav-tabContent">
-                        <div className="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabIndex="0">
-                            <div className='border-top border-bottom'>
-                                <div className='scrollbar ps-1'>
-                                    <div className="table-responsive" data-bs-theme="dark" >
-                                        <table className="table cart-table table-hover bg-transparent " >
-                                            <thead>
-                                                <tr>
-                                                    <th>Order №</th>
-                                                    <th>Status</th>
-                                                    <th>Deta</th>
-                                                    <th>Location</th>
-                                                    <th>Payment Account</th>
-                                                    <th>Total</th>
-
-
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-
-
-
-                                                <tr>
-                                                    <td><strong></strong></td>
-                                                    <td></td>
-                                                    <td></td>
-                                                    <td></td>
-                                                    <td></td>
-                                                    <td></td>
-                                                </tr>
-
-
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-
-                                </div>
-
+                <div className="lab-profile__layout">
+                    <div className="lab-profile__card">
+                        <div className="lab-profile__hero">
+                            <span className="lab-profile__avatar" aria-hidden>
+                                {initialsFromName(user.name)}
+                            </span>
+                            <div className="lab-profile__hero-main">
+                                <h3 className="lab-profile__name">{user.name}</h3>
+                                <p className="lab-profile__email">{user.email}</p>
+                                <p className="lab-profile__meta">
+                                    Member since {formatDate(user.createdAt)}
+                                </p>
                             </div>
                         </div>
-                        <div className="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabIndex="0">...</div>
-                        <div className="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" tabIndex="0">...</div>
-                        <div className="tab-pane fade" id="nav-disabled" role="tabpanel" aria-labelledby="nav-disabled-tab" tabIndex="0">...</div>
                     </div>
 
-
-
+                    {this.renderEmployeeCard(employee)}
                 </div>
-            </div>
 
+                <div className="lab-profile__tabs" role="tablist" aria-label="Profile sections">
+                    {TABS.map((tab) => (
+                        <button
+                            key={tab.id}
+                            type="button"
+                            role="tab"
+                            aria-selected={activeTab === tab.id}
+                            className={
+                                activeTab === tab.id
+                                    ? "lab-profile__tab lab-profile__tab--active"
+                                    : "lab-profile__tab"
+                            }
+                            onClick={() => this.setActiveTab(tab.id)}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
+
+                {activeTab === "overview" ? this.renderOverview(user) : null}
+                {activeTab === "personal" ? (
+                    <div className="lab-profile__panel" role="tabpanel">
+                        <div className="lab-profile__card">
+                            <h3 className="lab-profile__card-title">Edit profile</h3>
+                            <ProfileEdit user={user} onSaved={this.handleProfileSaved} />
+                        </div>
+                    </div>
+                ) : null}
+            </section>
         );
     }
 }

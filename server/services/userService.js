@@ -3,6 +3,13 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const logService = require('./logService');
 const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key'; // Убедитесь, что SECRET_KEY определен
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+
+function toPublicUser(user) {
+  const plain = user.get ? user.get({ plain: true }) : { ...user };
+  delete plain.password;
+  return plain;
+}
 // Создание нового пользователя
 const createUser = async (data, meta, context = {}) => {
   try {
@@ -173,17 +180,82 @@ const getProfile = async (token) => {
 
     // Получаем пользователя по ID
     const user = await User.findByPk(userId, {
-      include: { association: 'employee' }, // Если нужно включить данные из связи с Employee
+      include: [
+        {
+          association: 'employee',
+          include: [{ association: 'laboratory', required: false }],
+        },
+      ],
     });
 
     if (!user) {
       throw new Error('Пользователь не найден');
     }
 
-    return user;
+    return toPublicUser(user);
   } catch (error) {
     console.error('Ошибка при получении профиля пользователя:', error);
     throw new Error('Не удалось получить профиль');
+  }
+};
+
+/** Update authenticated user profile (name, email, optional password) */
+const updateProfile = async (token, data = {}) => {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findByPk(decoded.id, {
+      include: { association: 'employee', include: [{ association: 'laboratory', required: false }] },
+    });
+    if (!user) {
+      throw new Error('Пользователь не найден');
+    }
+
+    const updates = {};
+    if (data.name != null && String(data.name).trim()) {
+      updates.name = String(data.name).trim();
+    }
+    if (data.email != null && String(data.email).trim()) {
+      const email = String(data.email).trim().toLowerCase();
+      if (email !== user.email) {
+        const existing = await User.findOne({ where: { email } });
+        if (existing && existing.id !== user.id) {
+          throw new Error('Пользователь с таким email уже существует');
+        }
+      }
+      updates.email = email;
+    }
+
+    if (data.password) {
+      const currentPassword = data.currentPassword || '';
+      if (!currentPassword) {
+        throw new Error('Укажите текущий пароль для смены пароля');
+      }
+      const isValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isValid) {
+        throw new Error('Неверный текущий пароль');
+      }
+      if (String(data.password).length < 6) {
+        throw new Error('Новый пароль должен быть не короче 6 символов');
+      }
+      updates.password = data.password;
+    }
+
+    if (!Object.keys(updates).length) {
+      throw new Error('Нет данных для обновления');
+    }
+
+    await user.update(updates);
+    await user.reload({
+      include: { association: 'employee', include: [{ association: 'laboratory', required: false }] },
+    });
+
+    return toPublicUser(user);
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      throw new Error('Токен недействителен');
+    }
+    console.error('Ошибка при обновлении профиля:', error);
+    throw error;
   }
 };
 
@@ -213,5 +285,7 @@ module.exports = {
   deleteUser,
   loginUser,
   getProfile,
+  updateProfile,
   logoutUser,
+  toPublicUser,
 };

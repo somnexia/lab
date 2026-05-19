@@ -82,6 +82,23 @@ const loginUser = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Токен не предоставлен или недействителен' });
+  }
+
+  try {
+    const user = await userService.updateProfile(token, req.body);
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Ошибка при обновлении профиля:', error);
+    res.status(400).json({ message: error.message || 'Не удалось обновить профиль' });
+  }
+};
+
 const getProfile = async (req, res) => {
   // Проверяем наличие токена в заголовке Authorization
   const authHeader = req.headers.authorization || '';
@@ -135,5 +152,6 @@ module.exports = {
   deleteUser,
   loginUser,
   getProfile,
+  updateProfile,
   logoutUser
 };
