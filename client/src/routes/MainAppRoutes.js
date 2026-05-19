@@ -18,6 +18,7 @@ import ResearchList from "../components/ResearchList";
 import AddResearch from "../components/AddResearch";
 import ParticipantList from "../components/ParticipantList";
 import MembersTeamsPlaceholder from "../pages/MembersTeamsPlaceholder";
+import ResearchTeamsPage from "../pages/ResearchTeamsPage";
 import AdminLogsPage from "../components/AdminLogsPage";
 import TaskList from "../components/TaskList";
 import TaskCreate from "../components/TaskCreate";
@@ -87,7 +88,7 @@ const MainAppRoutes = () => (
         <Route path="/members-teams" element={<Navigate to="/members-teams/members" replace />} />
         <Route path="/members-teams/participants" element={<Navigate to="/members-teams/members" replace />} />
         <Route path="/members-teams/members" element={<ParticipantList />} />
-        <Route path="/members-teams/research-teams" element={<MembersTeamsPlaceholder />} />
+        <Route path="/members-teams/research-teams" element={<ResearchTeamsPage />} />
         <Route path="/members-teams/assignments" element={<MembersTeamsPlaceholder />} />
         <Route path="/members-teams/roles" element={<MembersTeamsPlaceholder />} />
         <Route path="/members-teams/activity-log" element={<MembersTeamsPlaceholder />} />

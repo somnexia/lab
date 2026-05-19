@@ -1,174 +1,232 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
 import axios from "axios";
 import { AuthContext } from "./AuthContext";
 
+const API_BASE = "http://localhost:3000/api";
+
 export const CartContext = createContext();
+
+/** Sequelize / API row → plain object for React state */
+function normalizeCartRow(row) {
+    if (!row) return null;
+    if (row.dataValues) return { ...row.dataValues };
+    return { ...row };
+}
+
+/** Inventory row id (add-to-cart passes inventory, not cart line) */
+function inventoryIdFromItem(item) {
+    return item?.id ?? item?.item_id ?? item?.reference_id;
+}
 
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState([]);
     const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
 
-    // Функция для загрузки корзины с сервера
-    const loadCart = async () => {
-        if (user) {
-            setLoading(true);
-            try {
-                const response = await axios.get(`http://localhost:3000/api/carts/${user.id}`);
-                setCart(Array.isArray(response.data) ? response.data : []);
-                console.log("Ответ сервера при загрузке корзины:", response.data);
-                
-            } catch (error) {
-                console.error('Ошибка при загрузке корзины:', error);
-            } finally {
-                setLoading(false);
-            }
+    const reloadCart = useCallback(async (userId) => {
+        if (!userId) return;
+        setLoading(true);
+        try {
+            const response = await axios.get(`${API_BASE}/carts/${userId}`);
+            setCart(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error("Failed to reload cart:", error);
+        } finally {
+            setLoading(false);
         }
-    };
+    }, []);
+
+    /**
+     * API may return a full cart array, a single cart line, or { message }.
+     * Prefer array; otherwise merge one row or reload from GET.
+     */
+    const applyCartMutationResponse = useCallback(
+        async (data, userId, options = {}) => {
+            const { removedCartLineId, cleared } = options;
+
+            if (Array.isArray(data)) {
+                setCart(data);
+                return;
+            }
+
+            if (cleared) {
+                setCart([]);
+                return;
+            }
+
+            if (removedCartLineId != null) {
+                setCart((prev) => prev.filter((item) => item.id !== removedCartLineId));
+                if (userId) {
+                    await reloadCart(userId);
+                }
+                return;
+            }
+
+            const row = normalizeCartRow(data);
+            if (row?.id != null && row.item_id != null) {
+                setCart((prev) => {
+                    const byLineId = prev.findIndex((i) => i.id === row.id);
+                    if (byLineId !== -1) {
+                        const next = [...prev];
+                        next[byLineId] = row;
+                        return next;
+                    }
+                    const byItemId = prev.findIndex((i) => i.item_id === row.item_id);
+                    if (byItemId !== -1) {
+                        const next = [...prev];
+                        next[byItemId] = row;
+                        return next;
+                    }
+                    return [...prev, row];
+                });
+                return;
+            }
+
+            if (userId) {
+                await reloadCart(userId);
+            }
+        },
+        [reloadCart]
+    );
 
     useEffect(() => {
-        if (user) {
-            loadCart();
+        if (user?.id) {
+            reloadCart(user.id);
         } else {
-            const savedCart = localStorage.getItem('cart');
+            const savedCart = localStorage.getItem("cart");
             if (savedCart) {
-                setCart(JSON.parse(savedCart));
+                try {
+                    setCart(JSON.parse(savedCart));
+                } catch {
+                    localStorage.removeItem("cart");
+                    setCart([]);
+                }
+            } else {
+                setCart([]);
             }
         }
-    }, [user]);
+    }, [user, reloadCart]);
 
     useEffect(() => {
         if (!user) {
-            localStorage.setItem('cart', JSON.stringify(cart));
+            localStorage.setItem("cart", JSON.stringify(cart));
         }
     }, [cart, user]);
 
-    // Функция для добавления товара в корзину
     const addToCart = async (newItem) => {
-        console.log('newItem:', newItem);
+        const inventoryId = inventoryIdFromItem(newItem);
+        if (inventoryId == null) {
+            console.error("addToCart: missing inventory id", newItem);
+            return;
+        }
 
         if (user) {
             try {
                 const itemToAdd = {
                     user_id: user.id,
-                    item_id: newItem.id,
+                    item_id: inventoryId,
                     item_name: newItem.item_name,
                     quantity: newItem.quantity || 1,
-                    substance_amount: newItem.substance_amount,
-                    unit_measure: newItem.unit_measure,
-                    supplier: newItem.supplier,
-                    status: newItem.status,
+                    substance_amount: newItem.substance_amount ?? null,
+                    unit_measure: newItem.unit_measure ?? null,
+                    supplier: newItem.supplier ?? null,
+                    status: newItem.status ?? null,
                 };
-                console.log('Данные, отправляемые на сервер для добавления:', itemToAdd);
-                const response = await axios.post(
-                    `http://localhost:3000/api/carts`,
-                    itemToAdd
-                );
-                console.log('Ответ сервера после добавления:', response.data);
-                if (Array.isArray(response.data)) {
-                    setCart(response.data);
-                } else {
-                    console.error('Ожидался массив после добавления, но получен:', typeof response.data);
-                }
+                const response = await axios.post(`${API_BASE}/carts`, itemToAdd);
+                await applyCartMutationResponse(response.data, user.id);
             } catch (error) {
-                console.error('Ошибка при добавлении товара в корзину:', error);
+                console.error("Error adding to cart:", error);
             }
         } else {
             setCart((prevCart) => {
-                const existingItemIndex = prevCart.findIndex((item) => item.id === newItem.id);
+                const existingIndex = prevCart.findIndex(
+                    (item) => item.item_id === inventoryId || item.id === inventoryId
+                );
                 let updatedCart;
-                if (existingItemIndex !== -1) {
+                if (existingIndex !== -1) {
                     updatedCart = [...prevCart];
-                    updatedCart[existingItemIndex].quantity += newItem.quantity || 1;
+                    updatedCart[existingIndex] = {
+                        ...updatedCart[existingIndex],
+                        quantity: (updatedCart[existingIndex].quantity || 0) + (newItem.quantity || 1),
+                    };
                 } else {
-                    updatedCart = [...prevCart, { ...newItem, quantity: newItem.quantity || 1 }];
+                    updatedCart = [
+                        ...prevCart,
+                        {
+                            ...newItem,
+                            id: inventoryId,
+                            item_id: inventoryId,
+                            quantity: newItem.quantity || 1,
+                        },
+                    ];
                 }
-                localStorage.setItem('cart', JSON.stringify(updatedCart));
+                localStorage.setItem("cart", JSON.stringify(updatedCart));
                 return updatedCart;
             });
         }
     };
 
-    // Функция для удаления товара из корзины
-    const removeFromCart = async (id) => {
+    const removeFromCart = async (cartLineId) => {
         if (user) {
             try {
-                console.log('ID товара для удаления:', id);
-                const response = await axios.delete(
-                    `http://localhost:3000/api/carts/item/${id}`,
-                    { data: { user_id: user.id } }
-                );
-                console.log('Ответ сервера после удаления:', response.data);
-                if (Array.isArray(response.data)) {
-                    setCart(response.data);
-                } else {
-                    console.error('Ожидался массив после удаления, но получен:', typeof response.data);
-                }
+                const response = await axios.delete(`${API_BASE}/carts/item/${cartLineId}`, {
+                    data: { user_id: user.id },
+                });
+                await applyCartMutationResponse(response.data, user.id, {
+                    removedCartLineId: cartLineId,
+                });
             } catch (error) {
-                console.error('Ошибка при удалении товара из корзины:', error);
+                console.error("Error removing from cart:", error);
             }
         } else {
             setCart((prevCart) => {
-                const updatedCart = prevCart.filter((item) => item.id !== id);
-                localStorage.setItem('cart', JSON.stringify(updatedCart));
+                const updatedCart = prevCart.filter((item) => item.id !== cartLineId);
+                localStorage.setItem("cart", JSON.stringify(updatedCart));
                 return updatedCart;
             });
         }
     };
 
-    // Функция для обновления количества товара в корзине
-    const updateCartQuantity = async (itemId, newQuantity) => {
+    const updateCartQuantity = async (cartLineId, newQuantity) => {
         if (user) {
             try {
-                const updateData = { user_id: user.id, quantity: newQuantity };
-                console.log('Данные, отправляемые на сервер для обновления:', updateData);
-                const response = await axios.put(
-                    `http://localhost:3000/api/carts/item/${itemId}`,
-                    updateData
-                );
-                console.log('Ответ сервера после обновления:', response.data);
-                if (Array.isArray(response.data)) {
-                    setCart(response.data);
-                } else {
-                    console.error('Ожидался массив после обновления, но получен:', typeof response.data);
-                }
+                const response = await axios.put(`${API_BASE}/carts/item/${cartLineId}`, {
+                    user_id: user.id,
+                    quantity: newQuantity,
+                });
+                await applyCartMutationResponse(response.data, user.id);
             } catch (error) {
-                console.error('Ошибка при обновлении количества товара в корзине:', error);
+                console.error("Error updating cart quantity:", error);
             }
         } else {
             setCart((prevCart) => {
                 const updatedCart = prevCart.map((item) =>
-                    item.id === itemId ? { ...item, quantity: newQuantity } : item
+                    item.id === cartLineId ? { ...item, quantity: newQuantity } : item
                 );
-                localStorage.setItem('cart', JSON.stringify(updatedCart));
+                localStorage.setItem("cart", JSON.stringify(updatedCart));
                 return updatedCart;
             });
         }
     };
 
-    // Очистка корзины
     const clearCart = async () => {
         if (user) {
             try {
-                console.log('Очистка корзины для пользователя с ID:', user.id);
-                const response = await axios.delete(`http://localhost:3000/api/carts/clear/${user.id}`);
-                console.log('Ответ сервера после очистки:', response.data);
-                if (Array.isArray(response.data)) {
-                    setCart(response.data);
-                } else {
-                    console.error('Ожидался массив после очистки, но получен:', typeof response.data);
-                }
+                const response = await axios.delete(`${API_BASE}/carts/clear/${user.id}`);
+                await applyCartMutationResponse(response.data, user.id, { cleared: true });
             } catch (error) {
-                console.error('Ошибка при очистке корзины:', error);
+                console.error("Error clearing cart:", error);
             }
         } else {
             setCart([]);
-            localStorage.removeItem('cart');
+            localStorage.removeItem("cart");
         }
     };
 
     return (
-        <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateCartQuantity, clearCart, loading }}>
+        <CartContext.Provider
+            value={{ cart, addToCart, removeFromCart, updateCartQuantity, clearCart, loading, reloadCart }}
+        >
             {children}
         </CartContext.Provider>
     );
