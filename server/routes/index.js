@@ -24,6 +24,7 @@ const userRoutes =  require("./userRoutes");
 const taskRoutes = require('./taskRoutes');
 const taskFileRouter = require('./taskFileRoutes');
 const researchEmployeeRoutes = require('./researchEmployeeRoutes');
+const researchTeamRoutes = require('./researchTeamRoutes');
 const orderRoutes = require('./orderRoutes'); // Путь к маршрутам для заказов
 const logRoutes = require('./logRoutes'); // Путь к маршрутам для логов
 
@@ -50,6 +51,7 @@ router.use("/pricings", pricingRoutes);
 router.use("/", homeRoutes);
 router.use('/api/taskFiles', taskFileRouter);
 router.use('/api/researchEmployees', researchEmployeeRoutes);
+router.use('/api/research-teams', researchTeamRoutes);
 router.use('/api/orders', orderRoutes); // Подключаем маршруты для заказов
 router.use('/api/logs', logRoutes); // Подключаем маршруты для логов
 

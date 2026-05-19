@@ -8,6 +8,16 @@ module.exports = (sequelize, DataTypes) => {
       // Определяем связь с лабораторией, если она существует
       Employee.belongsTo(models.Laboratory, { foreignKey: 'lab_id', as: 'laboratory' });
       Employee.hasOne(models.User, { foreignKey: 'employee_id', as: 'user' });
+      Employee.hasMany(models.ResearchEmployee, {
+        foreignKey: 'employee_id',
+        as: 'researchMemberships',
+      });
+      Employee.belongsToMany(models.Research, {
+        through: models.ResearchEmployee,
+        foreignKey: 'employee_id',
+        otherKey: 'research_id',
+        as: 'researches',
+      });
     }
   }
 

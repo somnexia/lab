@@ -53,7 +53,9 @@ const createResearchWithParticipants = async (req, res) => {
 // Получение всех исследований
 const getAllResearches = async (req, res) => {
   try {
-    const researches = await researchService.getAllResearches();
+    const includeParticipants =
+      req.query.includeParticipants === 'true' || req.query.include === 'participants';
+    const researches = await researchService.getAllResearches({ includeParticipants });
     return res.status(200).json(researches);
   } catch (error) {
     console.error(error);
@@ -65,7 +67,9 @@ const getAllResearches = async (req, res) => {
 const getResearchById = async (req, res) => {
   const { id } = req.params;
   try {
-    const research = await researchService.getResearchById(id);
+    const includeParticipants =
+      req.query.includeParticipants === 'true' || req.query.include === 'participants';
+    const research = await researchService.getResearchById(id, { includeParticipants });
     return res.status(200).json(research);
   } catch (error) {
     console.error(error);

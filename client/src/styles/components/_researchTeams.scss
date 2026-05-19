@@ -1,0 +1,329 @@
+// Research teams page — team = one research + its members
+$rt-radius: 0.75rem;
+$rt-shadow: 0 1rem 2.5rem rgba(4, 3, 22, 0.08);
+
+.research-teams {
+  color: var(--text-color);
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.research-teams__header {
+  margin-bottom: 1rem;
+}
+
+.research-teams__eyebrow {
+  color: var(--link-color);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+}
+
+.research-teams__title {
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 0.35rem;
+}
+
+.research-teams__subtitle {
+  color: var(--text-body-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+  max-width: 44rem;
+}
+
+.research-teams__toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.research-teams__filters {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.research-teams__label {
+  color: var(--text-body-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 0.25rem;
+}
+
+.research-teams__select {
+  background-color: var(--lab-input-bg);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: $rt-radius;
+  color: var(--text-color);
+  font-size: 0.85rem;
+  padding: 0.4rem 0.65rem;
+}
+
+.research-teams__view-tabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  background-color: var(--body-highlight-bg);
+  border-radius: $rt-radius;
+  border: 1px solid var(--secondary-border-color);
+}
+
+.research-teams__view-tab {
+  background: transparent;
+  border: none;
+  border-radius: calc($rt-radius - 0.15rem);
+  color: var(--text-body-secondary);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  transition: background-color 0.12s ease, color 0.12s ease;
+
+  &--active {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    box-shadow: 0 1px 4px rgba(4, 3, 22, 0.08);
+  }
+
+  &:hover:not(.research-teams__view-tab--active) {
+    color: var(--text-color);
+  }
+}
+
+.research-teams__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.research-teams__stat {
+  background-color: var(--card-bg);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: $rt-radius;
+  font-size: 0.8rem;
+  padding: 0.45rem 0.75rem;
+
+  strong {
+    color: var(--link-color);
+    font-weight: 700;
+  }
+}
+
+.research-teams__loading,
+.research-teams__error,
+.research-teams__empty {
+  font-size: 0.9rem;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.research-teams__error {
+  color: var(--semantic-danger);
+}
+
+.research-teams__empty {
+  color: var(--text-body-secondary);
+}
+
+.research-teams__hub-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+}
+
+.research-teams__hub {
+  background-color: var(--card-bg);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: $rt-radius;
+  box-shadow: $rt-shadow;
+  display: flex;
+  flex-direction: column;
+  min-height: 10rem;
+  overflow: hidden;
+}
+
+.research-teams__hub-head {
+  border-bottom: 1px solid var(--content-border-color);
+  padding: 0.85rem 1rem;
+}
+
+.research-teams__hub-title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0 0 0.35rem;
+}
+
+.research-teams__hub-meta {
+  align-items: center;
+  color: var(--text-body-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  gap: 0.35rem 0.65rem;
+}
+
+.research-teams__status {
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.5rem;
+  text-transform: uppercase;
+
+  &--ongoing {
+    background-color: color-mix(in srgb, var(--semantic-success) 18%, transparent);
+    color: var(--semantic-success);
+  }
+
+  &--pending {
+    background-color: color-mix(in srgb, var(--semantic-warning) 20%, transparent);
+    color: var(--semantic-warning);
+  }
+
+  &--completed {
+    background-color: color-mix(in srgb, var(--text-body-secondary) 20%, transparent);
+    color: var(--text-body-secondary);
+  }
+}
+
+.research-teams__hub-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem 1rem;
+}
+
+.research-teams__hub-empty {
+  color: var(--text-body-secondary);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.research-teams__member {
+  align-items: center;
+  background-color: var(--body-highlight-bg);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: 0.5rem;
+  display: flex;
+  gap: 0.65rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.research-teams__avatar {
+  align-items: center;
+  background: color-mix(in srgb, var(--link-color) 16%, var(--card-bg));
+  border-radius: 50%;
+  color: var(--link-color);
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+}
+
+.research-teams__member-info {
+  min-width: 0;
+}
+
+.research-teams__member-name {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.research-teams__member-role {
+  color: var(--text-body-secondary);
+  display: block;
+  font-size: 0.75rem;
+}
+
+.research-teams__map-wrap {
+  background-color: var(--card-bg);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: $rt-radius;
+  box-shadow: $rt-shadow;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.research-teams__map-svg {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  min-height: 320px;
+}
+
+.research-teams__map-node {
+  cursor: default;
+}
+
+.research-teams__map-rect {
+  stroke: var(--secondary-border-color);
+  stroke-width: 1;
+}
+
+.research-teams__map-node--research .research-teams__map-rect {
+  fill: color-mix(in srgb, var(--link-color) 14%, var(--card-bg));
+}
+
+.research-teams__map-node--employee .research-teams__map-rect {
+  fill: var(--body-highlight-bg);
+}
+
+.research-teams__map-label {
+  fill: var(--text-color);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.research-teams__map-sublabel {
+  fill: var(--text-body-secondary);
+  font-size: 9px;
+}
+
+.research-teams__map-edge {
+  fill: none;
+  stroke: color-mix(in srgb, var(--link-color) 45%, var(--secondary-border-color));
+  stroke-width: 1.5;
+}
+
+.research-teams__unassigned {
+  background-color: color-mix(in srgb, var(--semantic-warning) 10%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--semantic-warning) 35%, transparent);
+  border-radius: $rt-radius;
+  margin-top: 1.25rem;
+  padding: 0.85rem 1rem;
+}
+
+.research-teams__unassigned-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.research-teams__unassigned-list {
+  color: var(--text-body-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  gap: 0.35rem 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

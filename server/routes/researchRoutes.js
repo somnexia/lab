@@ -10,6 +10,8 @@ router.post('/with-participants', researchController.createResearchWithParticipa
 // Получение всех исследований
 router.get('/', researchController.getAllResearches);
 
+router.get('/ongoing/count', researchController.getOngoingResearchCount);
+
 // Получение исследования по ID
 router.get('/:id', researchController.getResearchById);
 
@@ -20,7 +22,5 @@ router.put('/:id', researchController.updateResearch);
 router.delete('/:id', researchController.deleteResearch);
 
 router.post('/:researchId/participants', researchController.addParticipantsToResearch);
-
-router.get('/ongoing/count', researchController.getOngoingResearchCount);
 
 module.exports = router;

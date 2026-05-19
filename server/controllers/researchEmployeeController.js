@@ -14,7 +14,11 @@ const createResearchEmployee = async (req, res) => {
 // Получение всех записей ResearchEmployee
 const getAllResearchEmployees = async (req, res) => {
   try {
-    const researchEmployees = await researchEmployeeService.getAllResearchEmployees();
+    const { researchId, employeeId } = req.query;
+    const researchEmployees = await researchEmployeeService.getAllResearchEmployees({
+      researchId,
+      employeeId,
+    });
     return res.status(200).json(researchEmployees);
   } catch (error) {
     console.error(error);

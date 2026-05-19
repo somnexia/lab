@@ -9,19 +9,40 @@ const createResearch = async (data) => {
     throw error;
   }
 };
+const participantInclude = {
+  model: ResearchEmployee,
+  as: 'participants',
+  include: [
+    {
+      model: Employee,
+      as: 'employee',
+      include: [{ association: 'laboratory', required: false }],
+    },
+  ],
+};
+
 // Получение всех исследований
-const getAllResearches = async () => {
+const getAllResearches = async (options = {}) => {
   try {
-    return await Research.findAll();
+    const query = { order: [['start_date', 'DESC']] };
+    if (options.includeParticipants) {
+      query.include = [participantInclude];
+    }
+    return await Research.findAll(query);
   } catch (error) {
     console.error('Ошибка при получении списка исследований:', error);
     throw error;
   }
 };
+
 // Получение исследования по ID
-const getResearchById = async (id) => {
+const getResearchById = async (id, options = {}) => {
   try {
-    const research = await Research.findByPk(id);
+    const query = {};
+    if (options.includeParticipants) {
+      query.include = [participantInclude];
+    }
+    const research = await Research.findByPk(id, query);
     if (!research) {
       throw new Error(`Исследование с id ${id} не найдено`);
     }

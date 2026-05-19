@@ -9,19 +9,43 @@ const createResearchEmployee = async (data) => {
     throw error;
   }
 };
-// Получение всех записей ResearchEmployee
-const getAllResearchEmployees = async () => {
+const membershipInclude = [
+  { model: Research, as: 'research' },
+  {
+    model: Employee,
+    as: 'employee',
+    include: [{ association: 'laboratory', required: false }],
+  },
+];
+
+// Получение записей ResearchEmployee (опционально researchId, employeeId)
+const getAllResearchEmployees = async (filters = {}) => {
   try {
+    const where = {};
+    if (filters.researchId != null) {
+      where.research_id = Number(filters.researchId);
+    }
+    if (filters.employeeId != null) {
+      where.employee_id = Number(filters.employeeId);
+    }
+
     return await ResearchEmployee.findAll({
-      include: [
-        { model: Research, as: 'research' },
-        { model: Employee, as: 'employee' }
-      ]
+      where,
+      include: membershipInclude,
+      order: [['id', 'ASC']],
     });
   } catch (error) {
     console.error('Ошибка при получении записей ResearchEmployee:', error);
     throw error;
   }
+};
+
+const getByResearchId = async (researchId) => {
+  return getAllResearchEmployees({ researchId });
+};
+
+const getByEmployeeId = async (employeeId) => {
+  return getAllResearchEmployees({ employeeId });
 };
 // Получение записи ResearchEmployee по ID
 const getResearchEmployeeById = async (id) => {
@@ -72,7 +96,9 @@ const deleteResearchEmployee = async (id) => {
 module.exports = {
   createResearchEmployee,
   getAllResearchEmployees,
+  getByResearchId,
+  getByEmployeeId,
   getResearchEmployeeById,
   updateResearchEmployee,
-  deleteResearchEmployee
+  deleteResearchEmployee,
 };
