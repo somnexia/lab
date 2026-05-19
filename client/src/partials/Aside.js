@@ -3,20 +3,48 @@ import { NavLink, useLocation } from "react-router-dom";
 import { IoHome } from "react-icons/io5";
 import { BsBoxes } from "react-icons/bs";
 import { FaRegFolderClosed } from "react-icons/fa6";
-import { FaFlask } from "react-icons/fa6";
 import { GrGroup } from "react-icons/gr";
-import { IoGameController } from "react-icons/io5";
+import { MdLocalShipping, MdOutlineAdminPanelSettings, MdOutlinePolicy, MdOutlineWarehouse } from "react-icons/md";
+import { FaFlask } from "react-icons/fa6";
 import { FaRegUserCircle } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
 import { usePanel } from "../context/PanelContext";
 import { useAsideLayout } from "../context/AsideLayoutContext";
+import { MEMBERS_TEAMS_NAV_ITEMS } from "../pages/membersTeamsSections";
+
+const SOON_HINT = "Planned in a future release";
 
 function subLinkClass({ isActive }) {
     return `lab-aside__sublink${isActive ? " lab-aside__sublink--active" : ""}`;
 }
 
+function nestedSubLinkClass({ isActive }) {
+    return `lab-aside__sublink lab-aside__sublink--nested${isActive ? " lab-aside__sublink--active" : ""}`;
+}
+
 function topLinkClass({ isActive }) {
     return `lab-aside__trigger text-decoration-none${isActive ? " is-active" : ""}`;
+}
+
+function NavSoonRow({ label }) {
+    return (
+        <li>
+            <span className="lab-aside__soon-row" title={SOON_HINT} aria-label={`${label}. ${SOON_HINT}`}>
+                <span className="lab-aside__soon-row__text">{label}</span>
+                <span className="lab-aside__soon-row__badge" aria-hidden>
+                    Soon
+                </span>
+            </span>
+        </li>
+    );
+}
+
+function NavSubheading({ label }) {
+    return (
+        <li className="lab-aside__sub-heading" role="presentation">
+            <span className="lab-aside__sub-heading-text">{label}</span>
+        </li>
+    );
 }
 
 function NavGroup({ id, title, icon: Icon, expanded, onToggle, children }) {
@@ -49,16 +77,24 @@ function Aside() {
     const { openPanel } = usePanel();
     const { asideCollapsed, toggleAsideCollapsed } = useAsideLayout();
     const [expanded, setExpanded] = useState(() => ({
-        inventory: false,
+        inventoryMaterials: false,
+        storageLocations: false,
+        labEquipment: false,
         projects: false,
+        membersTeams: false,
+        labProcurement: false,
+        labCompliance: false,
         management: false,
     }));
 
     const syncExpanded = useCallback((pathname) => {
         setExpanded((prev) => {
             const next = { ...prev };
-            if (pathname.startsWith("/inventory")) next.inventory = true;
+            if (pathname.startsWith("/inventory")) next.inventoryMaterials = true;
+            if (pathname.startsWith("/storage-locations")) next.storageLocations = true;
+            if (pathname.startsWith("/lab-equipment") || pathname === "/equipment") next.labEquipment = true;
             if (pathname.startsWith("/projects")) next.projects = true;
+            if (pathname.startsWith("/members-teams")) next.membersTeams = true;
             if (pathname.startsWith("/management")) next.management = true;
             return next;
         });
@@ -95,29 +131,6 @@ function Aside() {
                                 </NavLink>
                             </li>
 
-                            <NavGroup id="inventory" title="Inventory" icon={BsBoxes} expanded={expanded} onToggle={toggle}>
-                                <li>
-                                    <NavLink to="/inventory/overview" className={subLinkClass}>
-                                        Overview
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/inventory/warehouses" className={subLinkClass}>
-                                        Warehouses
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/inventory/storage-units" className={subLinkClass}>
-                                        Storage units
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/inventory/ladder" className={subLinkClass}>
-                                        Storage tree
-                                    </NavLink>
-                                </li>
-                            </NavGroup>
-
                             <NavGroup id="projects" title="Projects" icon={FaRegFolderClosed} expanded={expanded} onToggle={toggle}>
                                 <li>
                                     <NavLink to="/projects" end className={subLinkClass}>
@@ -146,32 +159,138 @@ function Aside() {
                                 </li>
                             </NavGroup>
 
-                            <li className="mb-1 ps-2">
-                                <NavLink to="/equipment" className={topLinkClass}>
-                                    <span className="lab-aside__trigger-main">
-                                        <span className="nav-link-icon">
-                                            <FaFlask />
-                                        </span>
-                                        <span className="nav-link-text lab-aside__nav-text">Equipment</span>
-                                    </span>
-                                </NavLink>
-                            </li>
+                            <NavGroup id="membersTeams" title="Members & Teams" icon={GrGroup} expanded={expanded} onToggle={toggle}>
+                                {MEMBERS_TEAMS_NAV_ITEMS.map(({ slug, title }) => (
+                                    <li key={slug}>
+                                        <NavLink to={`/members-teams/${slug}`} className={subLinkClass}>
+                                            {title}
+                                        </NavLink>
+                                    </li>
+                                ))}
+                            </NavGroup>
+                        </ul>
 
-                            <li className="mb-1 ps-2">
-                                <NavLink to="/teams/participants" className={topLinkClass}>
-                                    <span className="lab-aside__trigger-main">
-                                        <span className="nav-link-icon">
-                                            <GrGroup />
-                                        </span>
-                                        <span className="nav-link-text lab-aside__nav-text">Teams</span>
-                                    </span>
-                                </NavLink>
-                            </li>
+                        <h6 className="lab-aside__section-label navbar-heading text-secondary">Materials &amp; stock</h6>
+                        <ul className="lab-aside__list navbar-nav flex-column">
+                            <NavGroup id="inventoryMaterials" title="Inventory" icon={BsBoxes} expanded={expanded} onToggle={toggle}>
+                                <li>
+                                    <NavLink to="/inventory/overview" className={subLinkClass}>
+                                        Overview
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/inventory/chemicals" className={subLinkClass}>
+                                        Chemicals &amp; reagents
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/inventory/samples-specimens" className={subLinkClass}>
+                                        Samples &amp; specimens
+                                    </NavLink>
+                                </li>
+                                {/* <NavSubheading label="Lab supplies" subLinkClass /> */}
+                                <li>
+                                    <NavLink to="/inventory/consumables" className={subLinkClass}>
+                                        Consumables
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/inventory/labware" className={subLinkClass}>
+                                        Labware &amp; glassware
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/inventory/lots" className={subLinkClass}>
+                                        Lots &amp; batches
+                                    </NavLink>
+                                </li>
+                            </NavGroup>
+                        </ul>
+
+                        <h6 className="lab-aside__section-label navbar-heading text-secondary">Storage</h6>
+                        <ul className="lab-aside__list navbar-nav flex-column">
+                            <NavGroup id="storageLocations" title="Storage &amp; locations" icon={MdOutlineWarehouse} expanded={expanded} onToggle={toggle}>
+                                <li>
+                                    <NavLink to="/storage-locations/overview" className={subLinkClass}>
+                                        Overview
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/storage-locations/warehouses" className={subLinkClass}>
+                                        Warehouses
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/storage-locations/storage-units" className={subLinkClass}>
+                                        Storage units
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/storage-locations/ladder" className={subLinkClass}>
+                                        Storage tree
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/storage-locations/dropdown" className={subLinkClass}>
+                                        Dropdown view
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/storage-locations/location" className={subLinkClass}>
+                                        Locations
+                                    </NavLink>
+                                </li>
+                            </NavGroup>
+                        </ul>
+
+                        <h6 className="lab-aside__section-label navbar-heading text-secondary">Equipment</h6>
+                        <ul className="lab-aside__list navbar-nav flex-column">
+                            <NavGroup id="labEquipment" title="Laboratory equipment" icon={FaFlask} expanded={expanded} onToggle={toggle}>
+                                <li>
+                                    <NavLink to="/lab-equipment" end className={subLinkClass}>
+                                        Equipment inventory
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/lab-equipment/maintenance" className={subLinkClass}>
+                                        Maintenance
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/lab-equipment/calibration" className={subLinkClass}>
+                                        Calibration
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/lab-equipment/reservations" className={subLinkClass}>
+                                        Reservations
+                                    </NavLink>
+                                </li>
+                                <li>
+                                    <NavLink to="/lab-equipment/usage-tracking" className={subLinkClass}>
+                                        Usage tracking
+                                    </NavLink>
+                                </li>
+                            </NavGroup>
+                        </ul>
+
+                        <h6 className="lab-aside__section-label navbar-heading text-secondary">Laboratory</h6>
+                        <ul className="lab-aside__list navbar-nav flex-column">
+                            <NavGroup id="labProcurement" title="Procurement" icon={MdLocalShipping} expanded={expanded} onToggle={toggle}>
+                                <NavSoonRow label="Purchase orders" />
+                                <NavSoonRow label="Vendors" />
+                                <NavSoonRow label="Goods receipt" />
+                            </NavGroup>
+                            <NavGroup id="labCompliance" title="Compliance" icon={MdOutlinePolicy} expanded={expanded} onToggle={toggle}>
+                                <NavSoonRow label="Audit trail" />
+                                <NavSoonRow label="SDS & safety docs" />
+                                <NavSoonRow label="Training records" />
+                            </NavGroup>
                         </ul>
 
                         <h6 className="lab-aside__section-label navbar-heading text-secondary">Management</h6>
                         <ul className="lab-aside__list navbar-nav flex-column">
-                            <NavGroup id="management" title="Management" icon={IoGameController} expanded={expanded} onToggle={toggle}>
+                            <NavGroup id="management" title="Management" icon={MdOutlineAdminPanelSettings} expanded={expanded} onToggle={toggle}>
                                 <li>
                                     <NavLink to="/management/signin" className={subLinkClass}>
                                         Sign in

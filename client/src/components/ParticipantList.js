@@ -164,7 +164,7 @@ class ParticipantList extends Component {
             <section className="participant-list" aria-labelledby="participant-list-heading">
                 <div className="participant-list__shell">
                     <header className="participant-list__header">
-                        <p className="participant-list__eyebrow">Teams</p>
+                        <p className="participant-list__eyebrow">Members & Teams</p>
                         <div className="participant-list__title-row">
                             <h2 id="participant-list-heading" className="participant-list__title">
                                 Participants

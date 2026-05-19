@@ -1,4 +1,5 @@
-const researchService = require('../services/researchService'); // Путь к вашему сервису
+const researchService = require('../services/researchService');
+const logService = require('../services/logService');
 
 // Создание нового исследования
 const createResearch = async (req, res) => {
@@ -8,6 +9,15 @@ const createResearch = async (req, res) => {
       
     }
     const newResearch = await researchService.createResearch(req.body);
+    await logService.safeRecordAuditLog({
+      action: logService.LOG_ACTIONS.RESEARCH_CREATED,
+      userId: null,
+      resourceType: 'Research',
+      resourceId: newResearch.id,
+      description: { title: newResearch.title, type: newResearch.type },
+      status: logService.LOG_STATUS.SUCCESS,
+      ...logService.mergeMeta({}, req),
+    });
     return res.status(201).json(newResearch);
   } catch (error) {
     console.error(error);

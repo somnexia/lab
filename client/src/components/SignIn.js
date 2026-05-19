@@ -142,7 +142,7 @@ class SignIn extends Component {
                             </div>
                             <button type="submit" className="w-100 mb-3 btn btn-lab">Sign In</button>
                             <div className="text-center">
-                                <Link className="fw-bold text-decoration-none" to="/management/singup">
+                                <Link className="fw-bold text-decoration-none" to="/management/signup">
                                     Create an account
                                 </Link>
                             </div>

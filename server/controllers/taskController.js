@@ -1,4 +1,5 @@
 const taskService = require('../services/taskService');
+const logService = require('../services/logService');
 
 // Создание новой задачи
 const createTask = async (req, res) => {
@@ -12,6 +13,15 @@ const createTask = async (req, res) => {
 
   try {
     const task = await taskService.createTask(req.body);
+    await logService.safeRecordAuditLog({
+      action: logService.LOG_ACTIONS.TASK_CREATED,
+      userId: req.body.user_id != null ? Number(req.body.user_id) : null,
+      resourceType: 'Task',
+      resourceId: task.id,
+      description: { title: task.title, research_id: task.research_id },
+      status: logService.LOG_STATUS.SUCCESS,
+      ...logService.mergeMeta({}, req),
+    });
     return res.status(201).json(task);
   } catch (error) {
     console.error(error);

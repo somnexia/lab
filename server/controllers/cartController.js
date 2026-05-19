@@ -1,4 +1,5 @@
 const cartService = require('../services/cartService');
+const logService = require('../services/logService');
 
 // Создание нового элемента в корзине
 const createCartItem = async (req, res) => {
@@ -6,6 +7,15 @@ const createCartItem = async (req, res) => {
     console.log('Полученные данные для создания элемента:', req.body);
     const data = req.body;
     const cartItem = await cartService.createCartItem(data);
+    await logService.safeRecordAuditLog({
+      action: logService.LOG_ACTIONS.CART_ITEM_ADDED,
+      userId: data.user_id != null ? Number(data.user_id) : null,
+      resourceType: 'Cart',
+      resourceId: cartItem.id,
+      description: { item_id: data.item_id, quantity: cartItem.quantity },
+      status: logService.LOG_STATUS.SUCCESS,
+      ...logService.mergeMeta({}, req),
+    });
     res.status(201).json(cartItem);
   } catch (error) {
     console.error('Ошибка при создании элемента в корзине:', error);

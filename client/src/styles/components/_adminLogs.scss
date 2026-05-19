@@ -1,0 +1,285 @@
+// Admin activity log — no Bootstrap; matches app theme tokens
+// ---------------------------------------------------------------------------
+
+.lab-admin-logs {
+  max-width: 100%;
+  padding: 1rem 0 2rem;
+}
+
+.lab-admin-logs__header {
+  margin-bottom: 1.25rem;
+
+  h1 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0 0 0.35rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--bs-secondary-color, rgba(0, 0, 0, 0.55));
+    max-width: 52rem;
+    line-height: 1.45;
+  }
+}
+
+.lab-admin-logs__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--content-border-color, rgba(0, 0, 0, 0.12));
+  background: var(--lab-body-highlight-bg, rgba(0, 0, 0, 0.02));
+}
+
+.lab-admin-logs__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+
+  label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.65;
+  }
+
+  input,
+  select {
+    font: inherit;
+    font-size: 0.875rem;
+    padding: 0.4rem 0.55rem;
+    border-radius: 0.35rem;
+    border: 1px solid var(--content-border-color, rgba(0, 0, 0, 0.15));
+    background: var(--lab-navbar-bg, #fff);
+    color: inherit;
+    min-height: 2.25rem;
+  }
+
+  input:focus,
+  select:focus {
+    outline: 2px solid var(--lab-primary-color, #6ea8fe);
+    outline-offset: 1px;
+  }
+}
+
+.lab-admin-logs__field--grow {
+  flex: 1 1 12rem;
+}
+
+.lab-admin-logs__field--narrow {
+  flex: 0 1 7rem;
+}
+
+.lab-admin-logs__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-left: auto;
+}
+
+.lab-admin-logs__btn {
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.45rem 0.85rem;
+  border-radius: 0.35rem;
+  border: 1px solid var(--content-border-color, rgba(0, 0, 0, 0.18));
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--lab-body-highlight-bg, rgba(0, 0, 0, 0.06));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--lab-primary-color, #6ea8fe);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.lab-admin-logs__btn--primary {
+  border-color: rgba(110, 168, 254, 0.5);
+  background: rgba(110, 168, 254, 0.15);
+}
+
+.lab-admin-logs__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.65rem;
+  font-size: 0.85rem;
+  color: var(--bs-secondary-color, rgba(0, 0, 0, 0.55));
+}
+
+.lab-admin-logs__error {
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.35rem;
+  background: rgba(220, 53, 69, 0.12);
+  border: 1px solid rgba(220, 53, 69, 0.35);
+  color: inherit;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.lab-admin-logs__loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.lab-admin-logs__spinner {
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--content-border-color, rgba(0, 0, 0, 0.12));
+  border-top-color: var(--lab-primary-color, #6ea8fe);
+  border-radius: 50%;
+  animation: lab-admin-logs-spin 0.7s linear infinite;
+}
+
+@keyframes lab-admin-logs-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.lab-admin-logs__table-wrap {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  border: 1px solid var(--content-border-color, rgba(0, 0, 0, 0.12));
+}
+
+.lab-admin-logs__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  th,
+  td {
+    padding: 0.5rem 0.65rem;
+    text-align: left;
+    border-bottom: 1px solid var(--content-border-color, rgba(0, 0, 0, 0.08));
+    vertical-align: top;
+  }
+
+  th {
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+    white-space: nowrap;
+    background: var(--lab-body-highlight-bg, rgba(0, 0, 0, 0.03));
+  }
+
+  tbody tr:hover {
+    background: var(--lab-body-highlight-bg, rgba(0, 0, 0, 0.04));
+  }
+}
+
+.lab-admin-logs__cell--muted {
+  color: var(--bs-secondary-color, rgba(0, 0, 0, 0.55));
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-admin-logs__cell--mono {
+  font-family: ui-monospace, monospace;
+  font-size: 0.78rem;
+}
+
+.lab-admin-logs__empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--bs-secondary-color, rgba(0, 0, 0, 0.55));
+  font-size: 0.9rem;
+}
+
+.lab-admin-logs__badge {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.lab-admin-logs__badge--success {
+  background: rgba(25, 135, 84, 0.18);
+  color: #198754;
+}
+
+.lab-admin-logs__badge--failed {
+  background: rgba(220, 53, 69, 0.18);
+  color: #dc3545;
+}
+
+.lab-admin-logs__badge--pending {
+  background: rgba(255, 193, 7, 0.22);
+  color: #b8860b;
+}
+
+.lab-admin-logs__badge--neutral {
+  background: var(--lab-body-highlight-bg, rgba(0, 0, 0, 0.08));
+}
+
+.lab-admin-logs__row-expand-btn {
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  margin-top: 0.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--lab-primary-color, #6ea8fe);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.lab-admin-logs__row-detail {
+  font-size: 0.78rem;
+  margin: 0.35rem 0 0;
+  padding: 0.45rem;
+  border-radius: 0.25rem;
+  background: var(--lab-body-highlight-bg, rgba(0, 0, 0, 0.05));
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.lab-admin-logs__pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.lab-admin-logs__pagination nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 576px) {
+  .lab-admin-logs__actions {
+    margin-left: 0;
+    width: 100%;
+  }
+}

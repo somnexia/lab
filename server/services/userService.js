@@ -1,6 +1,7 @@
-const { User, Employee, Log } = require('../models');
+const { User, Employee } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const logService = require('./logService');
 const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key'; // Убедитесь, что SECRET_KEY определен
 // Создание нового пользователя
 const createUser = async (data, meta, context = {}) => {
@@ -13,17 +14,14 @@ const createUser = async (data, meta, context = {}) => {
 
 
     // Логирование события регистрации
-    await Log.create({
-      user_id: user.id,
-      action: 'REGISTER',
-      resource_id: user.id,
-      resource_type: 'User',
+    await logService.recordAuditLog({
+      action: logService.LOG_ACTIONS.REGISTER,
+      userId: user.id,
+      resourceType: 'User',
+      resourceId: user.id,
       description: `Пользователь с email ${user.email} зарегистрирован`,
-      timestamp: new Date(),
-      ip_address: meta.ip || null,
-      user_agent: meta.userAgent || null,
-      session_id: meta.sessionId || null,
-      status: 'SUCCESS',
+      status: logService.LOG_STATUS.SUCCESS,
+      ...logService.mergeMeta(meta),
     });
     console.log('Пользователь успешно создан:', user);
 
@@ -31,15 +29,12 @@ const createUser = async (data, meta, context = {}) => {
     return user;
   } catch (error) {
     console.error('Ошибка при создании пользователя:', error);
-    await Log.create({
-      user_id: null,
-      action: 'REGISTER_FAILED',
+    await logService.recordAuditLog({
+      action: logService.LOG_ACTIONS.REGISTER_FAILED,
+      userId: null,
       description: `Ошибка при регистрации: ${error.message}`,
-      timestamp: new Date(),
-      ip_address: meta.ip || null,
-      user_agent: meta.userAgent || null,
-      session_id: meta.sessionId || null,
-      status: 'FAILED',
+      status: logService.LOG_STATUS.FAILED,
+      ...logService.mergeMeta(meta),
     });
     throw error;
   }
@@ -109,15 +104,12 @@ const loginUser = async (email, password, meta = {}) => {
     const user = await User.findOne({ where: { email } });
     if (!user) {
       // Логируем неудачную попытку входа
-      await Log.create({
-        user_id: null,
-        action: 'LOGIN_FAILED',
+      await logService.recordAuditLog({
+        action: logService.LOG_ACTIONS.LOGIN_FAILED,
+        userId: null,
         description: `Попытка входа с несуществующим email: ${email}`,
-        timestamp: new Date(),
-        ip_address: meta.ip || null,
-        user_agent: meta.userAgent || null,
-        session_id: meta.sessionId || null,
-        status: 'FAILED',
+        status: logService.LOG_STATUS.FAILED,
+        ...logService.mergeMeta(meta),
       });
       console.error('Пользователь не найден, неверный email');
       throw new Error('Пользователь не найден, неверный email');
@@ -131,15 +123,12 @@ const loginUser = async (email, password, meta = {}) => {
     console.log('Пароль верен?', isPasswordValid);
     if (!isPasswordValid) {
       // Логируем неправильный пароль
-      await Log.create({
-        user_id: user.id,
-        action: 'LOGIN_FAILED',
+      await logService.recordAuditLog({
+        action: logService.LOG_ACTIONS.LOGIN_FAILED,
+        userId: user.id,
         description: `Неверный пароль для пользователя с email: ${email}`,
-        timestamp: new Date(),
-        ip_address: meta.ip || null,
-        user_agent: meta.userAgent || null,
-        session_id: meta.sessionId || null,
-        status: 'FAILED',
+        status: logService.LOG_STATUS.FAILED,
+        ...logService.mergeMeta(meta),
       });
       console.error('Неверный пароль для пользователя');
       throw new Error('Неверный пароль для пользователя');
@@ -156,17 +145,14 @@ const loginUser = async (email, password, meta = {}) => {
       { expiresIn: '1h' } // Токен действителен 1 час
     );
     // Логируем успешный вход
-    await Log.create({
-      user_id: user.id,
-      action: 'LOGIN',
-      resource_id: user.id,
-      resource_type: 'User',
+    await logService.recordAuditLog({
+      action: logService.LOG_ACTIONS.LOGIN,
+      userId: user.id,
+      resourceType: 'User',
+      resourceId: user.id,
       description: `Пользователь с email ${user.email} вошёл в систему`,
-      timestamp: new Date(),
-      ip_address: meta.ip || null,
-      user_agent: meta.userAgent || null,
-      session_id: meta.sessionId || null,
-      status: 'SUCCESS',
+      status: logService.LOG_STATUS.SUCCESS,
+      ...logService.mergeMeta(meta),
     });
 
     // Возвращаем токен и данные пользователя
@@ -203,17 +189,14 @@ const getProfile = async (token) => {
 
 const logoutUser = async (userId, meta = {}) => {
   try {
-    await Log.create({
-      user_id: userId,
-      action: 'LOGOUT',
-      resource_id: userId,
-      resource_type: 'User',
-      description: `Пользователь вышел из системы`,
-      timestamp: new Date(),
-      ip_address: meta.ip || null,
-      user_agent: meta.userAgent || null,
-      session_id: meta.sessionId || null,
-      status: 'SUCCESS',
+    await logService.recordAuditLog({
+      action: logService.LOG_ACTIONS.LOGOUT,
+      userId,
+      resourceType: 'User',
+      resourceId: userId,
+      description: 'Пользователь вышел из системы',
+      status: logService.LOG_STATUS.SUCCESS,
+      ...logService.mergeMeta(meta),
     });
     return { message: 'Выход из системы успешно залогирован' };
   } catch (error) {

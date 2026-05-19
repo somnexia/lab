@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
     Boxes,
@@ -8,55 +8,51 @@ import {
     ListTree,
     MapPin,
     Network,
-} from 'lucide-react';
+} from "lucide-react";
 
-
-
-class Inventory extends Component {
-    state = {}
-
+class StorageLocations extends Component {
     render() {
         const navItems = [
             {
-                to: "/inventory/overview",
+                to: "/storage-locations/overview",
                 Icon: LayoutDashboard,
                 title: "Overview",
-                description: "Inventory summary and item statuses",
+                description: "Storage sites, capacity, and unit health",
                 variant: "primary",
             },
             {
-                to: "/inventory/warehouses",
+                to: "/storage-locations/warehouses",
                 Icon: Building2,
                 title: "Warehouses",
                 description: "Manage warehouse spaces",
                 variant: "success",
             },
             {
-                to: "/inventory/storage-units",
+                to: "/storage-locations/storage-units",
                 Icon: Boxes,
                 title: "Storage Units",
                 description: "Browse shelves, racks and containers",
                 variant: "accent",
             },
             {
-                to: "/inventory/ladder",
+                to: "/storage-locations/ladder",
                 Icon: Network,
                 title: "Storage Tree",
                 description: "Review parent and child units",
                 variant: "info",
             },
             {
-                to: "/inventory/dropdown",
+                to: "/storage-locations/dropdown",
                 Icon: ListTree,
                 title: "Dropdown View",
                 description: "Quick hierarchy selector",
                 variant: "warning",
             },
             {
-                to: "/inventory/location",
+                to: "/storage-locations/location",
                 Icon: MapPin,
                 title: "Locations",
-                description: "Find inventory by place",
+                description: "Find items by storage place",
                 variant: "danger",
             },
         ];
@@ -65,10 +61,10 @@ class Inventory extends Component {
             <div className="inventory-page">
                 <section className="inventory-page__hero">
                     <div>
-                        <p className="inventory-page__eyebrow">Inventory workspace</p>
-                        <h2 className="inventory-page__title">Inventory</h2>
+                        <p className="inventory-page__eyebrow">Storage workspace</p>
+                        <h2 className="inventory-page__title">Storage &amp; locations</h2>
                         <p className="inventory-page__subtitle">
-                            Choose a section to manage stock, storage places, warehouse structure and item locations.
+                            Manage where materials live: warehouses, units, hierarchies, and placement — not chemical catalogs or stock quantities.
                         </p>
                     </div>
                 </section>
@@ -76,7 +72,7 @@ class Inventory extends Component {
                 <div className="row g-4 inventory-page__layout">
                     <aside className="col-12 col-xl-4 col-xxl-3">
                         <div className="inventory-page__sidebar">
-                            <nav className="inventory-page__nav" aria-label="Inventory sections">
+                            <nav className="inventory-page__nav" aria-label="Storage sections">
                                 {navItems.map(({ to, Icon, title, description, variant }) => (
                                     <NavLink
                                         className={({ isActive }) =>
@@ -101,7 +97,7 @@ class Inventory extends Component {
                                     <GitBranch size={20} />
                                 </span>
                                 <div>
-                                    <strong>Storage Tree tip</strong>
+                                    <strong>Storage tree tip</strong>
                                     <p>
                                         Use colored levels to read parent and child units faster while scrolling long hierarchies.
                                     </p>
@@ -116,9 +112,9 @@ class Inventory extends Component {
                         </div>
                     </div>
                 </div>
-            </div >
+            </div>
         );
     }
 }
 
-export default Inventory;
+export default StorageLocations;

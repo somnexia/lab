@@ -53,7 +53,7 @@ class SignOut extends Component {
                             <div className="mb-5">
                                 <h4 className="text-body-highlight">Come back soon!</h4>
                                 <p className="text-body-tertiary">
-                                    Thanks for using Phoenix.<br className="d-lg-none" />
+                                    Thanks for using our platform.<br className="d-lg-none" />
                                     You are now successfully signed out.
                                 </p>
 

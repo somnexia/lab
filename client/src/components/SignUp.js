@@ -54,6 +54,8 @@ class SignUp extends Component {
                 confirmPassword: '',
                 termsAccepted: false,
             });
+            
+            
         } catch (error) {
             this.setState({
                 errorMessage: error.response?.data?.error || 'Registration error',
@@ -181,9 +183,9 @@ class SignUp extends Component {
                                 </div>
                             </div>
 
-                            <button to="/management/singin" type="submit" className="w-100 mb-3 btn btn-lab">Sign Up</button>
+                            <button to="/management/signin" type="submit" className="w-100 mb-3 btn btn-lab">Sign Up</button>
                             <div className="text-center">
-                                <Link className="fw-bold text-decoration-none" to="/management/singin">
+                                <Link className="fw-bold text-decoration-none" to="/management/signin">
                                     Sign in to an existing account
                                 </Link>
                             </div>

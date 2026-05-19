@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import DashboardPage from "../pages/DashboardPage";
-import Inventory from "../pages/Inventory";
+import StorageLocations from "../pages/StorageLocations";
 import Equipment from "../pages/Equipment";
 import Projects from "../pages/Projects";
 
@@ -17,25 +17,44 @@ import Profile from "../components/Profile";
 import ResearchList from "../components/ResearchList";
 import AddResearch from "../components/AddResearch";
 import ParticipantList from "../components/ParticipantList";
+import MembersTeamsPlaceholder from "../pages/MembersTeamsPlaceholder";
 import AdminLogsPage from "../components/AdminLogsPage";
 import TaskList from "../components/TaskList";
 import TaskCreate from "../components/TaskCreate";
+import StorageLocationsOverview from "../pages/StorageLocationsOverview";
+import InventoryMaterialsPlaceholder from "../pages/InventoryMaterialsPlaceholder";
+import LabEquipmentPlaceholder from "../pages/LabEquipmentPlaceholder";
+
+const LEGACY_STORAGE_INVENTORY_PATHS = ["warehouses", "storage-units", "ladder", "dropdown", "location"];
 
 /**
  * Все маршруты основного layout (Header + Aside + Main).
- * Порядок: домашний дашборд → инвентарь → проекты → оборудование → клиент → команды → админка.
- * Вложенные пути только там, где родитель рендерит <Outlet /> (сейчас — Inventory).
  */
 const MainAppRoutes = () => (
     <Routes>
-        {/* ---------- Главная: дашборд ---------- */}
         <Route path="/" element={<DashboardPage />} />
 
-        {/* ---------- Инвентарь ---------- */}
-        <Route path="/inventory" element={<Inventory />}>
-            <Route index element={<InventoryOverview />} />
-            <Route path="overview" element={<InventoryOverview />} />
-            <Route path="list" element={<InventoryOverview fullPage />} />
+        {/* ---------- Materials inventory (what) ---------- */}
+        <Route path="/inventory" element={<Navigate to="/inventory/overview" replace />} />
+        <Route path="/inventory/overview" element={<InventoryOverview />} />
+        <Route path="/inventory/list" element={<InventoryOverview fullPage />} />
+        <Route path="/inventory/chemicals" element={<InventoryMaterialsPlaceholder />} />
+        <Route path="/inventory/samples-specimens" element={<InventoryMaterialsPlaceholder />} />
+        <Route path="/inventory/consumables" element={<InventoryMaterialsPlaceholder />} />
+        <Route path="/inventory/labware" element={<InventoryMaterialsPlaceholder />} />
+        <Route path="/inventory/lots" element={<InventoryMaterialsPlaceholder />} />
+        {LEGACY_STORAGE_INVENTORY_PATHS.map((segment) => (
+            <Route
+                key={segment}
+                path={`/inventory/${segment}`}
+                element={<Navigate to={`/storage-locations/${segment}`} replace />}
+            />
+        ))}
+
+        {/* ---------- Storage & locations (where) ---------- */}
+        <Route path="/storage-locations" element={<StorageLocations />}>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<StorageLocationsOverview />} />
             <Route path="warehouses" element={<WarehouseList />} />
             <Route path="storage-units" element={<StorageUnitList />} />
             <Route path="ladder" element={<StorageTree />} />
@@ -43,7 +62,7 @@ const MainAppRoutes = () => (
             <Route path="location" element={<ParentStorageUnits />} />
         </Route>
 
-        {/* ---------- Проекты, исследования, задачи ---------- */}
+        {/* ---------- Projects ---------- */}
         <Route path="/projects" element={<Projects />} />
         <Route path="/projects/overview" element={<Navigate to="/projects" replace />} />
         <Route path="/projects/research-list" element={<ResearchList />} />
@@ -52,17 +71,29 @@ const MainAppRoutes = () => (
         <Route path="/projects/task-create" element={<TaskCreate />} />
         <Route path="/projects/tasks" element={<Navigate to="/projects/task-list" replace />} />
 
-        {/* ---------- Оборудование ---------- */}
-        <Route path="/equipment" element={<Equipment />} />
+        {/* ---------- Laboratory equipment ---------- */}
+        <Route path="/equipment" element={<Navigate to="/lab-equipment" replace />} />
+        <Route path="/lab-equipment" element={<Equipment />} />
+        <Route path="/lab-equipment/maintenance" element={<LabEquipmentPlaceholder />} />
+        <Route path="/lab-equipment/calibration" element={<LabEquipmentPlaceholder />} />
+        <Route path="/lab-equipment/reservations" element={<LabEquipmentPlaceholder />} />
+        <Route path="/lab-equipment/usage-tracking" element={<LabEquipmentPlaceholder />} />
 
-        {/* ---------- Клиент (корзина, профиль) ---------- */}
+        {/* ---------- Customer ---------- */}
         <Route path="/customer/cart" element={<Cart />} />
         <Route path="/customer/profile" element={<Profile />} />
 
-        {/* ---------- Команды ---------- */}
-        <Route path="/teams/participants" element={<ParticipantList />} />
+        {/* ---------- Members & Teams ---------- */}
+        <Route path="/members-teams" element={<Navigate to="/members-teams/members" replace />} />
+        <Route path="/members-teams/participants" element={<Navigate to="/members-teams/members" replace />} />
+        <Route path="/members-teams/members" element={<ParticipantList />} />
+        <Route path="/members-teams/research-teams" element={<MembersTeamsPlaceholder />} />
+        <Route path="/members-teams/assignments" element={<MembersTeamsPlaceholder />} />
+        <Route path="/members-teams/roles" element={<MembersTeamsPlaceholder />} />
+        <Route path="/members-teams/activity-log" element={<MembersTeamsPlaceholder />} />
+        <Route path="/members-teams/invitations" element={<MembersTeamsPlaceholder />} />
 
-        {/* ---------- Администрирование ---------- */}
+        {/* ---------- Management ---------- */}
         <Route path="/management/userlog" element={<AdminLogsPage />} />
     </Routes>
 );

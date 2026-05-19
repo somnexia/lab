@@ -1,6 +1,8 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { MdOutlineHexagon } from "react-icons/md";
+import { IoAdd } from "react-icons/io5";
+import { LuClipboardList } from "react-icons/lu";
 import { FiShoppingCart } from "react-icons/fi";
 import { FaRegBell, FaRegUserCircle } from "react-icons/fa";
 import { FaEnvelope } from "react-icons/fa";
@@ -9,6 +11,8 @@ import { FaRegQuestionCircle } from "react-icons/fa";
 import { FiPieChart } from "react-icons/fi";
 import { AuthContext } from "../context/AuthContext";
 import { usePanel } from "../context/PanelContext";
+
+const CREATE_SOON_HINT = "Planned in a future release";
 
 function useCloseOnOutsideClick(ref, isOpen, onClose) {
     useEffect(() => {
@@ -26,24 +30,120 @@ function useCloseOnOutsideClick(ref, isOpen, onClose) {
 const navLinkClass = ({ isActive }) =>
     `lab-header__link${isActive ? " lab-header__link--active" : ""}`;
 
+function CreateSoonRow({ label, hint }) {
+    return (
+        <li>
+            <span className="lab-header__dropdown-item lab-header__dropdown-item--soon-stack" title={CREATE_SOON_HINT} aria-label={`${label}. ${CREATE_SOON_HINT}`}>
+                <span className="lab-header__dropdown-item--soon-stack__body">
+                    <span className="lab-header__dropdown-item--soon-stack__title">{label}</span>
+                    {hint ? <span className="lab-header__dropdown-item--soon-stack__hint">{hint}</span> : null}
+                </span>
+                <span className="lab-header__soon-badge">Soon</span>
+            </span>
+        </li>
+    );
+}
+
+function MyWorkMenuBody({ user, closeMenus }) {
+    if (!user) {
+        return (
+            <>
+                <li role="presentation">
+                    <p className="lab-header__mywork-empty">
+                        Sign in to see open tasks, drafts, and logistics queues assigned to you in one place.
+                    </p>
+                </li>
+                <li>
+                    <Link to="/management/signin" className="lab-header__dropdown-item" onClick={closeMenus}>
+                        Sign in
+                    </Link>
+                </li>
+            </>
+        );
+    }
+
+    return (
+        <>
+            <li role="presentation">
+                <div className="lab-header__dropdown-heading">Needs attention</div>
+            </li>
+            <li role="presentation">
+                <p className="lab-header__mywork-empty">
+                    No overdue tasks in your personal queue yet. When the queue API is connected, this block will list due and overdue items first.
+                </p>
+            </li>
+            <li role="presentation">
+                <div className="lab-header__dropdown-heading">In progress</div>
+            </li>
+            <li role="presentation">
+                <p className="lab-header__mywork-empty">
+                    No open tasks assigned to you in this snapshot. You can always review the full board in the task list.
+                </p>
+            </li>
+            <li>
+                <hr className="dropdown-divider my-1" />
+            </li>
+            <li role="presentation">
+                <div className="lab-header__dropdown-heading">Drafts &amp; unfinished</div>
+            </li>
+            <li role="presentation">
+                <p className="lab-header__mywork-empty">
+                    Unsaved forms and draft researches will surface here so you can resume without hunting through lists.
+                </p>
+            </li>
+            <CreateSoonRow label="Resume last draft" hint="Jump back to autosaved research or intake forms" />
+            <li>
+                <hr className="dropdown-divider my-1" />
+            </li>
+            <li role="presentation">
+                <div className="lab-header__dropdown-heading">Logistics &amp; handoffs</div>
+            </li>
+            <CreateSoonRow label="Incomplete goods receipts" hint="Receiving sessions started but not closed to stock" />
+            <CreateSoonRow label="Transfer requests" hint="Internal moves waiting for pick or approval" />
+            <li>
+                <hr className="dropdown-divider my-1" />
+            </li>
+            <li role="presentation">
+                <div className="lab-header__dropdown-heading">Collaboration</div>
+            </li>
+            <CreateSoonRow label="Mentions &amp; review requests" hint="Comments that need your reply or sign-off" />
+            <li role="presentation">
+                <p className="lab-header__dropdown-footnote">
+                    This panel is your working queue, not the full app map. Live items, badges, and snooze will come from a dedicated queue or notification service.
+                </p>
+            </li>
+            <li>
+                <NavLink to="/projects/task-list" className="lab-header__dropdown-item" onClick={closeMenus}>
+                    Open task list
+                </NavLink>
+            </li>
+            <li>
+                <NavLink to="/projects/research-list" className="lab-header__dropdown-item" onClick={closeMenus}>
+                    Open research list
+                </NavLink>
+            </li>
+        </>
+    );
+}
+
 function Header() {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useContext(AuthContext);
-    const { openPanel, closePanel } = usePanel();
+    const { openPanel } = usePanel();
 
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(null);
 
-    const projectsRef = useRef(null);
-    const inventoryRef = useRef(null);
+    const createRef = useRef(null);
+    const myWorkRef = useRef(null);
     const userRef = useRef(null);
     const notifyRef = useRef(null);
 
     const closeMenus = useCallback(() => setMenuOpen(null), []);
 
-    useCloseOnOutsideClick(projectsRef, menuOpen === "projects", closeMenus);
-    useCloseOnOutsideClick(inventoryRef, menuOpen === "inventory", closeMenus);
+    useCloseOnOutsideClick(createRef, menuOpen === "create", closeMenus);
+    useCloseOnOutsideClick(myWorkRef, menuOpen === "mywork", closeMenus);
     useCloseOnOutsideClick(userRef, menuOpen === "user", closeMenus);
     useCloseOnOutsideClick(notifyRef, menuOpen === "notify", closeMenus);
 
@@ -76,7 +176,7 @@ function Header() {
                         <span className="navbar-toggler-icon" />
                     </button>
                     <Link to="/" className="d-flex align-items-center text-decoration-none">
-                        <MdOutlineHexagon className="logo" />
+                        <MdOutlineHexagon className="logo" style={{ width: "4rem", height: "4rem" }} />
                     </Link>
                 </div>
 
@@ -85,85 +185,95 @@ function Header() {
                     className={`lab-header__nav-desktop ${mobileNavOpen ? "d-flex flex-column flex-lg-row flex-wrap" : "d-none d-lg-flex"} align-items-lg-center`}
                 >
                     <ul className="lab-header__nav-list">
-                        <li>
-                            <NavLink to="/" end className={navLinkClass}>
-                                Dashboard
-                            </NavLink>
-                        </li>
-                        <li className="lab-header__dropdown-wrap" ref={inventoryRef}>
+                        <li className="lab-header__dropdown-wrap lab-header__dropdown-wrap--mywork" ref={myWorkRef}>
                             <button
                                 type="button"
-                                className="lab-header__link"
-                                aria-expanded={menuOpen === "inventory"}
-                                onClick={() => toggleMenu("inventory")}
+                                className="lab-header__mywork-btn"
+                                aria-expanded={menuOpen === "mywork"}
+                                aria-haspopup="menu"
+                                onClick={() => toggleMenu("mywork")}
                             >
-                                Inventory
-                                <span className="lab-header__chev">▾</span>
+                                <span className="lab-header__mywork-btn__icon" aria-hidden>
+                                    <LuClipboardList />
+                                </span>
+                                <span>My work</span>
                             </button>
-                            {menuOpen === "inventory" ? (
-                                <ul className="lab-header__dropdown" role="menu">
-                                    <li>
-                                        <NavLink to="/inventory/overview" className="lab-header__dropdown-item" onClick={closeMenus}>
-                                            Overview
-                                        </NavLink>
-                                    </li>
-                                    <li>
-                                        <NavLink to="/inventory/warehouses" className="lab-header__dropdown-item" onClick={closeMenus}>
-                                            Warehouses
-                                        </NavLink>
-                                    </li>
-                                    <li>
-                                        <NavLink to="/inventory/storage-units" className="lab-header__dropdown-item" onClick={closeMenus}>
-                                            Storage units
-                                        </NavLink>
-                                    </li>
+                            {menuOpen === "mywork" ? (
+                                <ul className="lab-header__dropdown lab-header__dropdown--wide lab-header__dropdown--scroll" role="menu" aria-label="My work">
+                                    <MyWorkMenuBody user={user} closeMenus={closeMenus} />
                                 </ul>
                             ) : null}
                         </li>
-                        <li className="lab-header__dropdown-wrap" ref={projectsRef}>
+                        <li className="lab-header__dropdown-wrap lab-header__dropdown-wrap--create" ref={createRef}>
                             <button
                                 type="button"
-                                className="lab-header__link"
-                                aria-expanded={menuOpen === "projects"}
-                                onClick={() => toggleMenu("projects")}
+                                className="lab-header__create-btn"
+                                aria-expanded={menuOpen === "create"}
+                                aria-haspopup="menu"
+                                onClick={() => toggleMenu("create")}
                             >
-                                Projects
-                                <span className="lab-header__chev">▾</span>
+                                <span className="lab-header__create-btn__icon" aria-hidden>
+                                    <IoAdd />
+                                </span>
+                                <span className="lab-header__create-btn__label">Create</span>
                             </button>
-                            {menuOpen === "projects" ? (
-                                <ul className="lab-header__dropdown" role="menu">
+                            {menuOpen === "create" ? (
+                                <ul className="lab-header__dropdown lab-header__dropdown--wide" role="menu" aria-label="Create">
+                                    <li role="presentation">
+                                        <div className="lab-header__dropdown-heading">Research &amp; work</div>
+                                    </li>
                                     <li>
-                                        <NavLink to="/projects" end className="lab-header__dropdown-item" onClick={closeMenus}>
-                                            Overview
+                                        <NavLink
+                                            to="/projects/research-create"
+                                            className="lab-header__dropdown-item lab-header__dropdown-item--stacked"
+                                            onClick={closeMenus}
+                                        >
+                                            <span className="lab-header__dropdown-item__title">New research</span>
+                                            <span className="lab-header__dropdown-item__hint">Open a new study or experiment record</span>
                                         </NavLink>
                                     </li>
                                     <li>
-                                        <NavLink to="/projects/research-list" className="lab-header__dropdown-item" onClick={closeMenus}>
-                                            Researches
+                                        <NavLink
+                                            to="/projects/task-create"
+                                            className="lab-header__dropdown-item lab-header__dropdown-item--stacked"
+                                            onClick={closeMenus}
+                                        >
+                                            <span className="lab-header__dropdown-item__title">New task</span>
+                                            <span className="lab-header__dropdown-item__hint">Assign work linked to projects</span>
                                         </NavLink>
                                     </li>
                                     <li>
-                                        <NavLink to="/projects/research-create" className="lab-header__dropdown-item" onClick={closeMenus}>
-                                            New research
-                                        </NavLink>
+                                        <hr className="dropdown-divider my-1" />
                                     </li>
+                                    <li role="presentation">
+                                        <div className="lab-header__dropdown-heading">Samples &amp; traceability</div>
+                                    </li>
+                                    <CreateSoonRow label="Register sample" hint="Chain of custody, location, and metadata" />
+                                    <CreateSoonRow label="Register aliquot" hint="Split from parent sample with full lineage" />
                                     <li>
-                                        <NavLink to="/projects/task-list" className="lab-header__dropdown-item" onClick={closeMenus}>
-                                            Tasks
-                                        </NavLink>
+                                        <hr className="dropdown-divider my-1" />
+                                    </li>
+                                    <li role="presentation">
+                                        <div className="lab-header__dropdown-heading">Logistics &amp; procurement</div>
+                                    </li>
+                                    <CreateSoonRow label="Goods receipt" hint="Record incoming deliveries against orders" />
+                                    <CreateSoonRow label="Purchase requisition" hint="Internal request before a PO is raised" />
+                                    <CreateSoonRow label="Stock adjustment" hint="Corrections after count or spillage" />
+                                    <li>
+                                        <hr className="dropdown-divider my-1" />
+                                    </li>
+                                    <li role="presentation">
+                                        <div className="lab-header__dropdown-heading">Storage structure</div>
+                                    </li>
+                                    <CreateSoonRow label="New warehouse" hint="Top-level site or storage building" />
+                                    <CreateSoonRow label="New storage unit" hint="Shelf, freezer, or container in the tree" />
+                                    <li role="presentation">
+                                        <p className="lab-header__dropdown-footnote">
+                                            Lists, trees, and lab modules stay in the left sidebar — this menu is only for starting something new.
+                                        </p>
                                     </li>
                                 </ul>
                             ) : null}
-                        </li>
-                        <li>
-                            <NavLink to="/equipment" className={navLinkClass}>
-                                Equipment
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink to="/teams/participants" className={navLinkClass}>
-                                Teams
-                            </NavLink>
                         </li>
                     </ul>
                 </div>
