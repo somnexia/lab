@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import axios from "axios";
 import ResearchTeamHubGrid from "../components/ResearchTeamHubGrid";
 import ResearchTeamsMap from "../components/ResearchTeamsMap";
+import ResearchDetailsModal from "../components/ResearchDetailsModal";
 
 const API_BASE = "http://localhost:3000/api/research-teams";
 
@@ -21,6 +22,10 @@ class ResearchTeamsPage extends Component {
         summary: [],
         graph: null,
         unassigned: [],
+        isModalOpen: false,
+        selectedResearch: null,
+        modalLoading: false,
+        modalError: null,
     };
 
     componentDidMount() {
@@ -75,6 +80,48 @@ class ResearchTeamsPage extends Component {
         this.setState({ statusFilter: e.target.value });
     };
 
+    openResearchModal = async (research) => {
+        if (!research?.id) return;
+
+        try {
+            this.setState({
+                selectedResearch: research,
+                isModalOpen: true,
+                modalLoading: true,
+                modalError: null,
+            });
+
+            const researchResponse = await axios.get(
+                `http://localhost:3000/api/researches/${research.id}`
+            );
+
+            this.setState({
+                selectedResearch: { ...research, ...researchResponse.data },
+                modalLoading: false,
+            });
+        } catch (err) {
+            console.error("ResearchTeamsPage openResearchModal:", err);
+            this.setState({
+                modalError: "Could not load research details.",
+                modalLoading: false,
+            });
+        }
+    };
+
+    openResearchFromMap = (entityId) => {
+        const team = (this.state.summary || []).find((t) => t.id === entityId);
+        if (team) this.openResearchModal(team);
+    };
+
+    closeResearchModal = () => {
+        this.setState({
+            isModalOpen: false,
+            selectedResearch: null,
+            modalLoading: false,
+            modalError: null,
+        });
+    };
+
     countMembers() {
         return (this.state.summary || []).reduce(
             (sum, t) => sum + (t.participantCount || 0),
@@ -120,14 +167,33 @@ class ResearchTeamsPage extends Component {
         }
 
         if (viewMode === "map") {
-            return <ResearchTeamsMap graph={graph} />;
+            return (
+                <ResearchTeamsMap
+                    graph={graph}
+                    onResearchClick={this.openResearchFromMap}
+                />
+            );
         }
 
-        return <ResearchTeamHubGrid teams={summary} />;
+        return (
+            <ResearchTeamHubGrid
+                teams={summary}
+                onTeamClick={this.openResearchModal}
+            />
+        );
     }
 
     render() {
-        const { viewMode, statusFilter, summary, loading } = this.state;
+        const {
+            viewMode,
+            statusFilter,
+            summary,
+            loading,
+            selectedResearch,
+            isModalOpen,
+            modalLoading,
+            modalError,
+        } = this.state;
         const teamCount = summary.length;
         const memberLinks = this.countMembers();
 
@@ -203,6 +269,16 @@ class ResearchTeamsPage extends Component {
 
                 {this.renderContent()}
                 {!loading && this.renderUnassigned()}
+
+                {selectedResearch && (
+                    <ResearchDetailsModal
+                        isOpen={isModalOpen}
+                        research={selectedResearch}
+                        onClose={this.closeResearchModal}
+                        loading={modalLoading}
+                        error={modalError}
+                    />
+                )}
             </section>
         );
     }

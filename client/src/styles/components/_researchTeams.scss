@@ -150,12 +150,37 @@ $rt-shadow: 0 1rem 2.5rem rgba(4, 3, 22, 0.08);
   overflow: hidden;
 }
 
+.research-teams__hub--clickable {
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  width: 100%;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--link-color);
+    box-shadow: $rt-shadow, 0 0 0 3px color-mix(in srgb, var(--link-color) 18%, transparent);
+    outline: none;
+    transform: translateY(-2px);
+  }
+}
+
+.research-teams__hub-open-hint {
+  color: var(--link-color);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+}
+
 .research-teams__hub-head {
   border-bottom: 1px solid var(--content-border-color);
   padding: 0.85rem 1rem;
 }
 
 .research-teams__hub-title {
+  color: var(--text-body-primary);
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.3;
@@ -271,6 +296,16 @@ $rt-shadow: 0 1rem 2.5rem rgba(4, 3, 22, 0.08);
 
 .research-teams__map-node {
   cursor: default;
+
+  &--clickable {
+    cursor: pointer;
+
+    &:hover .research-teams__map-rect,
+    &:focus .research-teams__map-rect {
+      stroke: var(--link-color);
+      stroke-width: 2;
+    }
+  }
 }
 
 .research-teams__map-rect {

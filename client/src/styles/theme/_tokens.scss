@@ -9,6 +9,7 @@
   --text-color: #{map.get($theme, text-color)};
   --body-color: #{map.get($theme, body-color)};
   --nav-link-color: #{map.get($theme, nav-link-color)};
+  --text-body-primary: #{map.get($theme, text-body-primary)};
   --text-body-secondary: #{map.get($theme, text-body-secondary)};
   --quaternary-text-color: #{map.get($theme, quaternary-text-color)};
   --primary-color: #{map.get($theme, primary-color)};

@@ -84,6 +84,7 @@
 
   $body-color: tone($text, $bg, 78%);
   $nav-link-color: tone($text, $bg, 82%);
+  $text-body-primary: tone($text, $bg, 100%);
   $text-body-secondary: tone($text, $bg, 58%);
   $quaternary-text-color: tone($text, $bg, 42%);
   $tertiary-color: tone($text, $secondary, 45%);
@@ -110,6 +111,7 @@
     accent-color: $accent,
     tertiary-color: $tertiary-color,
     link-color: $primary,
+    text-body-primary: $text-body-primary,
     text-body-secondary: $text-body-secondary,
     quaternary-text-color: $quaternary-text-color,
     secondary-border-color: $border,

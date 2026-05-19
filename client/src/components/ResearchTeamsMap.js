@@ -69,14 +69,26 @@ class ResearchTeamsMap extends Component {
         return `${s.slice(0, max - 1)}…`;
     }
 
-    renderNode(node, pos, variant) {
-        const nodeClass =
-            variant === "research"
-                ? "research-teams__map-node research-teams__map-node--research"
-                : "research-teams__map-node research-teams__map-node--employee";
+    handleResearchKeyDown = (event, entityId) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        const { onResearchClick } = this.props;
+        if (onResearchClick) onResearchClick(entityId);
+    };
 
-        return (
-            <g key={node.id} className={nodeClass}>
+    renderNode(node, pos, variant) {
+        const { onResearchClick } = this.props;
+        const isResearch = variant === "research";
+        const clickable = isResearch && typeof onResearchClick === "function";
+
+        const nodeClass = isResearch
+            ? `research-teams__map-node research-teams__map-node--research${
+                  clickable ? " research-teams__map-node--clickable" : ""
+              }`
+            : "research-teams__map-node research-teams__map-node--employee";
+
+        const content = (
+            <>
                 <rect
                     className="research-teams__map-rect"
                     x={pos.x}
@@ -93,7 +105,7 @@ class ResearchTeamsMap extends Component {
                 >
                     {this.truncate(node.label, 16)}
                 </text>
-                {variant === "research" && node.status ? (
+                {isResearch && node.status ? (
                     <text
                         x={pos.x + NODE_W / 2}
                         y={pos.y + 32}
@@ -103,7 +115,7 @@ class ResearchTeamsMap extends Component {
                         {node.status}
                     </text>
                 ) : null}
-                {variant === "employee" && node.position ? (
+                {!isResearch && node.position ? (
                     <text
                         x={pos.x + NODE_W / 2}
                         y={pos.y + 32}
@@ -113,6 +125,28 @@ class ResearchTeamsMap extends Component {
                         {this.truncate(node.position, 18)}
                     </text>
                 ) : null}
+            </>
+        );
+
+        if (clickable) {
+            return (
+                <g
+                    key={node.id}
+                    className={nodeClass}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Open research: ${node.label}`}
+                    onClick={() => onResearchClick(node.entityId)}
+                    onKeyDown={(e) => this.handleResearchKeyDown(e, node.entityId)}
+                >
+                    {content}
+                </g>
+            );
+        }
+
+        return (
+            <g key={node.id} className={nodeClass}>
+                {content}
             </g>
         );
     }
