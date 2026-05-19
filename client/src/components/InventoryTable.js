@@ -222,7 +222,14 @@ class InventoryTable extends Component {
 		switch (key) {
 			case 'id':
 				return item.id || 'N/A';
-			case 'name':
+			case 'name': {
+				const displayName = this.props.useCatalogLabels
+					? (item.catalogName || item.item_name || 'Unnamed lot')
+					: (item.item_name || 'Название отсутствует');
+				const meta = this.props.useCatalogLabels && item.catalogFormula
+					? item.catalogFormula
+					: `#${item.id || 'N/A'}`;
+
 				return (
 					<button
 						className="inventory-table__item-button"
@@ -230,10 +237,11 @@ class InventoryTable extends Component {
 						onClick={() => this.props.onOpenDetails && this.props.onOpenDetails(item)}
 						type="button"
 					>
-						<span className="inventory-table__item-name">{item.item_name || 'Название отсутствует'}</span>
-						<span className="inventory-table__item-meta">#{item.id || 'N/A'}</span>
+						<span className="inventory-table__item-name">{displayName}</span>
+						<span className="inventory-table__item-meta">{meta}</span>
 					</button>
 				);
+			}
 			case 'type':
 				return <span className="inventory-table__type">{item.item_type || 'N/A'}</span>;
 			case 'reference':

@@ -11,10 +11,19 @@ const createInventoryItem = async (req, res) => {
   }
 };
 
-// Получение всех записей инвентаря
+// Получение партий инвентаря (остатки на складе)
 const getAllInventoryItems = async (req, res) => {
   try {
-    const inventoryItems = await inventoryService.getAllInventoryItems();
+    const { item_type, item_types, include_catalog } = req.query;
+    const itemTypes = item_types
+      ? item_types.split(',').map((value) => value.trim()).filter(Boolean)
+      : undefined;
+
+    const inventoryItems = await inventoryService.getInventoryLots({
+      itemType: item_type,
+      itemTypes,
+      includeCatalog: include_catalog !== 'false',
+    });
     return res.status(200).json(inventoryItems);
   } catch (error) {
     console.error(error);

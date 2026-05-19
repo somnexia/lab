@@ -12,7 +12,8 @@ import StorageUnitList from "../components/StorageUnitList";
 import DropdownHierarchy from "../components/DropdownHierarchy";
 import ParentStorageUnits from "../components/ParentStorageUnits";
 import Cart from "../components/Cart";
-import InventoryOverview from "../components/InventoryOverview";
+import InventoryStockOverview from "../components/InventoryStockOverview";
+import ReagentCatalogPage from "../pages/ReagentCatalogPage";
 import Profile from "../components/Profile";
 import ResearchList from "../components/ResearchList";
 import AddResearch from "../components/AddResearch";
@@ -37,9 +38,9 @@ const MainAppRoutes = () => (
 
         {/* ---------- Materials inventory (what) ---------- */}
         <Route path="/inventory" element={<Navigate to="/inventory/overview" replace />} />
-        <Route path="/inventory/overview" element={<InventoryOverview />} />
-        <Route path="/inventory/list" element={<InventoryOverview fullPage />} />
-        <Route path="/inventory/chemicals" element={<InventoryMaterialsPlaceholder />} />
+        <Route path="/inventory/overview" element={<InventoryStockOverview />} />
+        <Route path="/inventory/list" element={<InventoryStockOverview fullPage />} />
+        <Route path="/inventory/chemicals" element={<ReagentCatalogPage />} />
         <Route path="/inventory/samples-specimens" element={<InventoryMaterialsPlaceholder />} />
         <Route path="/inventory/consumables" element={<InventoryMaterialsPlaceholder />} />
         <Route path="/inventory/labware" element={<InventoryMaterialsPlaceholder />} />

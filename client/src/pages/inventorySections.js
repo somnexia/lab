@@ -1,7 +1,7 @@
 /** Materials inventory — what is stored (reagents, samples, supplies). */
 export const INVENTORY_MATERIALS_SECTIONS = {
-    overview: { title: "Overview", hint: "Stock levels, alerts, and recent material movements" },
-    chemicals: { title: "Chemicals & reagents", hint: "Catalog, SDS links, and reagent lots" },
+    overview: { title: "Stock overview", hint: "Warehouse lots: quantities, status, expiry, and storage locations" },
+    chemicals: { title: "Chemicals & reagents", hint: "Reagent catalog (elements, compounds, mixtures) with stock totals and lots" },
     samples: { title: "Samples & specimens", hint: "Chain of custody and specimen metadata" },
     consumables: { title: "Consumables", hint: "Disposable lab supplies and stock counts" },
     labware: { title: "Labware & glassware", hint: "Reusable vessels, tools, and breakage tracking" },

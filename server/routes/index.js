@@ -11,6 +11,7 @@ const chemStorageRoutes = require("./chemStorageRoutes"); // Путь к мар�
 const employeeRoutes = require("./employeeRoutes"); // Путь к маршрутам для сотрудников
 const experimentRoutes = require("./experimentRoutes"); // Путь к маршрутам для экспериментов
 const inventoryRoutes = require("./inventoryRoutes"); // Путь к маршрутам для инвентаря
+const reagentRoutes = require("./reagentRoutes");
 const storageUnitRoutes = require("./storageUnitRoutes");
 const inventoryStorageUnitRoutes = require('./inventoryStorageUnitRoutes');
 const cartRoutes =require("./cartRoutes")
@@ -38,6 +39,7 @@ router.use("/api/storages", chemStorageRoutes); // Подключаем марш
 router.use("/api/employees", employeeRoutes); // Подключаем маршруты для сотрудников
 router.use("/api/experiments", experimentRoutes); // Подключаем маршруты для экспериментов
 router.use("/api/inventories", inventoryRoutes); // Подключаем маршруты для инвентаря
+router.use("/api/reagents", reagentRoutes);
 router.use("/api/storageUnits", storageUnitRoutes);
 router.use('/api/inventoryStorageUnit', inventoryStorageUnitRoutes);
 router.use("/api/carts",cartRoutes);

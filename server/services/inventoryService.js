@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { Inventory } = require('../models');
 const { ChemElement, ChemEquipment, ChemCompound, ChemMixture, StorageUnit } = require('../models');
 
@@ -14,10 +15,44 @@ const createInventoryItem = async (data) => {
 
 // Получение всех записей Inventory
 const getAllInventoryItems = async () => {
+  return getInventoryLots();
+};
+
+const getInventoryLots = async (options = {}) => {
   try {
-    return await Inventory.findAll();
+    const { itemType, itemTypes, includeCatalog = true } = options;
+    const where = {};
+
+    if (itemType) {
+      where.item_type = itemType;
+    } else if (itemTypes?.length) {
+      where.item_type = { [Op.in]: itemTypes };
+    }
+
+    const include = [
+      {
+        model: StorageUnit,
+        as: 'storageUnits',
+        required: false,
+      },
+    ];
+
+    if (includeCatalog) {
+      include.push(
+        { model: ChemElement, as: 'chemElement', required: false },
+        { model: ChemCompound, as: 'chemCompound', required: false },
+        { model: ChemMixture, as: 'chemMixture', required: false },
+        { model: ChemEquipment, as: 'chemEquipment', required: false }
+      );
+    }
+
+    return await Inventory.findAll({
+      where,
+      include,
+      order: [['last_updated', 'DESC'], ['id', 'DESC']],
+    });
   } catch (error) {
-    console.error('Ошибка при получении записей Inventory:', error);
+    console.error('Ошибка при получении партий Inventory:', error);
     throw error;
   }
 };
@@ -228,6 +263,7 @@ const countEquipment = async () => {
 module.exports = {
   createInventoryItem,
   getAllInventoryItems,
+  getInventoryLots,
   getInventoryItemById,
   updateInventoryItem,
   deleteInventoryItem,
