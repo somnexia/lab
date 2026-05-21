@@ -1,4 +1,6 @@
 const chemMixtureService = require('../services/chemMixtureService');
+const mixtureCompositionService = require('../services/mixtureCompositionService');
+const { sendMixtureError } = require('../utils/mixtureControllerErrors');
 
 // Создание новой химической смеси
 const createChemMixture = async (req, res) => {
@@ -58,10 +60,38 @@ const deleteChemMixture = async (req, res) => {
   }
 };
 
+const getMixtureComponents = async (req, res) => {
+  try {
+    const components = await mixtureCompositionService.getMixtureComponents(req.params.id);
+    return res.status(200).json({
+      mixtureId: Number(req.params.id),
+      components,
+    });
+  } catch (error) {
+    return sendMixtureError(error, res);
+  }
+};
+
+const replaceMixtureComponents = async (req, res) => {
+  try {
+    const { components, syncCompositionText } = req.body;
+    const result = await mixtureCompositionService.replaceMixtureComponents(
+      req.params.id,
+      components,
+      { syncCompositionText: syncCompositionText !== false }
+    );
+    return res.status(200).json(result);
+  } catch (error) {
+    return sendMixtureError(error, res);
+  }
+};
+
 module.exports = {
   createChemMixture,
   getAllChemMixtures,
   getChemMixtureById,
   updateChemMixture,
-  deleteChemMixture
+  deleteChemMixture,
+  getMixtureComponents,
+  replaceMixtureComponents,
 };

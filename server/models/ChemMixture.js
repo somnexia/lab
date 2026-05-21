@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'parent_id',
         as: 'children',
       });
+      ChemMixture.hasMany(models.MixtureComponent, {
+        foreignKey: 'mixture_id',
+        as: 'components',
+      });
     }
   }
 

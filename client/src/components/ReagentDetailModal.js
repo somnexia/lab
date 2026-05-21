@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import InventoryTable from './InventoryTable';
+import MixtureCompositionTable from './MixtureCompositionTable';
 import { enrichInventoryLots } from '../utils/inventoryEnrichment';
 
 const KIND_LABELS = {
@@ -53,10 +54,19 @@ class ReagentDetailModal extends Component {
             <dd>{reagent.stock.lotCount}</dd>
           </div>
         </dl>
-        {reagent.composition && (
+        {reagent.kind === 'mixture' && (
           <div className="reagent-detail-modal__composition">
-            <h3>Composition</h3>
-            <p>{reagent.composition}</p>
+            <h3>Structured composition</h3>
+            <MixtureCompositionTable
+              components={reagent.components}
+              emptyMessage="No structured components yet."
+            />
+            {reagent.composition && (
+              <div className="reagent-detail-modal__composition-summary">
+                <h4>Composition summary (catalog text)</h4>
+                <p>{reagent.composition}</p>
+              </div>
+            )}
           </div>
         )}
         {reagent.description && (

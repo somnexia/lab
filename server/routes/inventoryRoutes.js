@@ -6,6 +6,8 @@ router.post('/', inventoryController.createInventoryItem);
 
 router.get('/locations/:entityType/:entityId', inventoryController.getLocationsForEntity);
 router.get('/filter', inventoryController.getInventoriesByReferenceAndType);
+router.get('/validate-catalog', inventoryController.validateCatalogReference);
+router.get('/integrity/orphans', inventoryController.getOrphanInventoryLots);
 router.get('/chemicals/count', inventoryController.getChemicalCount);
 router.get('/equipment/count', inventoryController.getEquipmentCount);
 

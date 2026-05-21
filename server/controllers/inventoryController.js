@@ -1,17 +1,15 @@
-const inventoryService = require('../services/inventoryService'); // Путь к вашему сервису
+const inventoryService = require('../services/inventoryService');
+const { sendInventoryError } = require('../utils/inventoryControllerErrors');
 
-// Создание новой записи инвентаря
 const createInventoryItem = async (req, res) => {
   try {
     const newInventoryItem = await inventoryService.createInventoryItem(req.body);
     return res.status(201).json(newInventoryItem);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendInventoryError(error, res);
   }
 };
 
-// Получение партий инвентаря (остатки на складе)
 const getAllInventoryItems = async (req, res) => {
   try {
     const { item_type, item_types, include_catalog } = req.query;
@@ -26,60 +24,37 @@ const getAllInventoryItems = async (req, res) => {
     });
     return res.status(200).json(inventoryItems);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendInventoryError(error, res);
   }
 };
 
-// Получение записи инвентаря по ID
 const getInventoryItemById = async (req, res) => {
   const { id } = req.params;
   try {
     const inventoryItem = await inventoryService.getInventoryItemById(id);
     return res.status(200).json(inventoryItem);
   } catch (error) {
-    console.error(error);
-    return res.status(404).json({ error: error.message });
+    return sendInventoryError(error, res);
   }
 };
 
-// const getInventoriesByStorageUnitId = async (req, res) => {
-//   try {
-//     const { storageunit_id } = req.query;
-//     if (!storageunit_id) {
-//       return res.status(400).json({ error: "storageunit_id is required" });
-//     }
-
-//     const inventories = await inventoryService.getInventoriesByStorageUnitId(storageunit_id);
-//     res.status(200).json(inventories);
-//   } catch (error) {
-//     console.error("Ошибка при получении инвентаря:", error);
-//     res.status(500).json({ error: "Ошибка сервера" });
-//   }
-// };
-
-
-// Обновление записи инвентаря по ID
 const updateInventoryItem = async (req, res) => {
   const { id } = req.params;
   try {
     const updatedInventoryItem = await inventoryService.updateInventoryItem(id, req.body);
     return res.status(200).json(updatedInventoryItem);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendInventoryError(error, res);
   }
 };
 
-// Удаление записи инвентаря по ID
 const deleteInventoryItem = async (req, res) => {
   const { id } = req.params;
   try {
     const result = await inventoryService.deleteInventoryItem(id);
     return res.status(200).json(result);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendInventoryError(error, res);
   }
 };
 
@@ -89,7 +64,7 @@ const getInventoriesByReferenceAndType = async (req, res) => {
 
     if (!reference_id || !item_type) {
       return res.status(400).json({
-        error: 'Параметры reference_id и item_type обязательны',
+        error: 'Query parameters reference_id and item_type are required',
       });
     }
 
@@ -97,14 +72,39 @@ const getInventoriesByReferenceAndType = async (req, res) => {
       reference_id,
       item_type
     );
-    
-    
-    res.status(200).json(inventories);
+
+    return res.status(200).json(inventories);
   } catch (error) {
-    console.error('Ошибка при фильтрации инвентаря:', error.message);
-    res.status(500).json({
-      error: 'Ошибка сервера при получении инвентаря',
+    return sendInventoryError(error, res);
+  }
+};
+
+const validateCatalogReference = async (req, res) => {
+  try {
+    const { reference_id, item_type } = req.query;
+
+    if (!reference_id || !item_type) {
+      return res.status(400).json({
+        error: 'Query parameters reference_id and item_type are required',
+      });
+    }
+
+    const result = await inventoryService.checkCatalogReference(item_type, reference_id);
+    return res.status(200).json(result);
+  } catch (error) {
+    return sendInventoryError(error, res);
+  }
+};
+
+const getOrphanInventoryLots = async (req, res) => {
+  try {
+    const orphans = await inventoryService.findOrphanInventoryLots();
+    return res.status(200).json({
+      count: orphans.length,
+      orphans,
     });
+  } catch (error) {
+    return sendInventoryError(error, res);
   }
 };
 
@@ -115,35 +115,27 @@ const getLocationsForEntity = async (req, res) => {
     const entity = await inventoryService.getLocationsForEntity(entityType, entityId);
     return res.status(200).json(entity);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendInventoryError(error, res);
   }
 };
-
 
 const getChemicalCount = async (req, res) => {
   try {
     const count = await inventoryService.countChemicals();
-    res.json({ count });
+    return res.json({ count });
   } catch (error) {
-    res.status(500).json({ message: 'Ошибка при подсчете химикатов' });
+    return sendInventoryError(error, res);
   }
 };
-
-const { countEquipment } = require('../services/inventoryService');
 
 const getEquipmentCount = async (req, res) => {
   try {
-    const count = await countEquipment();
-    res.json({ count });
+    const count = await inventoryService.countEquipment();
+    return res.json({ count });
   } catch (error) {
-    res.status(500).json({ error: 'Ошибка при получении количества оборудования' });
+    return sendInventoryError(error, res);
   }
 };
-
-
-
-
-
 
 module.exports = {
   createInventoryItem,
@@ -152,9 +144,9 @@ module.exports = {
   updateInventoryItem,
   deleteInventoryItem,
   getInventoriesByReferenceAndType,
+  validateCatalogReference,
+  getOrphanInventoryLots,
   getLocationsForEntity,
   getChemicalCount,
   getEquipmentCount,
-
-
 };

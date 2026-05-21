@@ -6,6 +6,7 @@ const {
   Inventory,
   StorageUnit,
 } = require('../models');
+const { getMixtureComponents } = require('./mixtureCompositionService');
 
 const REAGENT_KINDS = ['element', 'compound', 'mixture'];
 
@@ -186,10 +187,23 @@ const getReagentByKindAndId = async (kind, id) => {
     order: [['expiration_date', 'ASC'], ['id', 'ASC']],
   });
 
-  return {
+  const result = {
     ...catalogMappers[kind](catalog, stock),
     lots,
   };
+
+  if (kind === 'mixture') {
+    try {
+      result.components = await getMixtureComponents(id);
+    } catch (error) {
+      if (error.statusCode !== 404) {
+        throw error;
+      }
+      result.components = [];
+    }
+  }
+
+  return result;
 };
 
 const getReagentSummary = async () => {

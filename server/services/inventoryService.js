@@ -1,19 +1,54 @@
 const { Op } = require('sequelize');
 const { Inventory } = require('../models');
-const { ChemElement, ChemEquipment, ChemCompound, ChemMixture, StorageUnit } = require('../models');
+const {
+  ChemElement,
+  ChemEquipment,
+  ChemCompound,
+  ChemMixture,
+  StorageUnit,
+} = require('../models');
+const CatalogReferenceError = require('../errors/CatalogReferenceError');
+const {
+  isInventoryItemType,
+  assertCatalogReference,
+  validateInventoryCatalogPair,
+  validateInventoryCatalogPatch,
+} = require('./catalogReferenceService');
 
-// Создание новой записи Inventory
 const createInventoryItem = async (data) => {
   try {
-    const inventoryItem = await Inventory.create(data);
+    const { item_type, reference_id } = data;
+
+    if (!item_type || reference_id == null) {
+      throw new CatalogReferenceError(
+        'item_type and reference_id are required when creating an inventory lot',
+        { fields: ['item_type', 'reference_id'] }
+      );
+    }
+
+    const validated = await validateInventoryCatalogPair({
+      item_type,
+      reference_id,
+      item_name: data.item_name,
+    });
+
+    const inventoryItem = await Inventory.create({
+      ...data,
+      item_type: validated.item_type,
+      reference_id: validated.reference_id,
+      item_name: validated.item_name,
+    });
+
     return inventoryItem;
   } catch (error) {
+    if (error instanceof CatalogReferenceError) {
+      throw error;
+    }
     console.error('Ошибка при создании записи Inventory:', error);
     throw error;
   }
 };
 
-// Получение всех записей Inventory
 const getAllInventoryItems = async () => {
   return getInventoryLots();
 };
@@ -24,8 +59,15 @@ const getInventoryLots = async (options = {}) => {
     const where = {};
 
     if (itemType) {
+      if (!isInventoryItemType(itemType)) {
+        throw new CatalogReferenceError(`Unsupported item_type filter: ${itemType}`);
+      }
       where.item_type = itemType;
     } else if (itemTypes?.length) {
+      const invalid = itemTypes.filter((type) => !isInventoryItemType(type));
+      if (invalid.length) {
+        throw new CatalogReferenceError('Invalid item_types filter', { invalid });
+      }
       where.item_type = { [Op.in]: itemTypes };
     }
 
@@ -52,12 +94,14 @@ const getInventoryLots = async (options = {}) => {
       order: [['last_updated', 'DESC'], ['id', 'DESC']],
     });
   } catch (error) {
+    if (error instanceof CatalogReferenceError) {
+      throw error;
+    }
     console.error('Ошибка при получении партий Inventory:', error);
     throw error;
   }
 };
 
-// Получение записи Inventory по ID
 const getInventoryItemById = async (id) => {
   try {
     const inventoryItem = await Inventory.findByPk(id);
@@ -70,39 +114,33 @@ const getInventoryItemById = async (id) => {
     throw error;
   }
 };
-// const getInventoriesByStorageUnitId = async (storageunit_id) => {
-//   try {
-//     console.log(`Получение записей для StorageUnit ID: ${storageunit_id}`);
-//     const inventoryItems = await Inventory.findAll({
-//       where: { storageunit_id },
-//     });
-//     console.log('Найденные записи:', inventoryItems);
-//     if (!inventoryItems.length) {
-//       throw new Error(`Записи Inventory для StorageUnit с id ${storageunit_id} не найдены`);
-//     }
-//     return inventoryItems;
-//   } catch (error) {
-//     console.error('Ошибка при получении записей Inventory по StorageUnit ID:', error);
-//     throw error;
-//   }
-// };
 
-// Обновление записи Inventory по ID
 const updateInventoryItem = async (id, data) => {
   try {
     const inventoryItem = await Inventory.findByPk(id);
     if (!inventoryItem) {
       throw new Error(`Запись Inventory с id ${id} не найдена`);
     }
-    await inventoryItem.update(data);
+
+    const touchesCatalogLink = Object.prototype.hasOwnProperty.call(data, 'item_type')
+      || Object.prototype.hasOwnProperty.call(data, 'reference_id')
+      || Object.prototype.hasOwnProperty.call(data, 'item_name');
+
+    const payload = touchesCatalogLink
+      ? await validateInventoryCatalogPatch(inventoryItem, data)
+      : data;
+
+    await inventoryItem.update(payload);
     return inventoryItem;
   } catch (error) {
+    if (error instanceof CatalogReferenceError) {
+      throw error;
+    }
     console.error('Ошибка при обновлении записи Inventory:', error);
     throw error;
   }
 };
 
-// Удаление записи Inventory по ID
 const deleteInventoryItem = async (id) => {
   try {
     const inventoryItem = await Inventory.findByPk(id);
@@ -119,14 +157,15 @@ const deleteInventoryItem = async (id) => {
 
 const getInventoriesByReferenceAndType = async (referenceId, itemType) => {
   try {
+    await assertCatalogReference(itemType, referenceId);
+
     const includeOptions = [];
 
-    // Условно добавляем связанные модели в зависимости от item_type
     if (itemType === 'element') {
       includeOptions.push({
         model: ChemElement,
         as: 'chemElement',
-        required: true, // Включать только если есть связанная запись
+        required: true,
       });
     } else if (itemType === 'equipment') {
       includeOptions.push({
@@ -150,21 +189,20 @@ const getInventoriesByReferenceAndType = async (referenceId, itemType) => {
 
     includeOptions.push({
       model: StorageUnit,
-      as: 'storageUnits', // Псевдоним должен совпадать с определением в модели Inventory
+      as: 'storageUnits',
     });
 
-    // Запрос с учетом фильтрации по item_type
-    const inventoryItems = await Inventory.findAll({
+    return await Inventory.findAll({
       where: {
-        reference_id: referenceId,
-        item_type: itemType, // Условие фильтрации
+        reference_id: Number(referenceId),
+        item_type: itemType,
       },
-      include: includeOptions, // Включение только нужных моделей
-
+      include: includeOptions,
     });
-
-    return inventoryItems;
   } catch (error) {
+    if (error instanceof CatalogReferenceError) {
+      throw error;
+    }
     console.error(
       'Ошибка при получении инвентаря по reference_id и item_type:',
       error
@@ -173,10 +211,21 @@ const getInventoriesByReferenceAndType = async (referenceId, itemType) => {
   }
 };
 
+const checkCatalogReference = async (itemType, referenceId) => {
+  const catalog = await assertCatalogReference(itemType, referenceId);
+  return {
+    valid: true,
+    item_type: itemType,
+    reference_id: Number(referenceId),
+    catalog_id: catalog.id,
+    catalog_name: catalog.name || catalog.symbol,
+  };
+};
 
 const getLocationsForEntity = async (entityType, entityId) => {
   try {
-    // Связь типа сущности с соответствующей моделью
+    await assertCatalogReference(entityType, entityId);
+
     const entityModels = {
       element: ChemElement,
       compound: ChemCompound,
@@ -185,18 +234,11 @@ const getLocationsForEntity = async (entityType, entityId) => {
     };
 
     const model = entityModels[entityType];
-
-    console.log("entityType:", entityType)
-    if (!model) {
-      throw new Error(`Тип ${entityType} не поддерживается.`);
-    }
-
-    // Получаем сущность с ее связанным инвентарем
     const entity = await model.findByPk(entityId, {
       include: [
         {
           model: Inventory,
-          as: 'inventories', // Используем псевдоним связи из модели
+          as: 'inventories',
           include: [
             {
               model: StorageUnit,
@@ -204,8 +246,8 @@ const getLocationsForEntity = async (entityType, entityId) => {
               include: [
                 {
                   model: StorageUnit,
-                  as: 'parent', // Загружаем родительские единицы
-                  hierarchy: true, // Если используется иерархическая структура
+                  as: 'parent',
+                  hierarchy: true,
                 },
               ],
             },
@@ -220,20 +262,21 @@ const getLocationsForEntity = async (entityType, entityId) => {
 
     return entity;
   } catch (error) {
+    if (error instanceof CatalogReferenceError) {
+      throw error;
+    }
     console.error('Ошибка при получении данных сущности:', error);
     throw error;
   }
 };
 
-
 const countChemicals = async () => {
   try {
-    const count = await Inventory.count({
+    return await Inventory.count({
       where: {
-        item_type: ['element', 'compound', 'mixture'], // или Sequelize.Op.in
+        item_type: { [Op.in]: ['element', 'compound', 'mixture'] },
       },
     });
-    return count;
   } catch (error) {
     console.error('Ошибка при подсчете химикатов:', error);
     throw error;
@@ -242,23 +285,43 @@ const countChemicals = async () => {
 
 const countEquipment = async () => {
   try {
-    const count = await Inventory.count({
+    return await Inventory.count({
       where: {
         item_type: 'equipment',
       },
     });
-    return count;
   } catch (error) {
     console.error('Ошибка при подсчете оборудования:', error);
     throw error;
   }
 };
 
+/**
+ * Reports inventory rows whose (item_type, reference_id) do not resolve in catalog.
+ */
+const findOrphanInventoryLots = async () => {
+  const lots = await Inventory.findAll({
+    attributes: ['id', 'item_type', 'reference_id', 'item_name'],
+  });
 
+  const orphans = [];
 
+  for (const lot of lots) {
+    try {
+      await assertCatalogReference(lot.item_type, lot.reference_id);
+    } catch (error) {
+      orphans.push({
+        id: lot.id,
+        item_type: lot.item_type,
+        reference_id: lot.reference_id,
+        item_name: lot.item_name,
+        reason: error.message,
+      });
+    }
+  }
 
-
-
+  return orphans;
+};
 
 module.exports = {
   createInventoryItem,
@@ -268,7 +331,9 @@ module.exports = {
   updateInventoryItem,
   deleteInventoryItem,
   getInventoriesByReferenceAndType,
+  checkCatalogReference,
   getLocationsForEntity,
   countChemicals,
   countEquipment,
+  findOrphanInventoryLots,
 };
