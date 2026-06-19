@@ -136,6 +136,19 @@ class ReagentCatalogPage extends Component {
     });
   };
 
+  handleCompositionSaved = (result) => {
+    this.setState((prev) => ({
+      selectedReagentDetail: prev.selectedReagentDetail
+        ? {
+          ...prev.selectedReagentDetail,
+          components: result.components,
+          composition: result.compositionSummary,
+        }
+        : prev.selectedReagentDetail,
+    }));
+    this.fetchReagents();
+  };
+
   openLotModal = async (lot) => {
     try {
       this.setState({
@@ -324,6 +337,7 @@ class ReagentCatalogPage extends Component {
           onClose={this.closeReagentModal}
           onOpenLot={this.openLotModal}
           onAddLotToCart={this.handleAddLotToCart}
+          onCompositionSaved={this.handleCompositionSaved}
         />
 
         {selectedLot && (

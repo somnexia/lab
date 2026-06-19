@@ -24,8 +24,10 @@ import AdminLogsPage from "../components/AdminLogsPage";
 import TaskList from "../components/TaskList";
 import TaskCreate from "../components/TaskCreate";
 import StorageLocationsOverview from "../pages/StorageLocationsOverview";
-import InventoryMaterialsPlaceholder from "../pages/InventoryMaterialsPlaceholder";
+import InventoryLotsPage from "../pages/InventoryLotsPage";
+import RegisterInventoryLotPage from "../pages/RegisterInventoryLotPage";
 import LabEquipmentPlaceholder from "../pages/LabEquipmentPlaceholder";
+import InventoryMaterialsPlaceholder from "../pages/InventoryMaterialsPlaceholder";
 
 const LEGACY_STORAGE_INVENTORY_PATHS = ["warehouses", "storage-units", "ladder", "dropdown", "location"];
 
@@ -39,12 +41,13 @@ const MainAppRoutes = () => (
         {/* ---------- Materials inventory (what) ---------- */}
         <Route path="/inventory" element={<Navigate to="/inventory/overview" replace />} />
         <Route path="/inventory/overview" element={<InventoryStockOverview />} />
-        <Route path="/inventory/list" element={<InventoryStockOverview fullPage />} />
+        <Route path="/inventory/list" element={<Navigate to="/inventory/lots" replace />} />
+        <Route path="/inventory/lots" element={<InventoryLotsPage />} />
+        <Route path="/inventory/lots/register" element={<RegisterInventoryLotPage />} />
         <Route path="/inventory/chemicals" element={<ReagentCatalogPage />} />
         <Route path="/inventory/samples-specimens" element={<InventoryMaterialsPlaceholder />} />
         <Route path="/inventory/consumables" element={<InventoryMaterialsPlaceholder />} />
         <Route path="/inventory/labware" element={<InventoryMaterialsPlaceholder />} />
-        <Route path="/inventory/lots" element={<InventoryMaterialsPlaceholder />} />
         {LEGACY_STORAGE_INVENTORY_PATHS.map((segment) => (
             <Route
                 key={segment}

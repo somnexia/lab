@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
 import InventoryTable from './InventoryTable';
-import MixtureCompositionTable from './MixtureCompositionTable';
+import MixtureCompositionEditor from './MixtureCompositionEditor';
 import { enrichInventoryLots } from '../utils/inventoryEnrichment';
 
 const KIND_LABELS = {
@@ -56,10 +57,19 @@ class ReagentDetailModal extends Component {
         </dl>
         {reagent.kind === 'mixture' && (
           <div className="reagent-detail-modal__composition">
-            <h3>Structured composition</h3>
-            <MixtureCompositionTable
+            <div className="reagent-detail-modal__composition-head">
+              <h3>Structured composition</h3>
+              <Link
+                to={`/inventory/lots/register?item_type=mixture&reference_id=${reagent.catalogId}&name=${encodeURIComponent(reagent.name)}`}
+                className="reagent-detail-modal__register-lot"
+              >
+                Register lot
+              </Link>
+            </div>
+            <MixtureCompositionEditor
+              mixtureId={reagent.catalogId}
               components={reagent.components}
-              emptyMessage="No structured components yet."
+              onSaved={this.props.onCompositionSaved}
             />
             {reagent.composition && (
               <div className="reagent-detail-modal__composition-summary">
@@ -111,7 +121,17 @@ class ReagentDetailModal extends Component {
             <>
               {this.renderCatalogBlock()}
               <section className="reagent-detail-modal__lots">
-                <h3>Stock lots</h3>
+                <div className="reagent-detail-modal__lots-head">
+                  <h3>Stock lots</h3>
+                  {reagent.kind !== 'mixture' && (
+                    <Link
+                      to={`/inventory/lots/register?item_type=${reagent.kind}&reference_id=${reagent.catalogId}&name=${encodeURIComponent(reagent.name)}`}
+                      className="reagent-detail-modal__register-lot"
+                    >
+                      Register lot
+                    </Link>
+                  )}
+                </div>
                 <p className="reagent-detail-modal__lots-hint">
                   Physical batches linked to this catalog entry. Actions apply to a specific lot.
                 </p>

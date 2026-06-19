@@ -5,7 +5,7 @@ export const INVENTORY_MATERIALS_SECTIONS = {
     samples: { title: "Samples & specimens", hint: "Chain of custody and specimen metadata" },
     consumables: { title: "Consumables", hint: "Disposable lab supplies and stock counts" },
     labware: { title: "Labware & glassware", hint: "Reusable vessels, tools, and breakage tracking" },
-    lots: { title: "Lots & batches", hint: "Cross-material traceability and expiry" },
+    lots: { title: "Lots & batches", hint: "All warehouse lots with traceability, expiry, and links to the catalog. Register new batches from here." },
 };
 
 export function getInventoryMaterialsMeta(pathname) {

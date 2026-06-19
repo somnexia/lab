@@ -1,11 +1,12 @@
 const { Op } = require('sequelize');
-const { Inventory } = require('../models');
+const { Inventory, sequelize } = require('../models');
 const {
   ChemElement,
   ChemEquipment,
   ChemCompound,
   ChemMixture,
   StorageUnit,
+  InventoryStorageUnit,
 } = require('../models');
 const CatalogReferenceError = require('../errors/CatalogReferenceError');
 const {
@@ -16,8 +17,10 @@ const {
 } = require('./catalogReferenceService');
 
 const createInventoryItem = async (data) => {
+  const transaction = await sequelize.transaction();
+
   try {
-    const { item_type, reference_id } = data;
+    const { item_type, reference_id, storageunit_id } = data;
 
     if (!item_type || reference_id == null) {
       throw new CatalogReferenceError(
@@ -26,21 +29,47 @@ const createInventoryItem = async (data) => {
       );
     }
 
+    if (!data.storage_id) {
+      throw new CatalogReferenceError('storage_id is required when creating an inventory lot', {
+        field: 'storage_id',
+      });
+    }
+
     const validated = await validateInventoryCatalogPair({
       item_type,
       reference_id,
       item_name: data.item_name,
     });
 
-    const inventoryItem = await Inventory.create({
+    const inventoryPayload = {
       ...data,
       item_type: validated.item_type,
       reference_id: validated.reference_id,
       item_name: validated.item_name,
-    });
+    };
+    delete inventoryPayload.storageunit_id;
 
-    return inventoryItem;
+    const inventoryItem = await Inventory.create(inventoryPayload, { transaction });
+
+    if (storageunit_id) {
+      const lotQuantity = Number(
+        inventoryPayload.total_quantity ?? inventoryPayload.substance_amount ?? 0
+      );
+      await InventoryStorageUnit.create(
+        {
+          inventory_id: inventoryItem.id,
+          storageunit_id: Number(storageunit_id),
+          quantity: Number.isFinite(lotQuantity) ? lotQuantity : 0,
+        },
+        { transaction }
+      );
+    }
+
+    await transaction.commit();
+
+    return getInventoryItemById(inventoryItem.id, { includeRelations: true });
   } catch (error) {
+    await transaction.rollback();
     if (error instanceof CatalogReferenceError) {
       throw error;
     }
@@ -102,9 +131,21 @@ const getInventoryLots = async (options = {}) => {
   }
 };
 
-const getInventoryItemById = async (id) => {
+const getInventoryItemById = async (id, options = {}) => {
   try {
-    const inventoryItem = await Inventory.findByPk(id);
+    const include = [];
+
+    if (options.includeRelations !== false) {
+      include.push(
+        { model: StorageUnit, as: 'storageUnits', required: false },
+        { model: ChemElement, as: 'chemElement', required: false },
+        { model: ChemCompound, as: 'chemCompound', required: false },
+        { model: ChemMixture, as: 'chemMixture', required: false },
+        { model: ChemEquipment, as: 'chemEquipment', required: false }
+      );
+    }
+
+    const inventoryItem = await Inventory.findByPk(id, { include });
     if (!inventoryItem) {
       throw new Error(`Запись Inventory с id ${id} не найдена`);
     }

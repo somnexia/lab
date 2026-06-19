@@ -979,6 +979,253 @@ $inventory-shadow-hover: 0 1.25rem 3rem rgba(4, 3, 22, 0.12);
 
 .inventory-stock-overview__header {
   margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.inventory-stock-overview__header-action {
+  flex: 0 0 auto;
+}
+
+.inventory-lots-page__register-btn,
+.reagent-detail-modal__register-lot {
+  background: var(--primary-color);
+  border-radius: 0.65rem;
+  color: #fff;
+  display: inline-flex;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.55rem 1rem;
+  text-decoration: none;
+}
+
+.reagent-detail-modal__register-lot {
+  background: var(--body-highlight-bg);
+  border: 1px solid var(--secondary-border-color);
+  color: var(--link-color);
+}
+
+.inventory-lot-register__hero {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.inventory-lot-register__back {
+  color: var(--link-color);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.inventory-lot-register__success {
+  background: color-mix(in srgb, var(--semantic-success) 10%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--semantic-success) 35%, transparent);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.inventory-lot-register__success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.inventory-lot-register__btn {
+  background: var(--body-highlight-bg);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: 0.65rem;
+  color: var(--text-color);
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.55rem 1rem;
+
+  &--primary {
+    background: var(--primary-color);
+    border-color: transparent;
+    color: #fff;
+  }
+}
+
+.inventory-lot-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.inventory-lot-form__alert {
+  background: color-mix(in srgb, var(--semantic-danger) 12%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--semantic-danger) 35%, transparent);
+  border-radius: 0.65rem;
+  color: var(--semantic-danger);
+  padding: 0.75rem 1rem;
+}
+
+.inventory-lot-form__grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.inventory-lot-form__field {
+  display: grid;
+  gap: 0.35rem;
+
+  span {
+    color: var(--text-body-secondary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  input,
+  select,
+  textarea {
+    background: var(--card-bg);
+    border: 1px solid var(--secondary-border-color);
+    border-radius: 0.55rem;
+    color: var(--text-color);
+    padding: 0.55rem 0.7rem;
+  }
+
+  &--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.inventory-lot-form__fieldset {
+  border: 1px solid var(--secondary-border-color);
+  border-radius: 0.65rem;
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem;
+
+  legend {
+    color: var(--text-body-secondary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 0 0.25rem;
+    text-transform: uppercase;
+  }
+}
+
+.inventory-lot-form__quantity-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.inventory-lot-form__error {
+  color: var(--semantic-danger);
+  font-size: 0.78rem;
+}
+
+.inventory-lot-form__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.inventory-lot-form__submit {
+  background: var(--primary-color);
+  border: none;
+  border-radius: 0.65rem;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0.65rem 1.25rem;
+}
+
+.mixture-composition-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.mixture-composition-editor__btn {
+  background: var(--body-highlight-bg);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: 0.55rem;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.85rem;
+
+  &--primary {
+    background: var(--primary-color);
+    border-color: transparent;
+    color: #fff;
+  }
+
+  &--ghost {
+    background: transparent;
+  }
+}
+
+.mixture-composition-editor__rows {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.mixture-composition-editor__row {
+  align-items: center;
+  background: var(--body-highlight-bg);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: 0.65rem;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  padding: 0.75rem;
+}
+
+.mixture-composition-editor__remove {
+  background: transparent;
+  border: 1px solid var(--secondary-border-color);
+  border-radius: 0.45rem;
+  color: var(--semantic-danger);
+  cursor: pointer;
+  padding: 0.35rem 0.55rem;
+}
+
+.mixture-composition-editor__message {
+  font-size: 0.85rem;
+  margin: 0.65rem 0 0;
+
+  &--error {
+    color: var(--semantic-danger);
+  }
+
+  &--success {
+    color: var(--semantic-success);
+  }
+}
+
+.reagent-detail-modal__composition-head,
+.reagent-detail-modal__lots-head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+}
+
+.reagent-detail-modal__lots-head h3,
+.reagent-detail-modal__composition-head h3 {
+  margin: 0;
+}
+
+@media (max-width: 767.98px) {
+  .inventory-lot-form__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .inventory-stock-filters {

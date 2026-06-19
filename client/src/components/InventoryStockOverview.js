@@ -5,8 +5,7 @@ import InventoryDetailsModal from './InventoryDetailsModal';
 import InventoryTable from './InventoryTable';
 import { CartContext } from '../context/CartContext';
 import { enrichInventoryLot, enrichInventoryLots, getStockFilterParams } from '../utils/inventoryEnrichment';
-
-const API_INVENTORIES = 'http://localhost:3000/api/inventories';
+import { API_INVENTORIES } from '../config/api';
 
 const STOCK_FILTERS = [
   { id: 'all', label: 'All materials' },
@@ -154,6 +153,28 @@ class InventoryStockOverview extends Component {
 
     const { addToCart } = this.context;
     const isFullPage = Boolean(this.props.fullPage);
+    const variant = this.props.variant || (isFullPage ? 'list' : 'overview');
+    const isLotsPage = variant === 'lots';
+
+    const titleByVariant = {
+      overview: 'Stock overview',
+      list: 'Stock lots',
+      lots: this.props.sectionTitle || 'Lots & batches',
+    };
+
+    const descriptionByVariant = {
+      overview: (
+        <>
+          Warehouse view: each row is a physical lot (quantity, status, expiry, location).
+          {' '}
+          <Link to="/inventory/chemicals">Open reagent catalog</Link>
+          {' '}
+          or <Link to="/inventory/lots">view all lots</Link>.
+        </>
+      ),
+      list: 'Full warehouse lot table with catalog labels and storage details.',
+      lots: this.props.sectionDescription || 'Cross-material traceability: every batch on hand with expiry and location.',
+    };
 
     const filterLabel = STOCK_FILTERS.find((item) => item.id === stockFilter)?.label || 'All materials';
 
@@ -162,17 +183,14 @@ class InventoryStockOverview extends Component {
         <header className="inventory-stock-overview__header">
           <div>
             <p className="inventory-page__eyebrow">Materials inventory</p>
-            <h1 className="inventory-page__title">
-              {isFullPage ? 'Stock lots' : 'Stock overview'}
-            </h1>
-            <p className="inventory-page__subtitle">
-              Warehouse view: each row is a physical lot (quantity, status, expiry, location).
-              {' '}
-              <Link to="/inventory/chemicals">Open reagent catalog</Link>
-              {' '}
-              to browse registered chemicals including items with zero stock.
-            </p>
+            <h1 className="inventory-page__title">{titleByVariant[variant]}</h1>
+            <p className="inventory-page__subtitle">{descriptionByVariant[variant]}</p>
           </div>
+          {this.props.headerAction ? (
+            <div className="inventory-stock-overview__header-action">
+              {this.props.headerAction}
+            </div>
+          ) : null}
         </header>
 
         {this.renderFilterBar()}
@@ -180,14 +198,14 @@ class InventoryStockOverview extends Component {
         <InventoryTable
           compact={!isFullPage}
           error={error}
-          fullViewLink={isFullPage ? null : '/inventory/list'}
+          fullViewLink={isFullPage ? null : '/inventory/lots'}
           inventories={inventories}
           loading={loading}
           maxRows={isFullPage ? null : 6}
           onAddToCart={this.handleAddToCart}
           onOpenDetails={this.openModal}
           sectionDescription={`Showing ${filterLabel.toLowerCase()}. Lots are stock records linked to catalog entries.`}
-          sectionTitle={isFullPage ? 'All stock lots' : 'Recent stock lots'}
+          sectionTitle={isLotsPage ? null : (isFullPage ? 'All stock lots' : 'Recent stock lots')}
           useCatalogLabels
         />
 
