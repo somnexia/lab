@@ -24,6 +24,7 @@ import { FaFileLines } from "react-icons/fa6";
 import { FaImage } from "react-icons/fa6";
 import React, { Component } from 'react';
 import axios from 'axios';
+import ExperimentListPanel from './ExperimentListPanel';
 class ResearchDetailsModal extends Component {
     state = {
         showMore: false,
@@ -379,6 +380,21 @@ class ResearchDetailsModal extends Component {
                                 </div>
                                 <div className='col-xl-7 col-12'>
                                     <div className='px-5 px-lg-6 pt-4 pb-5 pb-lg-6'>
+                                        <div className="mb-5">
+                                            <ExperimentListPanel
+                                                compact
+                                                researchId={research?.id}
+                                                onNavigate={onClose}
+                                                onCreated={(experiment) => {
+                                                    onClose();
+                                                    if (experiment?.id && research?.id) {
+                                                        window.location.assign(
+                                                            `/projects/research/${research.id}/experiments/${experiment.id}`
+                                                        );
+                                                    }
+                                                }}
+                                            />
+                                        </div>
                                         <div className='mb-5'>
                                             <h5 className="mb-4">To do list
                                                 <span className="text-body-tertiary fw-normal fs-6">(23)</span>
