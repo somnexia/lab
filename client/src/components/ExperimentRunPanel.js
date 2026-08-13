@@ -24,10 +24,14 @@ class ExperimentRunPanel extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.experimentId !== this.props.experimentId
+    const experimentChanged =
+      prevProps.experimentId !== this.props.experimentId
       || prevProps.experiment?.inputs !== this.props.experiment?.inputs
       || prevProps.experiment?.status !== this.props.experiment?.status
-      || prevProps.experiment?.consumptions !== this.props.experiment?.consumptions) {
+      || prevProps.experiment?.consumptions !== this.props.experiment?.consumptions;
+
+    if (experimentChanged) {
+      this.setState({ success: null, error: null });
       this.fetchStockCheck();
     }
   }
@@ -103,9 +107,9 @@ class ExperimentRunPanel extends Component {
 
         {stockCheck.checks?.length > 0 && (
           <ul className="experiment-run__checks">
-            {stockCheck.checks.map((check) => (
+            {stockCheck.checks.map((check, index) => (
               <li
-                key={`${check.inputId}-${check.catalogName}`}
+                key={`${check.inputId ?? 'new'}-${check.catalogName}-${index}`}
                 className={`experiment-run__check experiment-run__check--${STATUS_CLASS[check.status] || 'neutral'}`}
               >
                 <strong>{check.catalogName || `Input #${check.inputId}`}</strong>

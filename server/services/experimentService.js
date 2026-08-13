@@ -318,7 +318,13 @@ const deleteExperiment = async (id) => {
 };
 
 const replaceExperimentInputs = async (experimentId, incoming = []) => {
-  await getExperimentOrThrow(experimentId);
+  const experiment = await getExperimentOrThrow(experimentId);
+
+  if (experiment.status === 'Completed') {
+    throw new ExperimentValidationError(
+      'Cannot change inputs on a completed experiment. Reopen or duplicate the run first.'
+    );
+  }
 
   if (!Array.isArray(incoming)) {
     throw new ExperimentValidationError('inputs must be an array');
@@ -336,6 +342,12 @@ const replaceExperimentInputs = async (experimentId, incoming = []) => {
   const transaction = await sequelize.transaction();
 
   try {
+    const runInvalidated = await revertExperimentConsumptions(experimentId, transaction);
+
+    if (runInvalidated && experiment.status === 'Ongoing') {
+      await experiment.update({ status: 'Pending' }, { transaction });
+    }
+
     await ExperimentInput.destroy({ where: { experiment_id: experimentId }, transaction });
 
     if (normalized.length) {
@@ -346,7 +358,10 @@ const replaceExperimentInputs = async (experimentId, incoming = []) => {
     }
 
     await transaction.commit();
-    return getExperimentDetail(experimentId);
+
+    const detail = await getExperimentDetail(experimentId);
+    detail.runInvalidated = runInvalidated;
+    return detail;
   } catch (error) {
     await transaction.rollback();
     throw error;
@@ -450,6 +465,54 @@ const deductFromLot = async (lot, amount, transaction) => {
 
   await lot.update(updates, { transaction });
   return remaining;
+};
+
+const restoreToLot = async (lot, amount, transaction) => {
+  const onHand = getLotOnHand(lot);
+  const restored = onHand + Number(amount);
+  const updates = { last_updated: new Date() };
+
+  if (lot.total_quantity != null && lot.total_quantity !== '') {
+    updates.total_quantity = Number.isInteger(lot.total_quantity)
+      ? Math.floor(restored)
+      : restored;
+  }
+
+  if (lot.substance_amount != null && lot.substance_amount !== '') {
+    updates.substance_amount = restored;
+  } else if (lot.total_quantity == null || lot.total_quantity === '') {
+    updates.substance_amount = restored;
+  }
+
+  updates.status = restored > 0 ? 'available' : 'out of stock';
+
+  await lot.update(updates, { transaction });
+  return restored;
+};
+
+const revertExperimentConsumptions = async (experimentId, transaction) => {
+  const consumptions = await ExperimentConsumption.findAll({
+    where: { experiment_id: experimentId },
+    transaction,
+  });
+
+  if (!consumptions.length) {
+    return false;
+  }
+
+  for (const row of consumptions) {
+    const lot = await Inventory.findByPk(row.inventory_id, { transaction });
+    if (lot) {
+      await restoreToLot(lot, row.quantity_consumed, transaction);
+    }
+  }
+
+  await ExperimentConsumption.destroy({
+    where: { experiment_id: experimentId },
+    transaction,
+  });
+
+  return true;
 };
 
 const getLotsForConsumption = async (itemType, referenceId, inventoryId, transaction) => {

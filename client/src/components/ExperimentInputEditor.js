@@ -268,7 +268,10 @@ class ExperimentInputEditor extends Component {
       const response = await axios.put(`${API_BASE}/experiments/${experimentId}/inputs`, {
         inputs: this.buildPayload(),
       });
-      this.setState({ saving: false, editing: false, success: 'Inputs saved.' });
+      const success = response.data.runInvalidated
+        ? 'Inputs saved. Previous run was reset and stock restored — run again to consume.'
+        : 'Inputs saved.';
+      this.setState({ saving: false, editing: false, success });
       if (onSaved) onSaved(response.data);
     } catch (error) {
       const message = error.response?.data?.error || 'Failed to save inputs';
