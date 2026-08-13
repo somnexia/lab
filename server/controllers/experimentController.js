@@ -1,60 +1,96 @@
-const experimentService = require('../services/experimentService'); // Путь к вашему сервису
+const experimentService = require('../services/experimentService');
+const CatalogReferenceError = require('../errors/CatalogReferenceError');
 
-// Создание нового эксперимента
-const createExperiment = async (req, res) => {
-  try {
-    const newExperiment = await experimentService.createExperiment(req.body);
-    return res.status(201).json(newExperiment);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+const sendExperimentError = (error, res) => {
+  if (error instanceof experimentService.ExperimentValidationError) {
+    return res.status(error.statusCode || 400).json({
+      error: error.message,
+      details: error.details,
+    });
   }
-};
 
-// Получение всех экспериментов
-const getAllExperiments = async (req, res) => {
-  try {
-    const experiments = await experimentService.getAllExperiments();
-    return res.status(200).json(experiments);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+  if (error instanceof CatalogReferenceError) {
+    return res.status(error.statusCode).json({
+      error: error.message,
+      details: error.details,
+    });
   }
-};
 
-// Получение эксперимента по ID
-const getExperimentById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const experiment = await experimentService.getExperimentById(id);
-    return res.status(200).json(experiment);
-  } catch (error) {
-    console.error(error);
+  if (error.message?.includes('не найден') || error.message?.includes('not found')) {
     return res.status(404).json({ error: error.message });
   }
+
+  console.error(error);
+  return res.status(500).json({ error: error.message || 'Internal server error' });
 };
 
-// Обновление эксперимента по ID
-const updateExperiment = async (req, res) => {
-  const { id } = req.params;
+const createExperiment = async (req, res) => {
   try {
-    const updatedExperiment = await experimentService.updateExperiment(id, req.body);
-    return res.status(200).json(updatedExperiment);
+    const experiment = await experimentService.createExperiment(req.body);
+    return res.status(201).json(experiment);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendExperimentError(error, res);
   }
 };
 
-// Удаление эксперимента по ID
-const deleteExperiment = async (req, res) => {
-  const { id } = req.params;
+const getAllExperiments = async (req, res) => {
   try {
-    const result = await experimentService.deleteExperiment(id);
+    const { research_id: researchId } = req.query;
+    const experiments = await experimentService.getExperiments({ researchId });
+    return res.status(200).json(experiments);
+  } catch (error) {
+    return sendExperimentError(error, res);
+  }
+};
+
+const getExperimentById = async (req, res) => {
+  try {
+    const experiment = await experimentService.getExperimentDetail(req.params.id);
+    return res.status(200).json(experiment);
+  } catch (error) {
+    return sendExperimentError(error, res);
+  }
+};
+
+const updateExperiment = async (req, res) => {
+  try {
+    const experiment = await experimentService.updateExperiment(req.params.id, req.body);
+    return res.status(200).json(experiment);
+  } catch (error) {
+    return sendExperimentError(error, res);
+  }
+};
+
+const deleteExperiment = async (req, res) => {
+  try {
+    const result = await experimentService.deleteExperiment(req.params.id);
     return res.status(200).json(result);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendExperimentError(error, res);
+  }
+};
+
+const replaceExperimentInputs = async (req, res) => {
+  try {
+    const experiment = await experimentService.replaceExperimentInputs(
+      req.params.id,
+      req.body.inputs
+    );
+    return res.status(200).json(experiment);
+  } catch (error) {
+    return sendExperimentError(error, res);
+  }
+};
+
+const replaceExperimentOutputs = async (req, res) => {
+  try {
+    const experiment = await experimentService.replaceExperimentOutputs(
+      req.params.id,
+      req.body.outputs
+    );
+    return res.status(200).json(experiment);
+  } catch (error) {
+    return sendExperimentError(error, res);
   }
 };
 
@@ -63,5 +99,7 @@ module.exports = {
   getAllExperiments,
   getExperimentById,
   updateExperiment,
-  deleteExperiment
+  deleteExperiment,
+  replaceExperimentInputs,
+  replaceExperimentOutputs,
 };
