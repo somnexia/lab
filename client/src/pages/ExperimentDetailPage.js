@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import ExperimentInputEditor from '../components/ExperimentInputEditor';
+import ExperimentOutputEditor from '../components/ExperimentOutputEditor';
 import { API_BASE } from '../config/api';
 
 class ExperimentDetailPage extends Component {
@@ -41,42 +42,8 @@ class ExperimentDetailPage extends Component {
     this.setState({ experiment });
   };
 
-  renderOutputs = () => {
-    const { experiment } = this.state;
-    const outputs = experiment?.outputs || [];
-
-    if (!outputs.length) {
-      return (
-        <p className="experiment-detail__placeholder">
-          No outputs yet. Simulation will populate expected products here.
-        </p>
-      );
-    }
-
-    return (
-      <table className="experiment-input-editor__table">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Result</th>
-            <th>Quantity</th>
-          </tr>
-        </thead>
-        <tbody>
-          {outputs.map((output) => (
-            <tr key={output.id}>
-              <td>{output.itemType || output.item_type}</td>
-              <td>{output.catalogName || output.resultItemName || output.result_item_name}</td>
-              <td>
-                {output.quantity != null
-                  ? `${output.quantity}${output.unitMeasure || output.unit_measure ? ` ${output.unitMeasure || output.unit_measure}` : ''}`
-                  : '—'}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
+  handleOutputsSaved = (experiment) => {
+    this.setState({ experiment });
   };
 
   render() {
@@ -121,11 +88,11 @@ class ExperimentDetailPage extends Component {
             </section>
 
             <section className="inventory-page__content experiment-detail__panel">
-              <h3>Outputs</h3>
-              <p className="experiment-input-editor__hint">
-                Expected products after the run. Editable in a later simulation step.
-              </p>
-              {this.renderOutputs()}
+              <ExperimentOutputEditor
+                experimentId={experiment.id}
+                outputs={experiment.outputs}
+                onSaved={this.handleOutputsSaved}
+              />
             </section>
           </div>
         )}

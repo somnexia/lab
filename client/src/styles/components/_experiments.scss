@@ -308,6 +308,14 @@
   color: var(--semantic-danger);
 }
 
+.experiment-output-editor__row {
+  border-left-color: var(--semantic-success) !important;
+}
+
+.experiment-output-editor__row-badge {
+  color: var(--semantic-success);
+}
+
 .experiment-input-editor__message--success {
   color: var(--semantic-success);
 }
