@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import ExperimentInputEditor from '../components/ExperimentInputEditor';
 import ExperimentOutputEditor from '../components/ExperimentOutputEditor';
+import ExperimentMetadataEditor from '../components/ExperimentMetadataEditor';
+import ExperimentRunPanel from '../components/ExperimentRunPanel';
 import { API_BASE } from '../config/api';
 
 class ExperimentDetailPage extends Component {
@@ -38,11 +40,7 @@ class ExperimentDetailPage extends Component {
     }
   };
 
-  handleInputsSaved = (experiment) => {
-    this.setState({ experiment });
-  };
-
-  handleOutputsSaved = (experiment) => {
+  handleExperimentUpdated = (experiment) => {
     this.setState({ experiment });
   };
 
@@ -55,7 +53,7 @@ class ExperimentDetailPage extends Component {
         <header className="inventory-page__hero experiment-detail__hero">
           <div>
             <p className="inventory-page__eyebrow">
-              <Link to={`/projects/research-list`}>Projects</Link>
+              <Link to="/projects/research-list">Projects</Link>
               {' › '}
               <Link to={`/projects/research/${researchId}/experiments`}>Research experiments</Link>
             </p>
@@ -80,10 +78,26 @@ class ExperimentDetailPage extends Component {
         {!loading && !error && experiment && (
           <div className="experiment-detail__layout">
             <section className="inventory-page__content experiment-detail__panel">
+              <ExperimentMetadataEditor
+                experimentId={experiment.id}
+                experiment={experiment}
+                onSaved={this.handleExperimentUpdated}
+              />
+            </section>
+
+            <section className="inventory-page__content experiment-detail__panel">
+              <ExperimentRunPanel
+                experimentId={experiment.id}
+                experiment={experiment}
+                onUpdated={this.handleExperimentUpdated}
+              />
+            </section>
+
+            <section className="inventory-page__content experiment-detail__panel">
               <ExperimentInputEditor
                 experimentId={experiment.id}
                 inputs={experiment.inputs}
-                onSaved={this.handleInputsSaved}
+                onSaved={this.handleExperimentUpdated}
               />
             </section>
 
@@ -91,7 +105,7 @@ class ExperimentDetailPage extends Component {
               <ExperimentOutputEditor
                 experimentId={experiment.id}
                 outputs={experiment.outputs}
-                onSaved={this.handleOutputsSaved}
+                onSaved={this.handleExperimentUpdated}
               />
             </section>
           </div>
