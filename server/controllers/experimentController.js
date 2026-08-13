@@ -94,6 +94,33 @@ const replaceExperimentOutputs = async (req, res) => {
   }
 };
 
+const checkExperimentStock = async (req, res) => {
+  try {
+    const stockCheck = await experimentService.checkExperimentStock(req.params.id);
+    return res.status(200).json(stockCheck);
+  } catch (error) {
+    return sendExperimentError(error, res);
+  }
+};
+
+const runExperiment = async (req, res) => {
+  try {
+    const result = await experimentService.runExperiment(req.params.id);
+    return res.status(200).json(result);
+  } catch (error) {
+    return sendExperimentError(error, res);
+  }
+};
+
+const completeExperiment = async (req, res) => {
+  try {
+    const experiment = await experimentService.completeExperiment(req.params.id);
+    return res.status(200).json(experiment);
+  } catch (error) {
+    return sendExperimentError(error, res);
+  }
+};
+
 module.exports = {
   createExperiment,
   getAllExperiments,
@@ -102,4 +129,7 @@ module.exports = {
   deleteExperiment,
   replaceExperimentInputs,
   replaceExperimentOutputs,
+  checkExperimentStock,
+  runExperiment,
+  completeExperiment,
 };
