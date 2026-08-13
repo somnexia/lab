@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       Experiment.belongsTo(models.Laboratory, { foreignKey: 'laboratory_id', as: 'laboratory' });
       Experiment.hasMany(models.ExperimentInput, { foreignKey: 'experiment_id', as: 'inputs' });
       Experiment.hasMany(models.ExperimentOutput, { foreignKey: 'experiment_id', as: 'outputs' });
+      Experiment.hasMany(models.ExperimentConsumption, { foreignKey: 'experiment_id', as: 'consumptions' });
     }
   }
 

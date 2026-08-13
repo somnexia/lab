@@ -26,7 +26,8 @@ class ExperimentRunPanel extends Component {
   componentDidUpdate(prevProps) {
     if (prevProps.experimentId !== this.props.experimentId
       || prevProps.experiment?.inputs !== this.props.experiment?.inputs
-      || prevProps.experiment?.status !== this.props.experiment?.status) {
+      || prevProps.experiment?.status !== this.props.experiment?.status
+      || prevProps.experiment?.consumptions !== this.props.experiment?.consumptions) {
       this.fetchStockCheck();
     }
   }
@@ -56,7 +57,7 @@ class ExperimentRunPanel extends Component {
       this.setState({
         running: false,
         stockCheck: response.data.stockCheck,
-        success: 'Experiment started — stock check passed.',
+        success: 'Experiment started — stock deducted from warehouse.',
       });
       if (onUpdated) onUpdated(response.data.experiment);
     } catch (error) {
@@ -77,7 +78,7 @@ class ExperimentRunPanel extends Component {
 
     try {
       const response = await axios.post(`${API_EXPERIMENTS}/${experimentId}/complete`);
-      this.setState({ completing: false, success: 'Experiment marked as completed.' });
+      this.setState({ completing: false, success: 'Experiment completed.' });
       if (onUpdated) onUpdated(response.data);
     } catch (error) {
       const message = error.response?.data?.error || 'Failed to complete experiment';
@@ -124,6 +125,46 @@ class ExperimentRunPanel extends Component {
     );
   };
 
+  renderConsumptions = () => {
+    const consumptions = this.props.experiment?.consumptions || [];
+
+    if (!consumptions.length) {
+      return null;
+    }
+
+    return (
+      <section className="experiment-run__actuals">
+        <h4 className="experiment-input-editor__section-title">Actual consumptions</h4>
+        <p className="experiment-input-editor__section-hint">
+          Stock deducted from warehouse lots when the experiment was run or completed.
+        </p>
+        <table className="experiment-input-editor__table">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Lot</th>
+              <th>Consumed</th>
+              <th>Phase</th>
+            </tr>
+          </thead>
+          <tbody>
+            {consumptions.map((row) => (
+              <tr key={row.id}>
+                <td>{row.catalogName || `${row.itemType} #${row.referenceId}`}</td>
+                <td>{row.inventoryLotLabel || `Lot #${row.inventoryId}`}</td>
+                <td>
+                  {row.quantityConsumed}
+                  {row.unitMeasure ? ` ${row.unitMeasure}` : ''}
+                </td>
+                <td>{row.consumptionPhase || row.consumption_phase || 'run'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    );
+  };
+
   render() {
     const { experiment } = this.props;
     const { running, completing, error, success } = this.state;
@@ -136,11 +177,12 @@ class ExperimentRunPanel extends Component {
         <div className="experiment-input-editor__head">
           <h3>Run</h3>
           <p className="experiment-input-editor__hint">
-            Validates reagent stock from selected lots or aggregate inventory before starting the run.
+            Run deducts reagent stock from selected lots (FIFO if no lot pinned). Complete finalizes the run.
           </p>
         </div>
 
         {this.renderChecks()}
+        {this.renderConsumptions()}
 
         <div className="experiment-input-editor__toolbar">
           {canRun && (
@@ -172,8 +214,12 @@ class ExperimentRunPanel extends Component {
           </button>
         </div>
 
-        {status === 'Completed' && (
-          <p className="experiment-run__state">This experiment is completed. Stock was validated at run time.</p>
+        {status === 'Completed' && !experiment?.consumptions?.length && (
+          <p className="experiment-run__state">This experiment is completed. No reagent consumptions were recorded.</p>
+        )}
+
+        {status === 'Completed' && experiment?.consumptions?.length > 0 && (
+          <p className="experiment-run__state">Completed — see actual consumptions above.</p>
         )}
 
         {error && <p className="experiment-input-editor__message experiment-input-editor__message--error">{error}</p>}
