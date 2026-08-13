@@ -1,0 +1,13 @@
+.auth-gate {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 50vh;
+  padding: 2rem;
+}
+
+.auth-gate__text {
+  color: var(--text-body-secondary, #6c757d);
+  font-size: 0.95rem;
+  margin: 0;
+}

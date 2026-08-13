@@ -56,8 +56,13 @@ class SignIn extends Component {
 
         if (result.success) {
             this.setState({ email: '', password: '', errorMessage: '' });
-            alert('Вы успешно вошли в систему!');
-            window.location.href = '/customer/profile'; // Перенаправляем после успешного входа
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get('redirect');
+            const target =
+                redirect && redirect.startsWith('/') && !redirect.startsWith('/management/sign')
+                    ? redirect
+                    : '/';
+            window.location.href = target;
         } else {
             this.setState({ errorMessage: result.message });
         }

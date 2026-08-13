@@ -1,5 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const { protectApiRoutes } = require("../middleware/authMiddleware");
+
+// Все /api/* требуют JWT, кроме POST /api/users/login и POST /api/users (регистрация)
+router.use(protectApiRoutes);
 
 const chemElementRoutes = require("./chemElementRoutes"); // Путь к маршрутам для элементов
 const chemCompoundRoutes = require("./chemCompoundRoutes"); // Путь к маршрутам для соединений

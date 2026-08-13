@@ -12,6 +12,7 @@ import CartDrawer from "./components/CartDrawer";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import SignOut from "./components/SignOut";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "./context/ThemeContext";
 import { PanelProvider, usePanel } from "./context/PanelContext";
 import { AsideLayoutProvider, useAsideLayout } from "./context/AsideLayoutContext";
@@ -77,8 +78,15 @@ const PageWrapper = () => {
                 <Route path="/management/signup" element={<SignUp />} />
                 <Route path="/management/signout" element={<SignOut />} /> 
 
-                {/* Все остальные страницы */}
-                <Route path="*" element={<Main />} />
+                {/* Все остальные страницы — только для авторизованных */}
+                <Route
+                    path="*"
+                    element={
+                        <ProtectedRoute>
+                            <Main />
+                        </ProtectedRoute>
+                    }
+                />
             </Routes>
         </div>
     );

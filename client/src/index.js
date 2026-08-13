@@ -5,6 +5,9 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from './context/AuthContext';
+import { setupApiClient } from './config/setupApiClient';
+
+setupApiClient();
 
 //
 

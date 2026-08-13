@@ -1,6 +1,7 @@
 // src/context/AuthContext.js
 import React, { createContext, Component } from 'react';
 import axios from 'axios';
+import { API_BASE } from '../config/api';
 
 const AuthContext = createContext();
 
@@ -19,34 +20,34 @@ class AuthProvider extends Component {
         const token = localStorage.getItem('authToken');
         if (token) {
             try {
-                const response = await axios.get('http://localhost:3000/api/users/profile', {
+                const response = await axios.get(`${API_BASE}/users/profile`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
 
-                this.setState({ user: response.data, loading: false });
+                this.setState({ user: response.data, loading: false, error: null });
             } catch (error) {
                 console.error('Ошибка при загрузке профиля:', error.response?.data || error.message);
-                this.setState({ user: null, loading: false });
+                if (error.response?.status === 401) {
+                    localStorage.removeItem('authToken');
+                }
+                this.setState({ user: null, loading: false, error: null });
             }
         } else {
-            this.setState({ user: null, loading: false });
+            this.setState({ user: null, loading: false, error: null });
         }
     };
     login = async (email, password) => {
         try {
-            const response = await axios.post('http://localhost:3000/api/users/login', { email, password });
+            const response = await axios.post(`${API_BASE}/users/login`, { email, password });
 
             const token = response.data.token;
             localStorage.setItem('authToken', token);
 
-            // Загружаем данные пользователя сразу после входа
-            const userResponse = await axios.get('http://localhost:3000/api/users/profile', {
+            const userResponse = await axios.get(`${API_BASE}/users/profile`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            this.setState({ user: userResponse.data, loading: false });
-
-            await this.loadUser();
+            this.setState({ user: userResponse.data, loading: false, error: null });
 
             return { success: true };
         } catch (error) {
@@ -63,7 +64,7 @@ class AuthProvider extends Component {
 
         try {
             const response = await axios.put(
-                'http://localhost:3000/api/users/profile',
+                `${API_BASE}/users/profile`,
                 data,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -84,7 +85,7 @@ class AuthProvider extends Component {
         try {
             if (token) {
                 await axios.post(
-                    'http://localhost:3000/api/users/logout',
+                    `${API_BASE}/users/logout`,
                     {},
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
@@ -106,6 +107,7 @@ class AuthProvider extends Component {
                 value={{
                     user,
                     loading,
+                    isAuthenticated: Boolean(user),
                     login: this.login,
                     logout: this.logout,
                     loadUser: this.loadUser,
