@@ -10,6 +10,8 @@ module.exports = (sequelize, DataTypes) => {
       
       // Связь с таблицей Laboratory
       Experiment.belongsTo(models.Laboratory, { foreignKey: 'laboratory_id', as: 'laboratory' });
+      Experiment.hasMany(models.ExperimentInput, { foreignKey: 'experiment_id', as: 'inputs' });
+      Experiment.hasMany(models.ExperimentOutput, { foreignKey: 'experiment_id', as: 'outputs' });
     }
   }
 
