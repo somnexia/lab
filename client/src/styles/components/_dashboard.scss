@@ -112,6 +112,10 @@ $dashboard-action-min-height: 8rem;
   color: var(--semantic-warning);
 }
 
+a.lab-dashboard__quick-action {
+  text-decoration: none;
+}
+
 .lab-dashboard__analytics-link {
   align-items: center;
   color: var(--link-color);
@@ -153,7 +157,7 @@ $dashboard-action-min-height: 8rem;
 }
 
 .overview-card__icon--info {
-  background-color: var(--semantic-);
+  background-color: var(--semantic-info);
 }
 
 .overview-card__icon--success {
@@ -180,6 +184,14 @@ $dashboard-action-min-height: 8rem;
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: 0;
+}
+
+.overview-card__meta {
+  color: var(--text-body-secondary);
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
 }
 
 .overview-card__footer {

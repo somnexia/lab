@@ -4,7 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardPage from "../pages/DashboardPage";
 import StorageLocations from "../pages/StorageLocations";
 import Equipment from "../pages/Equipment";
-import Projects from "../pages/Projects";
+import ProjectsOverviewPage from "../pages/ProjectsOverviewPage";
 
 import WarehouseList from "../components/WarehouseList";
 import StorageTree from "../components/StorageTree";
@@ -68,7 +68,7 @@ const MainAppRoutes = () => (
         </Route>
 
         {/* ---------- Projects ---------- */}
-        <Route path="/projects" element={<Projects />} />
+        <Route path="/projects" element={<ProjectsOverviewPage />} />
         <Route path="/projects/overview" element={<Navigate to="/projects" replace />} />
         <Route path="/projects/research-list" element={<ResearchList />} />
         <Route path="/projects/research-create" element={<AddResearch />} />
