@@ -28,6 +28,8 @@ import InventoryLotsPage from "../pages/InventoryLotsPage";
 import RegisterInventoryLotPage from "../pages/RegisterInventoryLotPage";
 import LabEquipmentPlaceholder from "../pages/LabEquipmentPlaceholder";
 import InventoryMaterialsPlaceholder from "../pages/InventoryMaterialsPlaceholder";
+import ExperimentDetailPage from "../pages/ExperimentDetailPage";
+import ResearchExperimentsPage from "../pages/ResearchExperimentsPage";
 
 const LEGACY_STORAGE_INVENTORY_PATHS = ["warehouses", "storage-units", "ladder", "dropdown", "location"];
 
@@ -75,6 +77,8 @@ const MainAppRoutes = () => (
         <Route path="/projects/task-list" element={<TaskList />} />
         <Route path="/projects/task-create" element={<TaskCreate />} />
         <Route path="/projects/tasks" element={<Navigate to="/projects/task-list" replace />} />
+        <Route path="/projects/research/:researchId/experiments/:experimentId" element={<ExperimentDetailPage />} />
+        <Route path="/projects/research/:researchId/experiments" element={<ResearchExperimentsPage />} />
 
         {/* ---------- Laboratory equipment ---------- */}
         <Route path="/equipment" element={<Navigate to="/lab-equipment" replace />} />
