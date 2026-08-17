@@ -9,7 +9,7 @@ export function setAuthRedirectEnabled(enabled) {
 
 /**
  * Единый HTTP-клиент к REST API.
- * Сейчас его используют Auth / SignUp. Остальные экраны ещё ходят через
+ * Сейчас его используют Auth / SignUp / Cart. Остальные экраны ещё ходят через
  * глобальный axios + setupApiClient, пока не будут переведены.
  */
 export const http = axios.create({
