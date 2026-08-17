@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { MdOutlineHexagon } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { FaFacebook, FaGoogle } from "react-icons/fa6";
-import axios from 'axios';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
 class SignUp extends Component {
     state = {
@@ -38,8 +39,7 @@ class SignUp extends Component {
         }
 
         try {
-            // Отправка данных на сервер
-            const response = await axios.post('http://localhost:3000/api/users', {
+            await http.post(API.users, {
                 name,
                 email,
                 password,

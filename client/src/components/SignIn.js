@@ -4,8 +4,7 @@ import { MdOutlineHexagon } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { FaFacebook } from "react-icons/fa6";
 import { FaGoogle } from "react-icons/fa6";
-import axios from 'axios';
-import { AuthContext } from "../context/AuthContext"; // Импорт контекста
+import { AuthContext } from "../context/AuthContext";
 
 class SignIn extends Component {
     state = {
@@ -24,34 +23,7 @@ class SignIn extends Component {
     handleSubmit = async (event) => {
         event.preventDefault();
         const { email, password } = this.state;
-        const { login } = this.context; // Получаем метод login из AuthContext
-
-        //     try {
-        //         const response = await axios.post('http://localhost:3000/api/users/login', {
-        //             email,
-        //             password,
-        //         });
-
-
-        //         // Сохранение токена в localStorage
-        //         const token = response.data.token;
-        //         localStorage.setItem('authToken', token);
-
-        //         // Загрузка данных пользователя через контекст
-        //         console.log("token:",token)
-        //         loadUser();
-
-        //         // Очистка состояния и редирект
-        //         this.setState({ email: '', password: '', errorMessage: '' });
-        //         alert('Вы успешно вошли в систему!');
-        //         window.location.href = '/customer/profile'; // Измените на ваш маршрут
-        //     } catch (error) {
-        //         console.error(error); // Логируем ошибку
-        //         this.setState({
-        //             errorMessage: error.response?.data?.message || 'Ошибка входа. Проверьте ваши данные.',
-        //         });
-        //     }
-        // };
+        const { login } = this.context;
         const result = await login(email, password);
 
         if (result.success) {

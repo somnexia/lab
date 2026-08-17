@@ -9,8 +9,8 @@ export function setAuthRedirectEnabled(enabled) {
 
 /**
  * Единый HTTP-клиент к REST API.
- * Пока не импортируется из index.js — приложение по-прежнему использует
- * глобальный axios + setupApiClient. Подключать экраны начиная с пункта 2.
+ * Сейчас его используют Auth / SignUp. Остальные экраны ещё ходят через
+ * глобальный axios + setupApiClient, пока не будут переведены.
  */
 export const http = axios.create({
   baseURL: API_BASE,

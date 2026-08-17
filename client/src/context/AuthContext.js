@@ -1,7 +1,7 @@
 // src/context/AuthContext.js
 import React, { createContext, Component } from 'react';
-import axios from 'axios';
-import { API_BASE } from '../config/api';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
 const AuthContext = createContext();
 
@@ -20,9 +20,7 @@ class AuthProvider extends Component {
         const token = localStorage.getItem('authToken');
         if (token) {
             try {
-                const response = await axios.get(`${API_BASE}/users/profile`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+                const response = await http.get(`${API.users}/profile`);
 
                 this.setState({ user: response.data, loading: false, error: null });
             } catch (error) {
@@ -38,14 +36,12 @@ class AuthProvider extends Component {
     };
     login = async (email, password) => {
         try {
-            const response = await axios.post(`${API_BASE}/users/login`, { email, password });
+            const response = await http.post(`${API.users}/login`, { email, password });
 
             const token = response.data.token;
             localStorage.setItem('authToken', token);
 
-            const userResponse = await axios.get(`${API_BASE}/users/profile`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const userResponse = await http.get(`${API.users}/profile`);
 
             this.setState({ user: userResponse.data, loading: false, error: null });
 
@@ -63,11 +59,7 @@ class AuthProvider extends Component {
         }
 
         try {
-            const response = await axios.put(
-                `${API_BASE}/users/profile`,
-                data,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const response = await http.put(`${API.users}/profile`, data);
             this.setState({ user: response.data, error: null });
             return { success: true, user: response.data };
         } catch (error) {
@@ -84,11 +76,7 @@ class AuthProvider extends Component {
 
         try {
             if (token) {
-                await axios.post(
-                    `${API_BASE}/users/logout`,
-                    {},
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                await http.post(`${API.users}/logout`, {});
             }
         } catch (error) {
             console.error('Ошибка при попытке выхода:', error.response?.data || error.message);
