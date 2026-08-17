@@ -15,6 +15,7 @@ const {
   isReagentItemType,
   resolveCatalogDisplayName,
 } = require('./catalogReferenceService');
+const { planReagentConsumption } = require('./experimentConsumptionPlanner');
 
 const EXPERIMENT_STATUSES = Object.freeze(['Completed', 'Ongoing', 'Pending']);
 
@@ -425,18 +426,6 @@ const replaceExperimentOutputs = async (experimentId, incoming = []) => {
   }
 };
 
-const getAggregateOnHand = async (itemType, referenceId, transaction = null) => {
-  const lots = await Inventory.findAll({
-    where: {
-      item_type: itemType,
-      reference_id: Number(referenceId),
-    },
-    transaction,
-  });
-
-  return lots.reduce((sum, lot) => sum + getLotOnHand(lot), 0);
-};
-
 const deductFromLot = async (lot, amount, transaction) => {
   const onHand = getLotOnHand(lot);
   if (onHand < amount) {
@@ -515,28 +504,6 @@ const revertExperimentConsumptions = async (experimentId, transaction) => {
   return true;
 };
 
-const getLotsForConsumption = async (itemType, referenceId, inventoryId, transaction) => {
-  if (inventoryId) {
-    const lot = await Inventory.findByPk(inventoryId, { transaction });
-    if (!lot) {
-      throw new ExperimentValidationError(`Inventory lot ${inventoryId} not found`, { inventoryId });
-    }
-    return [lot];
-  }
-
-  return Inventory.findAll({
-    where: {
-      item_type: itemType,
-      reference_id: Number(referenceId),
-    },
-    order: [
-      ['expiration_date', 'ASC'],
-      ['id', 'ASC'],
-    ],
-    transaction,
-  });
-};
-
 const applyExperimentConsumptions = async (experimentId, phase, transaction) => {
   const existingCount = await ExperimentConsumption.count({
     where: { experiment_id: experimentId },
@@ -547,131 +514,59 @@ const applyExperimentConsumptions = async (experimentId, phase, transaction) => 
     return [];
   }
 
-  const inputs = await ExperimentInput.findAll({
+  const rawInputs = await ExperimentInput.findAll({
     where: { experiment_id: experimentId },
     order: [['sort_order', 'ASC'], ['id', 'ASC']],
     transaction,
   });
 
-  const reagentInputs = inputs.filter((input) => input.input_role === 'reagent');
-  const createdRows = [];
+  const reagentInputs = await enrichInputs(rawInputs.filter((row) => row.input_role === 'reagent'));
+  const plan = await planReagentConsumption(reagentInputs, { transaction });
 
-  for (const input of reagentInputs) {
-    const quantity = input.quantity != null ? Number(input.quantity) : null;
-    if (quantity == null || quantity <= 0) {
-      throw new ExperimentValidationError(
-        `Reagent input #${input.id} must specify a positive amount before consumption`,
-        { inputId: input.id }
-      );
-    }
-
-    let remaining = quantity;
-
-    if (input.inventory_id) {
-      await assertInventoryLotForInput(input.inventory_id, input.item_type, input.reference_id);
-    }
-
-    const lots = await getLotsForConsumption(
-      input.item_type,
-      input.reference_id,
-      input.inventory_id,
-      transaction
+  if (plan.blocking.length) {
+    const firstBlock = plan.blocking[0];
+    throw new ExperimentValidationError(
+      firstBlock.reason || `Insufficient stock for ${firstBlock.catalogName}`,
+      { stockCheck: { checks: plan.checks, ready: false } }
     );
-
-    for (const lot of lots) {
-      if (remaining <= 0) break;
-
-      const onHand = getLotOnHand(lot);
-      if (onHand <= 0) continue;
-
-      const take = Math.min(remaining, onHand);
-      await deductFromLot(lot, take, transaction);
-
-      createdRows.push({
-        experiment_id: experimentId,
-        experiment_input_id: input.id,
-        inventory_id: lot.id,
-        item_type: input.item_type,
-        reference_id: input.reference_id,
-        quantity_consumed: take,
-        unit_measure: input.unit_measure,
-        consumed_at: new Date(),
-        consumption_phase: phase,
-        notes: input.notes,
-      });
-
-      remaining -= take;
-    }
-
-    if (remaining > 0) {
-      throw new ExperimentValidationError(
-        `Insufficient stock to consume ${quantity} for ${input.item_type} #${input.reference_id}`,
-        { inputId: input.id, remaining }
-      );
-    }
   }
 
-  if (!createdRows.length) {
+  if (plan.warnings.length) {
+    throw new ExperimentValidationError(
+      `${plan.warnings.length} reagent input(s) missing amount — required before consumption`
+    );
+  }
+
+  if (!plan.allocations.length) {
     return [];
+  }
+
+  const createdRows = [];
+
+  for (const allocation of plan.allocations) {
+    await deductFromLot(allocation.lot, allocation.quantityConsumed, transaction);
+
+    createdRows.push({
+      experiment_id: experimentId,
+      experiment_input_id: allocation.input.id,
+      inventory_id: allocation.lot.id,
+      item_type: allocation.input.itemType || allocation.input.item_type,
+      reference_id: allocation.input.referenceId ?? allocation.input.reference_id,
+      quantity_consumed: allocation.quantityConsumed,
+      unit_measure: allocation.unitMeasure,
+      consumed_at: new Date(),
+      consumption_phase: phase,
+      notes: allocation.input.notes,
+    });
   }
 
   return ExperimentConsumption.bulkCreate(createdRows, { transaction });
 };
 
-const checkInputStock = async (input) => {
-  const inputRole = input.input_role || input.inputRole;
-  if (inputRole !== 'reagent') {
-    return {
-      inputId: input.id,
-      catalogName: input.catalogName,
-      status: 'skipped',
-      reason: 'Equipment inputs are not stock-checked',
-    };
-  }
-
-  const quantity = input.quantity != null ? Number(input.quantity) : null;
-  if (quantity == null || quantity <= 0) {
-    return {
-      inputId: input.id,
-      catalogName: input.catalogName,
-      status: 'warning',
-      reason: 'No amount specified — stock check skipped',
-    };
-  }
-
-  const inventoryId = input.inventoryId ?? input.inventory_id;
-  let available = 0;
-  let source = 'aggregate';
-
-  if (inventoryId) {
-    const lot = await Inventory.findByPk(inventoryId);
-    available = getLotOnHand(lot);
-    source = input.inventoryLotLabel || `Lot #${inventoryId}`;
-  } else {
-    available = await getAggregateOnHand(input.itemType || input.item_type, input.referenceId ?? input.reference_id);
-    source = 'All lots (aggregate)';
-  }
-
-  const sufficient = available >= quantity;
-
-  return {
-    inputId: input.id,
-    catalogName: input.catalogName,
-    requested: quantity,
-    unitMeasure: input.unitMeasure || input.unit_measure,
-    available,
-    source,
-    status: sufficient ? 'ok' : 'insufficient',
-    reason: sufficient
-      ? 'Sufficient stock'
-      : `Need ${quantity}, available ${available}`,
-  };
-};
-
 const checkExperimentStock = async (experimentId, { forRun = false } = {}) => {
   const experiment = await getExperimentDetail(experimentId);
-  const inputs = experiment.inputs || [];
-  const reagentInputs = inputs.filter((input) => (input.inputRole || input.input_role) === 'reagent');
+  const reagentInputs = (experiment.inputs || [])
+    .filter((input) => (input.inputRole || input.input_role) === 'reagent');
 
   if (!reagentInputs.length) {
     return {
@@ -682,10 +577,8 @@ const checkExperimentStock = async (experimentId, { forRun = false } = {}) => {
     };
   }
 
-  const checks = await Promise.all(reagentInputs.map((input) => checkInputStock(input)));
-  const blocking = checks.filter((check) => check.status === 'insufficient');
-  const warnings = checks.filter((check) => check.status === 'warning');
-
+  const plan = await planReagentConsumption(reagentInputs);
+  const { checks, blocking, warnings } = plan;
   const ready = blocking.length === 0 && (!forRun || warnings.length === 0);
 
   return {
@@ -715,9 +608,11 @@ const runExperiment = async (experimentId) => {
 
   const stockCheck = await checkExperimentStock(experimentId, { forRun: true });
   if (!stockCheck.ready) {
-    const error = new ExperimentValidationError('Cannot run experiment — stock or input amounts are insufficient', {
-      stockCheck,
-    });
+    const detail = stockCheck.checks?.find((check) => check.status === 'insufficient');
+    const error = new ExperimentValidationError(
+      detail?.reason || 'Cannot run experiment — stock or input amounts are insufficient',
+      { stockCheck }
+    );
     error.statusCode = 409;
     throw error;
   }

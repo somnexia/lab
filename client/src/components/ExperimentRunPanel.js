@@ -117,8 +117,18 @@ class ExperimentRunPanel extends Component {
                 {check.requested != null && (
                   <span className="experiment-run__check-meta">
                     Requested: {check.requested}{check.unitMeasure ? ` ${check.unitMeasure}` : ''}
-                    {' · '}
-                    Available: {check.available} ({check.source})
+                    {check.available != null && check.status === 'insufficient' && (
+                      <>
+                        {' · '}
+                        Fulfilled: {check.available}{check.availableUnit ? ` ${check.availableUnit}` : ''}
+                      </>
+                    )}
+                    {check.status === 'ok' && check.source && (
+                      <>
+                        {' · '}
+                        Source: {check.source}
+                      </>
+                    )}
                   </span>
                 )}
               </li>
