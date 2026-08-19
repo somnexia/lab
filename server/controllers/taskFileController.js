@@ -40,9 +40,8 @@ const getTaskFilesByResearch = async (req, res) => {
 
   try {
     const files = await taskFileService.getTaskFilesByResearch(researchId);
-    if (!files.length) {
-      return res.status(404).json({ message: "Файлы не найдены" });
-    }
+    // Отсутствие файлов для исследования — штатный случай, а не ошибка.
+    // Возвращаем пустой массив, чтобы UI не попадал в error-flow.
     return res.status(200).json(files);
   } catch (error) {
     return res.status(500).json({ error: error.message });

@@ -78,6 +78,12 @@ class ResearchDetailsModal extends Component {
             const response = await axios.get(`http://localhost:3000/api/taskFiles/research/${research.id}`);
             this.setState({ files: response.data, loadingFiles: false });
         } catch (error) {
+            // Для совместимости со старым API: 404 здесь трактуем как "файлов пока нет".
+            // После правки backend этот кейс должен приходить как 200 + [].
+            if (error.response?.status === 404) {
+                this.setState({ files: [], errorFiles: null, loadingFiles: false });
+                return;
+            }
             console.error("Ошибка загрузки файлов:", error);
             this.setState({ errorFiles: "Не удалось загрузить файлы", loadingFiles: false });
         }
