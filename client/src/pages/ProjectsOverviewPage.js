@@ -1,7 +1,14 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { API_BASE } from '../config/api';
+import { API } from '../config/api';
+import { http } from '../config/http';
+
+/**
+ * Миграция на единый HTTP-клиент:
+ * - было: axios.get(`${API_BASE}/...`)
+ * - стало: http.get(`${API....}`)
+ * Проверка: Network -> GET /api/researches, /api/researches/ongoing/count, /api/tasks
+ */
 
 const PROJECT_LINKS = [
   {
@@ -42,9 +49,9 @@ class ProjectsOverviewPage extends Component {
   fetchSummary = async () => {
     try {
       const [researchesRes, ongoingRes, tasksRes] = await Promise.all([
-        axios.get(`${API_BASE}/researches`),
-        axios.get(`${API_BASE}/researches/ongoing/count`),
-        axios.get(`${API_BASE}/tasks`),
+        http.get(API.researches),
+        http.get(`${API.researches}/ongoing/count`),
+        http.get(API.tasks),
       ]);
 
       this.setState({

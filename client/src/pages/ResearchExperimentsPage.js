@@ -1,8 +1,13 @@
 import React, { Component } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
 import ExperimentListPanel from '../components/ExperimentListPanel';
-import { API_BASE } from '../config/api';
+import { API } from '../config/api';
+import { http } from '../config/http';
+
+/**
+ * Миграция на http + API.
+ * Проверка: Network -> GET /api/researches/:researchId.
+ */
 
 class ResearchExperimentsPage extends Component {
   state = {
@@ -19,7 +24,7 @@ class ResearchExperimentsPage extends Component {
     const { researchId } = this.props;
 
     try {
-      const response = await axios.get(`${API_BASE}/researches/${researchId}`);
+      const response = await http.get(`${API.researches}/${researchId}`);
       this.setState({ research: response.data, loading: false });
     } catch (error) {
       console.error('Failed to load research:', error);

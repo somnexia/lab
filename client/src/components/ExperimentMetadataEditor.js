@@ -1,6 +1,12 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import { API_EXPERIMENTS } from '../config/api';
+import { http } from '../config/http';
+
+/**
+ * Миграция на http-клиент:
+ * обновление метаданных эксперимента выполняется через общий инстанс.
+ * Проверка: PUT /api/experiments/:id при Save details.
+ */
 
 const STATUS_OPTIONS = ['Pending', 'Ongoing', 'Completed'];
 
@@ -76,7 +82,7 @@ class ExperimentMetadataEditor extends Component {
     this.setState({ saving: true, error: null, success: null });
 
     try {
-      const response = await axios.put(`${API_EXPERIMENTS}/${experimentId}`, {
+      const response = await http.put(`${API_EXPERIMENTS}/${experimentId}`, {
         name: name.trim(),
         status,
         start_date: fromDateInputValue(startDate),

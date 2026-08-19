@@ -1,6 +1,13 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import { API_BASE, API_REAGENTS } from '../config/api';
+import { API, API_REAGENTS } from '../config/api';
+import { http } from '../config/http';
+
+/**
+ * Миграция на http-клиент для outputs эксперимента.
+ * Проверка:
+ * - GET /api/reagents?types=...
+ * - PUT /api/experiments/:id/outputs
+ */
 
 const PRODUCT_KINDS = [
   { id: 'element', label: 'Element' },
@@ -68,7 +75,7 @@ class ExperimentOutputEditor extends Component {
     this.setState({ loadingCatalogKey: rowKey });
 
     try {
-      const response = await axios.get(API_REAGENTS, { params: { types: itemType } });
+      const response = await http.get(API_REAGENTS, { params: { types: itemType } });
       const catalogOptions = response.data.map((item) => ({
         id: item.catalogId,
         name: item.name,
@@ -186,7 +193,7 @@ class ExperimentOutputEditor extends Component {
     this.setState({ saving: true, error: null, success: null });
 
     try {
-      const response = await axios.put(`${API_BASE}/experiments/${experimentId}/outputs`, {
+      const response = await http.put(`${API.experiments}/${experimentId}/outputs`, {
         outputs: payload,
       });
       this.setState({ saving: false, editing: false, success: 'Outputs saved.' });

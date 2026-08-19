@@ -1,11 +1,17 @@
 import React, { Component } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import axios from 'axios';
 import ExperimentInputEditor from '../components/ExperimentInputEditor';
 import ExperimentOutputEditor from '../components/ExperimentOutputEditor';
 import ExperimentMetadataEditor from '../components/ExperimentMetadataEditor';
 import ExperimentRunPanel from '../components/ExperimentRunPanel';
-import { API_BASE } from '../config/api';
+import { API } from '../config/api';
+import { http } from '../config/http';
+
+/**
+ * Миграция на http-инстанс:
+ * endpoint эксперимента теперь собирается как API.experiments + /:id.
+ * Проверка: Network -> GET /api/experiments/:id при открытии страницы.
+ */
 
 class ExperimentDetailPage extends Component {
   state = {
@@ -29,7 +35,7 @@ class ExperimentDetailPage extends Component {
 
     try {
       this.setState({ loading: true, error: null });
-      const response = await axios.get(`${API_BASE}/experiments/${experimentId}`);
+      const response = await http.get(`${API.experiments}/${experimentId}`);
       this.setState({ experiment: response.data, loading: false });
     } catch (error) {
       console.error('Failed to load experiment:', error);

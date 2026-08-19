@@ -1,6 +1,15 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import { API_BASE, API_CHEM_EQUIPMENTS, API_INVENTORIES, API_REAGENTS } from '../config/api';
+import { API, API_CHEM_EQUIPMENTS, API_INVENTORIES, API_REAGENTS } from '../config/api';
+import { http } from '../config/http';
+
+/**
+ * Миграция на http-клиент:
+ * - чтение каталога/лотов и сохранение inputs идут через http.
+ * Проверка:
+ * - GET /api/inventories/filter
+ * - GET /api/reagents?types=...
+ * - PUT /api/experiments/:id/inputs
+ */
 
 const REAGENT_KINDS = [
   { id: 'element', label: 'Element' },
@@ -111,7 +120,7 @@ class ExperimentInputEditor extends Component {
     this.setState({ loadingLotKey: rowKey });
 
     try {
-      const response = await axios.get(`${API_INVENTORIES}/filter`, {
+      const response = await http.get(`${API_INVENTORIES}/filter`, {
         params: { reference_id: referenceId, item_type: itemType },
       });
       const lotOptions = response.data.map((lot) => {
@@ -141,7 +150,7 @@ class ExperimentInputEditor extends Component {
 
     try {
       if (inputRole === 'equipment') {
-        const response = await axios.get(API_CHEM_EQUIPMENTS);
+        const response = await http.get(API_CHEM_EQUIPMENTS);
         const catalogOptions = response.data.map((item) => ({
           id: item.id,
           label: `${item.name} (#${item.id})`,
@@ -153,7 +162,7 @@ class ExperimentInputEditor extends Component {
         return;
       }
 
-      const response = await axios.get(API_REAGENTS, { params: { types: itemType } });
+      const response = await http.get(API_REAGENTS, { params: { types: itemType } });
       const catalogOptions = response.data.map((item) => ({
         id: item.catalogId,
         label: `${item.name} (${item.casId || item.kind})`,
@@ -265,7 +274,7 @@ class ExperimentInputEditor extends Component {
     this.setState({ saving: true, error: null, success: null });
 
     try {
-      const response = await axios.put(`${API_BASE}/experiments/${experimentId}/inputs`, {
+      const response = await http.put(`${API.experiments}/${experimentId}/inputs`, {
         inputs: this.buildPayload(),
       });
       const success = response.data.runInvalidated

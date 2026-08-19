@@ -1,6 +1,15 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import { API_EXPERIMENTS } from '../config/api';
+import { http } from '../config/http';
+
+/**
+ * Миграция на http-клиент:
+ * - stock-check, run, complete теперь идут через общий инстанс.
+ * Проверка:
+ * - GET  /api/experiments/:id/stock-check
+ * - POST /api/experiments/:id/run
+ * - POST /api/experiments/:id/complete
+ */
 
 const STATUS_CLASS = {
   ok: 'success',
@@ -43,7 +52,7 @@ class ExperimentRunPanel extends Component {
     this.setState({ loadingCheck: true, error: null });
 
     try {
-      const response = await axios.get(`${API_EXPERIMENTS}/${experimentId}/stock-check`);
+      const response = await http.get(`${API_EXPERIMENTS}/${experimentId}/stock-check`);
       this.setState({ stockCheck: response.data, loadingCheck: false });
     } catch (error) {
       const message = error.response?.data?.error || 'Failed to check stock';
@@ -57,7 +66,7 @@ class ExperimentRunPanel extends Component {
     this.setState({ running: true, error: null, success: null });
 
     try {
-      const response = await axios.post(`${API_EXPERIMENTS}/${experimentId}/run`);
+      const response = await http.post(`${API_EXPERIMENTS}/${experimentId}/run`);
       this.setState({
         running: false,
         stockCheck: response.data.stockCheck,
@@ -81,7 +90,7 @@ class ExperimentRunPanel extends Component {
     this.setState({ completing: true, error: null, success: null });
 
     try {
-      const response = await axios.post(`${API_EXPERIMENTS}/${experimentId}/complete`);
+      const response = await http.post(`${API_EXPERIMENTS}/${experimentId}/complete`);
       this.setState({ completing: false, success: 'Experiment completed.' });
       if (onUpdated) onUpdated(response.data);
     } catch (error) {

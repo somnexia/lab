@@ -1,7 +1,14 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { API_BASE } from '../config/api';
+import { API } from '../config/api';
+import { http } from '../config/http';
+
+/**
+ * Миграция на единый http-клиент.
+ * Проверка:
+ * - GET /api/experiments?research_id=...
+ * - POST /api/experiments (кнопка New experiment)
+ */
 
 const STATUS_CLASS = {
   Completed: 'success',
@@ -34,7 +41,7 @@ class ExperimentListPanel extends Component {
     this.setState({ loading: true, error: null });
 
     try {
-      const response = await axios.get(`${API_BASE}/experiments`, {
+      const response = await http.get(API.experiments, {
         params: { research_id: researchId },
       });
       this.setState({ experiments: response.data, loading: false });
@@ -51,7 +58,7 @@ class ExperimentListPanel extends Component {
     this.setState({ creating: true, error: null });
 
     try {
-      const response = await axios.post(`${API_BASE}/experiments`, {
+      const response = await http.post(API.experiments, {
         research_id: researchId,
         name: `Experiment ${new Date().toLocaleDateString()}`,
         status: 'Pending',
