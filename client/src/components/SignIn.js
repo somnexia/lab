@@ -1,4 +1,17 @@
-// src/components/SignIn.js
+/**
+ * SignIn — форма входа.
+ *
+ * Что изменилось (пункт 2 миграции):
+ *   - Удалён import axios (здесь он был не нужен — логин шёл через AuthContext).
+ *   - Удалён закомментированный хардкод axios.post('http://localhost:3000/api/users/login').
+ *   - Компонент по-прежнему вызывает this.context.login(email, password),
+ *     а AuthContext внутри делает http.post('/users/login').
+ *
+ * Проверить:
+ *   /management/signin → ввести email + пароль → Sign In.
+ *   DevTools → Network: POST /api/users/login → 200 + { token }.
+ *   Неверный пароль → красный alert на форме.
+ */
 import React, { Component } from 'react';
 import { MdOutlineHexagon } from "react-icons/md";
 import { Link } from "react-router-dom";

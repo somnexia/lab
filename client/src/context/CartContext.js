@@ -1,3 +1,34 @@
+/**
+ * CartContext — корзина покупок (серверная для залогиненных, localStorage для гостей).
+ *
+ * Что изменилось (пункт 3 миграции):
+ *   Было:
+ *     import axios from "axios";
+ *     const API_BASE = "http://localhost:3000/api";     ← свой локальный хардкод
+ *     axios.get(`${API_BASE}/carts/${userId}`)
+ *
+ *   Стало:
+ *     import { http } from "../config/http";
+ *     import { API } from "../config/api";
+ *     http.get(`${API.carts}/${userId}`)                ← путь /carts, хост в baseURL
+ *
+ *   - Удалён собственный API_BASE — теперь один источник правды в config/api.js.
+ *   - Удалён import axios — все вызовы через http-инстанс.
+ *   - Bearer-токен ставит interceptor автоматически.
+ *
+ * Примеры реальных запросов (видно в DevTools → Network):
+ *   GET    /api/carts/12                — загрузить корзину пользователя 12
+ *   POST   /api/carts        {body}     — добавить позицию
+ *   PUT    /api/carts/item/7 {body}     — изменить количество строки 7
+ *   DELETE /api/carts/item/7            — удалить строку
+ *   DELETE /api/carts/clear/12          — очистить корзину
+ *
+ * Проверить:
+ *   1. Войти → открыть Inventory Overview → кнопка «Add to cart» на любом лоте.
+ *   2. Открыть CartDrawer (иконка корзины в Header) — позиция появилась.
+ *   3. Изменить количество, удалить, очистить.
+ *   4. F5 — корзина подтягивается с сервера (GET /api/carts/:userId).
+ */
 import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
 import { API } from "../config/api";
 import { http } from "../config/http";

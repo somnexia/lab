@@ -1,3 +1,21 @@
+/**
+ * SignUp — форма регистрации нового пользователя.
+ *
+ * Что изменилось (пункт 2 миграции):
+ *   Было:
+ *     import axios from 'axios';
+ *     axios.post('http://localhost:3000/api/users', { name, email, password })
+ *
+ *   Стало:
+ *     import { http } from '../config/http';
+ *     http.post(API.users, { name, email, password })
+ *     // API.users = '/users' → baseURL склеит в http://localhost:3000/api/users
+ *
+ * Проверить:
+ *   /management/signup → заполнить форму → Submit.
+ *   DevTools → Network: POST /api/users, статус 200/201.
+ *   При ошибке (дубль email) — красное сообщение на форме, не 401-редирект.
+ */
 import React, { Component } from 'react';
 import { MdOutlineHexagon } from "react-icons/md";
 import { Link } from "react-router-dom";

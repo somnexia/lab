@@ -1,10 +1,23 @@
-export const API_BASE = 'http://localhost:3000/api';
-
 /**
- * Относительные пути ресурсов (без хоста).
- * Для axios-инстанса с baseURL = API_BASE: http.get(API.researches) → /api/researches.
- * Пока экраны не переведены на http, эти пути никто не обязан использовать.
+ * Центральный конфиг API-адресов.
+ *
+ * Миграция (пункты 1–6):
+ *   До миграции каждый компонент сам собирал полный URL:
+ *     axios.get('http://localhost:3000/api/researches')
+ *
+ *   После миграции компонент импортирует http-клиент и относительный путь:
+ *     import { http } from '../config/http';
+ *     import { API } from '../config/api';
+ *     http.get(API.researches)            →  GET http://localhost:3000/api/researches
+ *
+ *   http.js знает baseURL (API_BASE), компонент знает только ресурс (/researches).
+ *   Смена хоста/порта — одно место (API_BASE), не 30 файлов.
+ *
+ * Проверить:
+ *   Открыть DevTools → Network. Все запросы должны уходить на
+ *   http://localhost:3000/api/..., а не на другой origin или двойной /api/api/...
  */
+export const API_BASE = 'http://localhost:3000/api';
 export const API = {
   inventories: '/inventories',
   reagents: '/reagents',
@@ -27,7 +40,12 @@ export const API = {
   logs: '/logs',
 };
 
-/** @deprecated Абсолютные URL. Нужны текущим экранам, пока они не перейдут на http. */
+/**
+ * @deprecated Абсолютные URL — временная обратная совместимость.
+ * Экраны, ещё не переведённые на http-клиент (пункты 4–5), импортируют
+ * эти константы. По мере миграции каждая строка ниже будет удалена.
+ * НЕ использовать в новом коде — только API.xxx + http.
+ */
 export const API_INVENTORIES = `${API_BASE}/inventories`;
 export const API_REAGENTS = `${API_BASE}/reagents`;
 export const API_CHEM_MIXTURES = `${API_BASE}/chemMixtures`;

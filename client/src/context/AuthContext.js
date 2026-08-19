@@ -1,4 +1,28 @@
-// src/context/AuthContext.js
+/**
+ * AuthContext — глобальное состояние авторизации.
+ *
+ * Что изменилось (пункт 2 миграции):
+ *   Было:
+ *     import axios from 'axios';
+ *     axios.get(`${API_BASE}/users/profile`, { headers: { Authorization: `Bearer ${token}` } })
+ *
+ *   Стало:
+ *     import { http } from '../config/http';
+ *     http.get(`${API.users}/profile`)
+ *
+ *   - Убран прямой import axios — используется http-инстанс из config/http.js.
+ *   - Убраны ручные headers { Authorization } — токен подставляет interceptor в http.js.
+ *   - URL собирается из относительного пути: API.users = '/users',
+ *     http.js добавляет baseURL → http://localhost:3000/api/users/profile.
+ *
+ * Проверить:
+ *   DevTools → Network:
+ *     POST /api/users/login          — при нажатии Sign In
+ *     GET  /api/users/profile        — после логина и при обновлении страницы (F5)
+ *     PUT  /api/users/profile        — при сохранении профиля
+ *     POST /api/users/logout         — при выходе
+ *   Все запросы (кроме login) должны содержать заголовок Authorization: Bearer <token>.
+ */
 import React, { createContext, Component } from 'react';
 import { API } from '../config/api';
 import { http } from '../config/http';
