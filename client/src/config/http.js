@@ -24,7 +24,8 @@ export function setAuthRedirectEnabled(enabled) {
  *   await http.delete(`/carts/item/${lineId}`);            // DELETE
  *
  * Сейчас переведены: Auth, SignUp, Cart, Projects/Experiments,
- * ResearchDetailsModal, Inventory/Reagents/Lots/Mixtures.
+ * ResearchDetailsModal, Inventory/Reagents/Lots/Mixtures,
+ * ResearchList / AddResearch / TaskList / TaskCreate / ParticipantList.
  * Остальные экраны пока ходят через глобальный axios + setupApiClient.
  *
  * Проверить:

@@ -1,14 +1,17 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 
+/**
+ * ResearchOverview — заготовка UI (пункт 6).
+ * API-вызовов нет; убран неиспользуемый import axios.
+ * Живой overview: ProjectsOverviewPage + ResearchList.
+ */
 class ResearchOverview extends Component {
-    state = {  } 
-    render() { 
+    state = {}
+    render() {
         return (
-            
             <div></div>
         );
     }
 }
- 
+
 export default ResearchOverview;

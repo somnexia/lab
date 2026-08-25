@@ -1,10 +1,25 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import { FaSearch, FaPlus, FaChevronRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import ResearchDetailsModal from './ResearchDetailsModal';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
-
+/**
+ * ResearchList — список исследований (пункт 6: Research / tasks / members).
+ *
+ * Было:
+ *   axios.get('http://localhost:3000/api/researches')
+ *   axios.get(`http://localhost:3000/api/researches/${id}`)
+ *
+ * Стало:
+ *   http.get(API.researches)
+ *   http.get(`${API.researches}/${id}`)
+ *
+ * Проверить (/projects/research-list):
+ *   GET /api/researches
+ *   GET /api/researches/:id при открытии карточки (+ запросы ResearchDetailsModal)
+ */
 class ResearchList extends Component {
     state = {
         researches: [],  // Храним список исследований
@@ -23,7 +38,7 @@ class ResearchList extends Component {
 
     fetchResearches = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/researches');
+            const response = await http.get(API.researches);
             const researches = response.data;
 
             // Подсчитываем количество исследований в каждом статусе
@@ -33,7 +48,6 @@ class ResearchList extends Component {
             }, {});
 
             this.setState({ researches, statusCounts });
-            console.log("researches", researches)
         } catch (error) {
             console.error("Ошибка загрузки данных:", error);
         }
@@ -49,18 +63,14 @@ class ResearchList extends Component {
                 modalLoading: true,
                 error: null,
             });
-            console.log('Данные research:', research);
 
-            const researchResponse = await axios.get(`http://localhost:3000/api/researches/${research.id}`);
+            const researchResponse = await http.get(`${API.researches}/${research.id}`);
             const researchData = researchResponse.data;
-             
-            console.log('Данные research: researchData', researchData);
 
             const fullResearch = {
                 ...research,
                 ...researchData,
-            }
-            console.log('Объект, передаваемый в ResearchDetailsModal fullResearch:', fullResearch);
+            };
 
             this.setState({
                 selectedResearch: fullResearch,

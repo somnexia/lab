@@ -1,9 +1,27 @@
-
 import React, { Component } from 'react';
-import axios from 'axios';
 import { FaAngleDown } from "react-icons/fa";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { API } from '../config/api';
+import { http } from '../config/http';
+
+/**
+ * AddResearch — создание исследования (пункт 6).
+ *
+ * Было:
+ *   axios.get('http://localhost:3000/api/researches')
+ *   axios.get('http://localhost:3000/api/employees')
+ *   axios.post('http://localhost:3000/api/researches', formData)
+ *
+ * Стало:
+ *   http.get(API.researches)
+ *   http.get(API.employees)
+ *   http.post(API.researches, formData)
+ *
+ * Проверить (/projects/research-create):
+ *   GET /api/researches, GET /api/employees при открытии формы
+ *   POST /api/researches при Create Project
+ */
 class AddResearch extends Component {
     state = {
         types: [],
@@ -30,7 +48,7 @@ class AddResearch extends Component {
     }
     fetchResearchData = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/researches');
+            const response = await http.get(API.researches);
             const researches = response.data;
             // Извлекаем уникальные значения
             const types = [...new Set(researches.map(r => r.type))];
@@ -44,7 +62,7 @@ class AddResearch extends Component {
     };
     fetchEmployees = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/employees');
+            const response = await http.get(API.employees);
             this.setState({ employees: response.data });
         } catch (error) {
             console.error('Ошибка загрузки сотрудников:', error);
@@ -107,15 +125,12 @@ class AddResearch extends Component {
             client: this.state.client || null,
             funding_source: this.state.selectedFunding || null
         };
-        console.log("formData:", formData)
+            console.log("formData:", formData)
         try {
-            // Отправка POST-запроса для создания нового исследования
-            const response = await axios.post('http://localhost:3000/api/researches', formData);
-            // Обработка успешного ответа
+            const response = await http.post(API.researches, formData);
             console.log('Research created:', response.data);
             alert('Research created successfully!');
         } catch (error) {
-            // Обработка ошибки
             console.error('Error creating research:', error);
             alert('Failed to create research.');
         }

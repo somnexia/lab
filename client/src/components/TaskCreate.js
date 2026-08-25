@@ -1,9 +1,27 @@
 // client/src/components/TaskCreate.js
 import React, { Component } from 'react';
-import axios from 'axios';
 import { FaArrowLeft, FaSave, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * TaskCreate — создание задачи (пункт 6).
+ *
+ * Было:
+ *   axios.get('http://localhost:3000/api/researches')
+ *   axios.get('http://localhost:3000/api/users')
+ *   axios.post('http://localhost:3000/api/tasks', taskData)
+ *
+ * Стало:
+ *   http.get(API.researches)
+ *   http.get(API.users)
+ *   http.post(API.tasks, taskData)
+ *
+ * Проверить (/projects/task-create):
+ *   GET /api/researches, GET /api/users
+ *   POST /api/tasks при сохранении
+ */
 class TaskCreate extends Component {
     state = {
         researches: [],
@@ -33,7 +51,7 @@ class TaskCreate extends Component {
 
     fetchResearches = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/researches');
+            const response = await http.get(API.researches);
             this.setState({ researches: response.data });
         } catch (error) {
             console.error("Ошибка загрузки исследований:", error);
@@ -43,7 +61,7 @@ class TaskCreate extends Component {
 
     fetchUsers = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/users');
+            const response = await http.get(API.users);
             this.setState({ users: response.data });
         } catch (error) {
             console.error("Ошибка загрузки пользователей:", error);
@@ -124,7 +142,7 @@ class TaskCreate extends Component {
                 user_id: this.state.formData.user_id || null
             };
 
-            const response = await axios.post('http://localhost:3000/api/tasks', taskData);
+            const response = await http.post(API.tasks, taskData);
 
             this.setState({
                 success: true,

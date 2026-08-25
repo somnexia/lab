@@ -1,6 +1,5 @@
 // client\src\components\TaskList.js
 import React, { Component } from 'react';
-import axios from 'axios';
 import {
     FaCalendarAlt,
     FaCheckCircle,
@@ -16,7 +15,17 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import TaskDetailsModal from './TaskDetailsModal';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * TaskList — список задач (пункт 6).
+ *
+ * Было: axios.get('http://localhost:3000/api/tasks')
+ * Стало: http.get(API.tasks)
+ *
+ * Проверить (/projects/task-list): GET /api/tasks + Bearer
+ */
 class TaskList extends Component {
     state = {
         tasks: [],
@@ -42,7 +51,7 @@ class TaskList extends Component {
         this.setState({ loading: true, error: null });
 
         try {
-            const response = await axios.get('http://localhost:3000/api/tasks');
+            const response = await http.get(API.tasks);
             const tasks = response.data;
 
             const statusCounts = tasks.reduce((acc, task) => {

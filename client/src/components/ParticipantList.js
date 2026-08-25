@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import { FaSearch } from 'react-icons/fa';
 import {
     FaPlus,
@@ -9,6 +8,17 @@ import {
 } from 'react-icons/fa6';
 import { formatDistanceToNow, format } from 'date-fns';
 import { enUS } from 'date-fns/locale';
+import { API } from '../config/api';
+import { http } from '../config/http';
+
+/**
+ * ParticipantList — участники / сотрудники (пункт 6).
+ *
+ * Было: axios.get('http://localhost:3000/api/employees')
+ * Стало: http.get(API.employees)
+ *
+ * Проверить (/members-teams/members): GET /api/employees + Bearer
+ */
 
 /** Table columns: extend this array and `renderCell` for new fields. */
 const TABLE_COLUMNS = [
@@ -46,7 +56,7 @@ class ParticipantList extends Component {
     fetchEmployees = async () => {
         this.setState({ loading: true, error: null });
         try {
-            const response = await axios.get('http://localhost:3000/api/employees');
+            const response = await http.get(API.employees);
             this.setState({ employees: response.data, loading: false });
         } catch (err) {
             console.error('Ошибка при загрузке сотрудников:', err);
