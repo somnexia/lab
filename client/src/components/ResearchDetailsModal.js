@@ -23,8 +23,37 @@ import { FaFileZipper } from "react-icons/fa6";
 import { FaFileLines } from "react-icons/fa6";
 import { FaImage } from "react-icons/fa6";
 import React, { Component } from 'react';
-import axios from 'axios';
+import { API } from '../config/api';
+import { http } from '../config/http';
 import ExperimentListPanel from './ExperimentListPanel';
+
+/**
+ * ResearchDetailsModal — детали исследования (задачи, файлы, участники).
+ *
+ * Относится к пункту 6 плана миграции (Research / tasks / members).
+ *
+ * Зачем переводить на http + API:
+ *   Модалка ходила на три endpoint'а с жёстким localhost:3000 и глобальным axios.
+ *   Это ломает единый контракт: хост в одном месте (API_BASE), Bearer-токен
+ *   ставит interceptor http.js, 401 обрабатывается одинаково с Auth/Cart.
+ *
+ * Что изменилось:
+ *   Было:
+ *     axios.get(`http://localhost:3000/api/tasks/research?researchId=${id}`)
+ *     axios.get(`http://localhost:3000/api/taskFiles/research/${id}`)
+ *     axios.get(`http://localhost:3000/api/researchEmployees?researchId=${id}`)
+ *
+ *   Стало:
+ *     http.get(`${API.tasks}/research`, { params: { researchId: id } })
+ *     http.get(`${API.taskFiles}/research/${id}`)
+ *     http.get(API.researchEmployees, { params: { researchId: id } })
+ *
+ * Проверить (открыть карточку research на /projects/research-list):
+ *   GET /api/tasks/research?researchId=...
+ *   GET /api/taskFiles/research/:id   → 200 + [] если файлов нет (не 404)
+ *   GET /api/researchEmployees?researchId=...
+ *   В заголовках запросов должен быть Authorization: Bearer ...
+ */
 class ResearchDetailsModal extends Component {
     state = {
         showMore: false,
@@ -63,7 +92,9 @@ class ResearchDetailsModal extends Component {
         if (!research?.id) return;
         this.setState({ loadingTasks: true, errorTasks: null });
         try {
-            const response = await axios.get(`http://localhost:3000/api/tasks/research?researchId=${research.id}`);
+            const response = await http.get(`${API.tasks}/research`, {
+                params: { researchId: research.id },
+            });
             this.setState({ tasks: response.data, loadingTasks: false });
         } catch (error) {
             console.error("Ошибка загрузки задач:", error);
@@ -75,11 +106,10 @@ class ResearchDetailsModal extends Component {
         if (!research?.id) return;
         this.setState({ loadingFiles: true, errorFiles: null });
         try {
-            const response = await axios.get(`http://localhost:3000/api/taskFiles/research/${research.id}`);
-            this.setState({ files: response.data, loadingFiles: false });
+            const response = await http.get(`${API.taskFiles}/research/${research.id}`);
+            this.setState({ files: Array.isArray(response.data) ? response.data : [], loadingFiles: false });
         } catch (error) {
-            // Для совместимости со старым API: 404 здесь трактуем как "файлов пока нет".
-            // После правки backend этот кейс должен приходить как 200 + [].
+            // Защита на случай старого backend: 404 = «файлов нет», не «эндпоинт сломан».
             if (error.response?.status === 404) {
                 this.setState({ files: [], errorFiles: null, loadingFiles: false });
                 return;
@@ -92,10 +122,11 @@ class ResearchDetailsModal extends Component {
         const { research } = this.props;
         if (!research?.id) return;
         try {
-            const response = await axios.get(`http://localhost:3000/api/researchEmployees?researchId=${research.id}`);
-            // Фильтруем только сотрудников текущего исследования
-            const filteredEmployees = response.data.filter(emp => emp.research_id === research.id);
-            console.log("Отфильтрованные сотрудники исследования:", filteredEmployees);
+            const response = await http.get(API.researchEmployees, {
+                params: { researchId: research.id },
+            });
+            const rows = Array.isArray(response.data) ? response.data : [];
+            const filteredEmployees = rows.filter((emp) => emp.research_id === research.id);
             this.setState({ researchEmployees: filteredEmployees });
         } catch (error) {
             console.error("Ошибка загрузки сотрудников исследования:", error);
