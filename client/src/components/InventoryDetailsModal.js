@@ -7,10 +7,15 @@ import { FaShareNodes } from "react-icons/fa6";
 import { FaBell } from "react-icons/fa";
 import { FaHistory } from "react-icons/fa";
 import { FaCartPlus } from "react-icons/fa6";
-import axios from 'axios';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
-
-
+/**
+ * InventoryDetailsModal — детали лота (пункт 5).
+ * Было: axios.put(`http://localhost:3000/api/inventories/${id}`, ...)
+ * Стало: http.put(`${API.inventories}/${id}`, ...)
+ * Проверить: смена статуса лота → PUT /api/inventories/:id
+ */
 class InventoryDetailsModal extends Component {
     
     constructor(props) {
@@ -39,7 +44,7 @@ class InventoryDetailsModal extends Component {
         const { inventory } = this.props;  // Получаем текущие данные инвентаря из props
         try {
             // Отправляем запрос на сервер для обновления статуса
-            const response = await axios.put(`http://localhost:3000/api/inventories/${inventory.id}`, {
+            const response = await http.put(`${API.inventories}/${inventory.id}`, {
                 ...inventory,
                 status: newStatus,  // Обновляем только статус
             });

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { API, API_REAGENTS } from '../config/api';
+import { API } from '../config/api';
 import { http } from '../config/http';
 
 /**
@@ -75,7 +75,7 @@ class ExperimentOutputEditor extends Component {
     this.setState({ loadingCatalogKey: rowKey });
 
     try {
-      const response = await http.get(API_REAGENTS, { params: { types: itemType } });
+      const response = await http.get(API.reagents, { params: { types: itemType } });
       const catalogOptions = response.data.map((item) => ({
         id: item.catalogId,
         name: item.name,

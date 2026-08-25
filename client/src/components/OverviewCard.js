@@ -1,8 +1,19 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { API_BASE, API_REAGENTS } from '../config/api';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * OverviewCard — KPI на Dashboard (пункт 5 для chemicals/equipment counts).
+ * Было: axios + API_BASE/API_REAGENTS абсолютные URL.
+ * Стало: http + API.reagents / API.inventories / API.researches / API.orders
+ *
+ * Проверить Dashboard:
+ *   GET /api/reagents/summary
+ *   GET /api/inventories/equipment/count
+ *   GET /api/researches/ongoing/count
+ *   GET /api/orders/active/count
+ */
 class OverviewCard extends Component {
   state = {
     count: null,
@@ -20,7 +31,7 @@ class OverviewCard extends Component {
 
     try {
       if (itemType === 'chemicals') {
-        const response = await axios.get(`${API_REAGENTS}/summary`);
+        const response = await http.get(`${API.reagents}/summary`);
         const { catalogTotal, lotCount, inStockCount } = response.data;
         this.setState({
           count: catalogTotal,
@@ -33,20 +44,20 @@ class OverviewCard extends Component {
       let endpoint = '';
       switch (itemType) {
         case 'equipment':
-          endpoint = `${API_BASE}/inventories/equipment/count`;
+          endpoint = `${API.inventories}/equipment/count`;
           break;
         case 'researches':
-          endpoint = `${API_BASE}/researches/ongoing/count`;
+          endpoint = `${API.researches}/ongoing/count`;
           break;
         case 'orders':
-          endpoint = `${API_BASE}/orders/active/count`;
+          endpoint = `${API.orders}/active/count`;
           break;
         default:
           this.setState({ loading: false, error: 'Unknown card type' });
           return;
       }
 
-      const response = await axios.get(endpoint);
+      const response = await http.get(endpoint);
       this.setState({
         count: response.data.count,
         loading: false,

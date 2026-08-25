@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { API, API_CHEM_EQUIPMENTS, API_INVENTORIES, API_REAGENTS } from '../config/api';
+import { API } from '../config/api';
 import { http } from '../config/http';
 
 /**
@@ -120,7 +120,7 @@ class ExperimentInputEditor extends Component {
     this.setState({ loadingLotKey: rowKey });
 
     try {
-      const response = await http.get(`${API_INVENTORIES}/filter`, {
+      const response = await http.get(`${API.inventories}/filter`, {
         params: { reference_id: referenceId, item_type: itemType },
       });
       const lotOptions = response.data.map((lot) => {
@@ -150,7 +150,7 @@ class ExperimentInputEditor extends Component {
 
     try {
       if (inputRole === 'equipment') {
-        const response = await http.get(API_CHEM_EQUIPMENTS);
+        const response = await http.get(API.chemEquipments);
         const catalogOptions = response.data.map((item) => ({
           id: item.id,
           label: `${item.name} (#${item.id})`,
@@ -162,7 +162,7 @@ class ExperimentInputEditor extends Component {
         return;
       }
 
-      const response = await http.get(API_REAGENTS, { params: { types: itemType } });
+      const response = await http.get(API.reagents, { params: { types: itemType } });
       const catalogOptions = response.data.map((item) => ({
         id: item.catalogId,
         label: `${item.name} (${item.casId || item.kind})`,

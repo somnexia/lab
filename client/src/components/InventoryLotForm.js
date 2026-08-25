@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
-import axios from 'axios';
-import {
-  API_CHEM_EQUIPMENTS,
-  API_INVENTORIES,
-  API_REAGENTS,
-  API_STORAGES,
-  API_STORAGE_UNITS,
-} from '../config/api';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * InventoryLotForm — регистрация лота (пункт 5).
+ * Было: axios + абсолютные API_INVENTORIES / API_REAGENTS / ...
+ * Стало: http + API.inventories / API.reagents / API.storages / ...
+ * Проверить: Register lot → POST /api/inventories
+ */
 const ITEM_TYPES = [
   { id: 'element', label: 'Element' },
   { id: 'compound', label: 'Compound' },
@@ -68,7 +68,7 @@ class InventoryLotForm extends Component {
 
   fetchStorages = async () => {
     try {
-      const response = await axios.get(API_STORAGES);
+      const response = await http.get(API.storages);
       this.setState({ storages: response.data });
     } catch (error) {
       console.error('Failed to load storages:', error);
@@ -77,7 +77,7 @@ class InventoryLotForm extends Component {
 
   fetchStorageUnits = async (storageId) => {
     try {
-      const response = await axios.get(API_STORAGE_UNITS);
+      const response = await http.get(API.storageUnits);
       const storageUnits = response.data.filter(
         (unit) => String(unit.storage_id) === String(storageId)
       );
@@ -93,7 +93,7 @@ class InventoryLotForm extends Component {
 
     try {
       if (itemType === 'equipment') {
-        const response = await axios.get(API_CHEM_EQUIPMENTS);
+        const response = await http.get(API.chemEquipments);
         const catalogOptions = response.data.map((item) => ({
           kind: 'equipment',
           catalogId: item.id,
@@ -104,7 +104,7 @@ class InventoryLotForm extends Component {
         return;
       }
 
-      const response = await axios.get(API_REAGENTS, {
+      const response = await http.get(API.reagents, {
         params: { types: itemType },
       });
       const catalogOptions = response.data.map((item) => ({
@@ -226,7 +226,7 @@ class InventoryLotForm extends Component {
     this.setState({ submitting: true, error: null });
 
     try {
-      const response = await axios.post(API_INVENTORIES, this.buildPayload());
+      const response = await http.post(API.inventories, this.buildPayload());
       this.setState({ submitting: false });
       if (this.props.onSuccess) {
         this.props.onSuccess(response.data);

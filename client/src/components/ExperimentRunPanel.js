@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { API_EXPERIMENTS } from '../config/api';
+import { API } from '../config/api';
 import { http } from '../config/http';
 
 /**
@@ -52,7 +52,7 @@ class ExperimentRunPanel extends Component {
     this.setState({ loadingCheck: true, error: null });
 
     try {
-      const response = await http.get(`${API_EXPERIMENTS}/${experimentId}/stock-check`);
+      const response = await http.get(`${API.experiments}/${experimentId}/stock-check`);
       this.setState({ stockCheck: response.data, loadingCheck: false });
     } catch (error) {
       const message = error.response?.data?.error || 'Failed to check stock';
@@ -66,7 +66,7 @@ class ExperimentRunPanel extends Component {
     this.setState({ running: true, error: null, success: null });
 
     try {
-      const response = await http.post(`${API_EXPERIMENTS}/${experimentId}/run`);
+      const response = await http.post(`${API.experiments}/${experimentId}/run`);
       this.setState({
         running: false,
         stockCheck: response.data.stockCheck,
@@ -90,7 +90,7 @@ class ExperimentRunPanel extends Component {
     this.setState({ completing: true, error: null, success: null });
 
     try {
-      const response = await http.post(`${API_EXPERIMENTS}/${experimentId}/complete`);
+      const response = await http.post(`${API.experiments}/${experimentId}/complete`);
       this.setState({ completing: false, success: 'Experiment completed.' });
       if (onUpdated) onUpdated(response.data);
     } catch (error) {

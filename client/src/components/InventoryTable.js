@@ -1,6 +1,14 @@
 import React, { Component } from 'react';
 import { Link } from "react-router-dom";
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * InventoryTable — лоты по storage unit (пункт 5, данные инвентаря).
+ * Было: fetch('http://localhost:3000/api/inventoryStorageUnit/...')
+ * Стало: http.get(`${API.inventoryStorageUnit}/...`)
+ * Проверить: открыть storage unit → GET /api/inventoryStorageUnit/:id/inventories
+ */
 class InventoryTable extends Component {
 	constructor(props) {
 		super(props);
@@ -33,23 +41,19 @@ class InventoryTable extends Component {
 		this.setState({ loading: true, error: null });
 
 		try {
-			// Запрос для получения инвентаря
-			const inventoryResponse = await fetch(`http://localhost:3000/api/inventoryStorageUnit/${activeStorageUnitId}/inventories`);
-			if (!inventoryResponse.ok) throw new Error('Не удалось загрузить данные инвентаря.');
-			const inventoryData = await inventoryResponse.json();
-			console.log('Inventory data inventories:', inventoryData);
+			const inventoryResponse = await http.get(
+				`${API.inventoryStorageUnit}/${activeStorageUnitId}/inventories`
+			);
+			const inventoryData = inventoryResponse.data;
 
-			// Запрос для получения цепочки расположения
-			const locationResponse = await fetch(`http://localhost:3000/api/inventoryStorageUnit/${activeStorageUnitId}/inventories-with-location`);
-			if (!locationResponse.ok) throw new Error('Не удалось загрузить цепочку расположения.');
-			const locationData = await locationResponse.json();
-			console.log('Inventory data inventories-with-location:', inventoryData);
+			const locationResponse = await http.get(
+				`${API.inventoryStorageUnit}/${activeStorageUnitId}/inventories-with-location`
+			);
+			const locationData = locationResponse.data;
 
-
-			// Обновляем состояние компонента с результатами обоих запросов
 			const combinedData = inventoryData.map((item, index) => ({
 				...item,
-				location: locationData[index] ? locationData[index].location : null, // Подключение данных location, если они есть
+				location: locationData[index] ? locationData[index].location : null,
 			}));
 
 			this.setState({

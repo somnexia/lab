@@ -1,12 +1,23 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import InventoryDetailsModal from './InventoryDetailsModal';
 import InventoryTable from './InventoryTable';
 import { CartContext } from '../context/CartContext';
 import { enrichInventoryLot, enrichInventoryLots, getStockFilterParams } from '../utils/inventoryEnrichment';
-import { API_INVENTORIES } from '../config/api';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * InventoryStockOverview — обзор лотов (пункт 5: Inventory / reagents / lots / mixtures).
+ *
+ * Было: axios + API_INVENTORIES (абсолютный URL) и хардкод location-chain.
+ * Стало: http + API.inventories / API.storageUnits.
+ *
+ * Проверить Network:
+ *   GET /api/inventories
+ *   GET /api/inventories/filter?...
+ *   GET /api/storageUnits/:id/location-chain
+ */
 const STOCK_FILTERS = [
   { id: 'all', label: 'All materials' },
   { id: 'reagents', label: 'Reagents only' },
@@ -35,7 +46,7 @@ class InventoryStockOverview extends Component {
 
     try {
       this.setState({ loading: true, error: null });
-      const response = await axios.get(API_INVENTORIES, {
+      const response = await http.get(API.inventories, {
         params: getStockFilterParams(stockFilter),
       });
       this.setState({
@@ -66,7 +77,7 @@ class InventoryStockOverview extends Component {
         error: null,
       });
 
-      const inventoryResponse = await axios.get(`${API_INVENTORIES}/filter`, {
+      const inventoryResponse = await http.get(`${API.inventories}/filter`, {
         params: {
           reference_id: inventory.reference_id,
           item_type: inventory.item_type,
@@ -79,8 +90,8 @@ class InventoryStockOverview extends Component {
 
       if (inventoryData.storageUnits?.length) {
         const storageUnitId = inventoryData.storageUnits[0].id;
-        const locationChainResponse = await axios.get(
-          `http://localhost:3000/api/storageunits/${storageUnitId}/location-chain`
+        const locationChainResponse = await http.get(
+          `${API.storageUnits}/${storageUnitId}/location-chain`
         );
         locationChain = locationChainResponse.data || [];
         location = locationChain.length

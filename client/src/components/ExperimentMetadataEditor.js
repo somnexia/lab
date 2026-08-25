@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { API_EXPERIMENTS } from '../config/api';
+import { API } from '../config/api';
 import { http } from '../config/http';
 
 /**
@@ -82,7 +82,7 @@ class ExperimentMetadataEditor extends Component {
     this.setState({ saving: true, error: null, success: null });
 
     try {
-      const response = await http.put(`${API_EXPERIMENTS}/${experimentId}`, {
+      const response = await http.put(`${API.experiments}/${experimentId}`, {
         name: name.trim(),
         status,
         start_date: fromDateInputValue(startDate),

@@ -1,16 +1,26 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import ReagentCatalogTable from '../components/ReagentCatalogTable';
 import ReagentDetailModal from '../components/ReagentDetailModal';
 import InventoryDetailsModal from '../components/InventoryDetailsModal';
 import { CartContext } from '../context/CartContext';
 import { enrichInventoryLot } from '../utils/inventoryEnrichment';
 import { getInventoryMaterialsMeta } from './inventorySections';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
-const API_REAGENTS = 'http://localhost:3000/api/reagents';
-const API_INVENTORIES = 'http://localhost:3000/api/inventories';
-
+/**
+ * ReagentCatalogPage — каталог реагентов (пункт 5).
+ * Было: локальные API_REAGENTS / API_INVENTORIES = 'http://localhost:3000/api/...'
+ * Стало: http + API.reagents / API.inventories / API.storageUnits
+ *
+ * Проверить:
+ *   GET /api/reagents/summary
+ *   GET /api/reagents?types=...
+ *   GET /api/reagents/:kind/:id
+ *   GET /api/inventories/filter?...
+ *   GET /api/storageUnits/:id/location-chain
+ */
 const TYPE_TABS = [
   { id: 'all', label: 'All', types: 'element,compound,mixture' },
   { id: 'element', label: 'Elements', types: 'element' },
@@ -63,7 +73,7 @@ class ReagentCatalogPage extends Component {
 
   fetchSummary = async () => {
     try {
-      const response = await axios.get(`${API_REAGENTS}/summary`);
+      const response = await http.get(`${API.reagents}/summary`);
       this.setState({ summary: response.data });
     } catch (error) {
       console.error('Failed to load reagent summary:', error);
@@ -73,7 +83,7 @@ class ReagentCatalogPage extends Component {
   fetchReagents = async () => {
     try {
       this.setState({ loading: true, error: null });
-      const response = await axios.get(API_REAGENTS, {
+      const response = await http.get(API.reagents, {
         params: {
           types: this.getTypesParam(),
           q: this.state.search.trim() || undefined,
@@ -113,7 +123,7 @@ class ReagentCatalogPage extends Component {
     });
 
     try {
-      const response = await axios.get(`${API_REAGENTS}/${reagent.kind}/${reagent.catalogId}`);
+      const response = await http.get(`${API.reagents}/${reagent.kind}/${reagent.catalogId}`);
       this.setState({
         selectedReagentDetail: response.data,
         reagentModalLoading: false,
@@ -158,7 +168,7 @@ class ReagentCatalogPage extends Component {
         lotModalError: null,
       });
 
-      const inventoryResponse = await axios.get(`${API_INVENTORIES}/filter`, {
+      const inventoryResponse = await http.get(`${API.inventories}/filter`, {
         params: {
           reference_id: lot.reference_id,
           item_type: lot.item_type,
@@ -174,8 +184,8 @@ class ReagentCatalogPage extends Component {
 
       if (inventoryData.storageUnits?.length) {
         const storageUnitId = inventoryData.storageUnits[0].id;
-        const locationChainResponse = await axios.get(
-          `http://localhost:3000/api/storageunits/${storageUnitId}/location-chain`
+        const locationChainResponse = await http.get(
+          `${API.storageUnits}/${storageUnitId}/location-chain`
         );
         locationChain = locationChainResponse.data || [];
         location = locationChain.length

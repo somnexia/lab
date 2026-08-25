@@ -1,8 +1,14 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import MixtureCompositionTable from './MixtureCompositionTable';
-import { API_CHEM_MIXTURES, API_REAGENTS } from '../config/api';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * MixtureCompositionEditor — состав смеси (пункт 5).
+ * Было: axios + абсолютные API_REAGENTS / API_CHEM_MIXTURES
+ * Стало: http + API.reagents / API.chemMixtures
+ * Проверить: Save composition → PUT /api/chemMixtures/:id/components
+ */
 const COMPONENT_KINDS = [
   { id: 'element', label: 'Element' },
   { id: 'compound', label: 'Compound' },
@@ -65,7 +71,7 @@ class MixtureCompositionEditor extends Component {
   fetchCatalogOptions = async (kind) => {
     this.setState({ loadingCatalog: true });
     try {
-      const response = await axios.get(API_REAGENTS, { params: { types: kind } });
+      const response = await http.get(API.reagents, { params: { types: kind } });
       const catalogOptions = response.data
         .filter((item) => !(kind === 'mixture' && Number(item.catalogId) === Number(this.props.mixtureId)))
         .map((item) => ({
@@ -159,7 +165,7 @@ class MixtureCompositionEditor extends Component {
     this.setState({ saving: true, error: null, success: null });
 
     try {
-      const response = await axios.put(`${API_CHEM_MIXTURES}/${mixtureId}/components`, {
+      const response = await http.put(`${API.chemMixtures}/${mixtureId}/components`, {
         syncCompositionText: true,
         components: this.buildPayload(),
       });

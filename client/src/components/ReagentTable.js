@@ -1,6 +1,12 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * ReagentTable — таблица лотов/реагентов (пункт 5).
+ * Было: axios.get('http://localhost:3000/api/inventories'...)
+ * Стало: http.get(API.inventories...)
+ */
 class ReagentTable extends Component {
     state = {
         inventories: [], // Данные модели Inventory
@@ -21,7 +27,7 @@ class ReagentTable extends Component {
     fetchInventories = async () => {
         try {
             this.setState({ loading: true, error: null });
-            const response = await axios.get('http://localhost:3000/api/inventories'); // Ваш маршрут для получения всех данных
+            const response = await http.get(API.inventories);
             this.setState({ inventories: response.data, loading: false });
         } catch (error) {
             console.error('Ошибка при загрузке данных Inventory:', error);
@@ -40,7 +46,7 @@ class ReagentTable extends Component {
             });
 
             // Запрос связанных данных по reference_id и item_type
-            const response = await axios.get('http://localhost:3000/api/inventories/filter', {
+            const response = await http.get(`${API.inventories}/filter`, {
                 params: {
                     reference_id: inventory.reference_id,
                     item_type: inventory.item_type,
