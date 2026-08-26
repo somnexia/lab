@@ -25,7 +25,8 @@ export function setAuthRedirectEnabled(enabled) {
  *
  * Сейчас переведены: Auth, SignUp, Cart, Projects/Experiments,
  * ResearchDetailsModal, Inventory/Reagents/Lots/Mixtures,
- * ResearchList / AddResearch / TaskList / TaskCreate / ParticipantList.
+ * ResearchList / AddResearch / TaskList / TaskCreate / ParticipantList,
+ * Storage (warehouses, tree, units, hierarchy) + Equipment.
  * Остальные экраны пока ходят через глобальный axios + setupApiClient.
  *
  * Проверить:

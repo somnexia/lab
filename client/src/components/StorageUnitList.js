@@ -1,7 +1,14 @@
 import React, { Component } from "react";
-import axios from "axios";
 import InventoryOffcanvas from "./InventoryOffcanvas";
+import { API } from "../config/api";
+import { http } from "../config/http";
 
+/**
+ * StorageUnitList — список единиц хранения (пункт 7).
+ * Было: axios + localhost storageUnits / inventoryStorageUnit
+ * Стало: http + API.storageUnits / API.inventoryStorageUnit
+ * Проверить: GET /api/storageUnits, GET /api/inventoryStorageUnit/:id/inventories
+ */
 class StorageUnitList extends Component {
     state = {
         storageUnits: [],
@@ -19,7 +26,7 @@ class StorageUnitList extends Component {
 
     fetchStorageUnits = async () => {
         try {
-            const response = await axios.get("http://localhost:3000/api/storageUnits");
+            const response = await http.get(API.storageUnits);
             this.setState({ storageUnits: response.data, loading: false });
         } catch (error) {
             console.error("Ошибка при загрузке блоков хранения:", error);
@@ -30,8 +37,8 @@ class StorageUnitList extends Component {
     fetchInventory = async (storageUnitId) => {
         this.setState({ loadingInventory: true });
         try {
-            const response = await axios.get(
-                `http://localhost:3000/api/inventoryStorageUnit/${storageUnitId}/inventories`
+            const response = await http.get(
+                `${API.inventoryStorageUnit}/${storageUnitId}/inventories`
             );
             this.setState({ selectedInventory: response.data });
         } catch (error) {

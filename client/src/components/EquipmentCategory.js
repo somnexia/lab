@@ -1,7 +1,13 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import { API } from "../config/api";
+import { http } from "../config/http";
 
+/**
+ * EquipmentCategory — группы по категории оборудования (пункт 7).
+ * Было: axios.get('.../ChemEquipments/groups?category=...')
+ * Стало: http.get(`${API.chemEquipments}/groups`, { params: { category } })
+ */
 class EquipmentCategory extends Component {
     constructor(props) {
         super(props);
@@ -18,9 +24,9 @@ class EquipmentCategory extends Component {
 
     loadGroupsByCategory = async (category) => {
         try {
-            const response = await axios.get(
-                `http://localhost:3000/api/ChemEquipments/groups?category=${category}`
-            );
+            const response = await http.get(`${API.chemEquipments}/groups`, {
+                params: { category },
+            });
             // Передаем категорию и группы в родительский компонент
             this.props.onCategoryChange(category, response.data);
         } catch (error) {

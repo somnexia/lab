@@ -1,12 +1,18 @@
 import React, { Component } from 'react';
-import ChildStorageUnits from './ChildStorageUnits'; // Импорт нового компонента
-import InventoryTable from './InventoryTable'; // Импорт компонента InventoryTable
+import ChildStorageUnits from './ChildStorageUnits';
+import InventoryTable from './InventoryTable';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
-// Функция для получения данных
+/**
+ * ParentStorageUnits — навигация по иерархии хранения (пункт 7).
+ * Было: fetch('http://localhost:3000/api/storageUnits')
+ * Стало: http.get(API.storageUnits)
+ * Проверить: GET /api/storageUnits
+ */
 const fetchUnits = async () => {
-	const response = await fetch('http://localhost:3000/api/storageUnits');
-	const data = await response.json();
-	return data;
+	const response = await http.get(API.storageUnits);
+	return response.data;
 };
 
 class ParentStorageUnits extends Component {

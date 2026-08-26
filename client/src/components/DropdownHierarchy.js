@@ -1,6 +1,13 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * DropdownHierarchy — каскад склад → unit → inventory (пункт 7).
+ * Было: axios + localhost с query в строке URL.
+ * Стало: http + API.storages / API.storageUnits + params.
+ * Проверить: GET /api/storages, GET /api/storageUnits?storage_id=, GET .../inventories
+ */
 class DropdownHierarchy extends Component {
 	state = {
 		storages: [],
@@ -19,7 +26,7 @@ class DropdownHierarchy extends Component {
 	fetchStorages = async () => {
 		try {
 			this.setState({ loading: true });
-			const response = await axios.get('http://localhost:3000/api/storages');
+			const response = await http.get(API.storages);
 			this.setState({ storages: response.data, loading: false });
 		} catch (error) {
 			this.setState({ error: 'Ошибка при загрузке складов', loading: false });
@@ -29,7 +36,9 @@ class DropdownHierarchy extends Component {
 	fetchStorageUnits = async (storageId) => {
 		try {
 			this.setState({ loading: true, storageUnits: [], inventories: [], selectedStorageUnit: null, selectedInventory: null });
-			const response = await axios.get(`http://localhost:3000/api/storageUnits?storage_id=${storageId}`);
+			const response = await http.get(API.storageUnits, {
+				params: { storage_id: storageId },
+			});
 			this.setState({ storageUnits: response.data, loading: false });
 		} catch (error) {
 			this.setState({ error: 'Ошибка при загрузке блоков хранения', loading: false });
@@ -39,7 +48,7 @@ class DropdownHierarchy extends Component {
 	fetchInventories = async (storageUnitId) => {
 		try {
 			this.setState({ loading: true, inventories: [], selectedInventory: null });
-			const response = await axios.get(`http://localhost:3000/api/storageUnits/${storageUnitId}/inventories`);
+			const response = await http.get(`${API.storageUnits}/${storageUnitId}/inventories`);
 			this.setState({ inventories: response.data, loading: false });
 		} catch (error) {
 			this.setState({ error: 'Ошибка при загрузке инвентаря', loading: false });

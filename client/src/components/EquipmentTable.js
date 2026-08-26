@@ -1,8 +1,14 @@
 import React, { Component } from "react";
-import axios from "axios";
 import EquipmentOffcanvas from "./EquipmentOffcanvas";
+import { API } from "../config/api";
+import { http } from "../config/http";
 
-
+/**
+ * EquipmentTable — таблица оборудования (пункт 7).
+ * Было: axios.get('http://localhost:3000/api/ChemEquipments/equipments?...')
+ * Стало: http.get(`${API.chemEquipments}/equipments`, { params: { category } })
+ * Проверить: GET /api/chemEquipments/equipments?category=...
+ */
 class EquipmentTable extends Component {
     
     constructor(props) {
@@ -26,8 +32,9 @@ class EquipmentTable extends Component {
         this.setState({ isLoading: true });
 
         try {
-            let url = `http://localhost:3000/api/ChemEquipments/equipments?category=${category}`;
-            const response = await axios.get(url);
+            const response = await http.get(`${API.chemEquipments}/equipments`, {
+                params: { category },
+            });
 
             // Фильтруем данные по группе, если группа указана
             const filteredData = group

@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import WarehouseChart from './WarehouseChart';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * WarehouseList — склады (пункт 7: Storage + equipment).
+ * Было: axios.get/delete('http://localhost:3000/api/storages'...)
+ * Стало: http.get/delete(API.storages...)
+ * Проверить: GET /api/storages, DELETE /api/storages/:id
+ */
 const WarehouseList = () => {
     const [warehouses, setWarehouses] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -11,7 +18,7 @@ const WarehouseList = () => {
     useEffect(() => {
         const fetchWarehouses = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/api/storages');
+                const response = await http.get(API.storages);
                 setWarehouses(response.data);
             } catch (error) {
                 setError('Ошибка при загрузке складов');
@@ -26,7 +33,7 @@ const WarehouseList = () => {
     // Удаление склада
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:3000/api/storages/${id}`);
+            await http.delete(`${API.storages}/${id}`);
             setWarehouses(warehouses.filter((warehouse) => warehouse.id !== id));
         } catch (error) {
             alert('Ошибка при удалении склада');

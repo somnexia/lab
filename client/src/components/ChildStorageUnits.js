@@ -1,5 +1,12 @@
 import React, { Component } from 'react';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * ChildStorageUnits — дочерние единицы хранения (пункт 7).
+ * Было: fetch(`http://localhost:3000/api/storageUnits/${id}`)
+ * Стало: http.get(`${API.storageUnits}/${id}`) → data.children
+ */
 class ChildStorageUnits extends Component {
   constructor(props) {
     super(props);
@@ -33,10 +40,8 @@ class ChildStorageUnits extends Component {
     this.setState({ isLoading: true });
 
     try {
-      // Загружаем дочерние элементы для текущего блока
-      const response = await fetch(`http://localhost:3000/api/storageUnits/${unit.id}`);
-      const data = await response.json();
-      this.setState({ childUnits: data.children || [] });
+      const response = await http.get(`${API.storageUnits}/${unit.id}`);
+      this.setState({ childUnits: response.data.children || [] });
     } catch (error) {
       console.error('Ошибка загрузки дочерних единиц:', error);
     } finally {

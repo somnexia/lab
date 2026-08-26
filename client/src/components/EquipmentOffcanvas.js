@@ -1,7 +1,13 @@
 import React, { Component } from "react";
-import axios from 'axios';
 import { CartContext } from "../context/CartContext";
+import { API } from "../config/api";
+import { http } from "../config/http";
 
+/**
+ * EquipmentOffcanvas — локации оборудования (пункт 7).
+ * Было: axios.get(`http://localhost:3000/api/chemEquipments/${id}/locations`)
+ * Стало: http.get(`${API.chemEquipments}/${id}/locations`)
+ */
 class EquipmentOffcanvas extends Component {
     static contextType = CartContext;
     constructor(props) {
@@ -20,7 +26,9 @@ class EquipmentOffcanvas extends Component {
 
         try {
             this.setState({ loading: true });
-            const response = await axios.get(`http://localhost:3000/api/chemEquipments/${selectedEquipment.id}/locations`);
+            const response = await http.get(
+                `${API.chemEquipments}/${selectedEquipment.id}/locations`
+            );
 
             const inventories = response.data.inventories || [];
             const storageUnits = inventories.flatMap((inventory) =>

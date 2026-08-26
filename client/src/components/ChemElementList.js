@@ -1,15 +1,20 @@
 // /client/src/components/ChemElementList.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * ChemElementList — справочник элементов (пункт 7 / catalog).
+ * Было: axios.get('http://localhost:3000/api/chemelements')
+ * Стало: http.get(API.chemElements)  → /api/chemElements
+ */
 const ChemElementList = () => {
     const [elements, setElements] = useState([]);
 
     useEffect(() => {
-        // Функция для загрузки данных
         const fetchElements = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/api/chemelements');
+                const response = await http.get(API.chemElements);
                 setElements(response.data);
             } catch (error) {
                 console.error("Ошибка при загрузке данных:", error);
@@ -17,7 +22,7 @@ const ChemElementList = () => {
         };
 
         fetchElements();
-    }, []); // пустой массив зависимостей чтобы запрос выполнился один раз
+    }, []);
 
     return (
         <div>

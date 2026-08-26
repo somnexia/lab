@@ -1,8 +1,15 @@
 import React, { Component } from 'react';
-import axios from 'axios';
 import { GitBranch, Layers, Package, Search } from 'lucide-react';
 import StorageUnit from './StorageUnit';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
+/**
+ * StorageTree — дерево единиц хранения (пункт 7).
+ * Было: axios.get('http://localhost:3000/api/storageUnits')
+ * Стало: http.get(API.storageUnits)
+ * Проверить: GET /api/storageUnits
+ */
 class StorageTree extends Component {
   state = {
     error: null,
@@ -19,7 +26,7 @@ class StorageTree extends Component {
   fetchStorageUnits = async () => {
     try {
       this.setState({ loading: true, error: null });
-      const response = await axios.get('http://localhost:3000/api/storageUnits');
+      const response = await http.get(API.storageUnits);
       this.setState({ storageUnits: response.data, loading: false });
     } catch (error) {
       console.error('Ошибка при загрузке дерева хранения:', error);

@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { API } from '../config/api';
+import { http } from '../config/http';
 
-// Fetch данные из API
+/**
+ * StorageUnitNavbar — альтернативный UI навигации по storage units (пункт 7).
+ * Сейчас нигде не импортируется (дубль логики ParentStorageUnits).
+ * Было: fetch('http://localhost:3000/api/storageUnits'...)
+ * Стало: http.get(API.storageUnits...)
+ * Кандидат на удаление в пункте 8 вместе с "StorageUnitNavbar copy.js".
+ */
 const fetchUnits = async () => {
-	const response = await fetch('http://localhost:3000/api/storageUnits');
-	const data = await response.json();
-	return data;
+	const response = await http.get(API.storageUnits);
+	return response.data;
 };
 
-// Компонент для отображения дочерних элементов
 const ChildUnits = ({ unit, onUnitClick }) => {
 	const [childUnits, setChildUnits] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
@@ -19,9 +25,8 @@ const ChildUnits = ({ unit, onUnitClick }) => {
 			setIsLoading(true);
 
 			try {
-				const response = await fetch(`http://localhost:3000/api/storageUnits/${unit.id}`);
-				const data = await response.json();
-				setChildUnits(data.children || []);
+				const response = await http.get(`${API.storageUnits}/${unit.id}`);
+				setChildUnits(response.data.children || []);
 			} catch (error) {
 				console.error(`Ошибка загрузки детей для блока ${unit.id}:`, error);
 			} finally {
@@ -33,17 +38,16 @@ const ChildUnits = ({ unit, onUnitClick }) => {
 	useEffect(() => {
 		loadChildren();
 	}, [unit]);
-	
 
 	return (
 		<>
 			{isLoading ? (
 				<p>Loading...</p>
 			) : (
-
 				childUnits.map((child) => (
 					<li className="nav-item inventory-nav-item mb-1" key={child.id}>
-						<a className="nav-link inventory-link"
+						<a
+							className="nav-link inventory-link"
 							style={{ cursor: 'pointer' }}
 							onClick={() => onUnitClick(child)}
 						>
@@ -53,33 +57,28 @@ const ChildUnits = ({ unit, onUnitClick }) => {
 				))
 			)}
 		</>
-
 	);
 };
 
-// Основной компонент
-const ParentStorageUnits = () => {
+const StorageUnitNavbar = () => {
 	const [units, setUnits] = useState([]);
-	const [activeUnit, setActiveUnit] = useState(null); // Текущий выбранный элемент
-	const [navHistory, setNavHistory] = useState([]); // История навигации
+	const [activeUnit, setActiveUnit] = useState(null);
+	const [navHistory, setNavHistory] = useState([]);
 
 	useEffect(() => {
-		// Загружаем данные при загрузке компонента
 		const loadUnits = async () => {
 			const data = await fetchUnits();
-			setUnits(data.filter((unit) => unit.storage_id !== null)); // Фильтруем только родительские
+			setUnits(data.filter((unit) => unit.storage_id !== null));
 		};
 		loadUnits();
 	}, []);
 
 	const handleUnitClick = (unit) => {
-		// Добавляем текущий список в историю навигации
 		setNavHistory((prevHistory) => [...prevHistory, activeUnit]);
-		setActiveUnit(unit); // Устанавливаем текущий активный блок
+		setActiveUnit(unit);
 	};
 
 	const handleBackClick = () => {
-		// Возвращаемся к предыдущему уровню
 		const prevNavHistory = [...navHistory];
 		const previousUnit = prevNavHistory.pop();
 		setNavHistory(prevNavHistory);
@@ -113,8 +112,7 @@ const ParentStorageUnits = () => {
 							<hr />
 							<ul className="nav flex-column navbar-nav">
 								{activeUnit
-									? // Показываем дочерние элементы текущего активного блока
-									activeUnit.children?.map((child) => (
+									? activeUnit.children?.map((child) => (
 										<li className="nav-item inventory-nav-item mb-1" key={child.id}>
 											<a
 												className="nav-link inventory-link"
@@ -127,8 +125,7 @@ const ParentStorageUnits = () => {
 									)) || (
 										<ChildUnits unit={activeUnit} onUnitClick={handleUnitClick} />
 									)
-									: // Показываем родительские элементы
-									units.map((unit) => (
+									: units.map((unit) => (
 										<li className="nav-item inventory-nav-item mb-1" key={unit.id}>
 											<a
 												className="nav-link inventory-link"
@@ -152,7 +149,6 @@ const ParentStorageUnits = () => {
 						<p>Type: {activeUnit.unit_type}</p>
 						<p>Capacity: {activeUnit.capacity}</p>
 						<p>Material: {activeUnit.material}</p>
-
 					</>
 				) : (
 					<p>Select a storage unit to see details.</p>
@@ -162,4 +158,4 @@ const ParentStorageUnits = () => {
 	);
 };
 
-export default ParentStorageUnits;
+export default StorageUnitNavbar;
