@@ -7,7 +7,8 @@ import { http } from '../config/http';
  * Сейчас нигде не импортируется (дубль логики ParentStorageUnits).
  * Было: fetch('http://localhost:3000/api/storageUnits'...)
  * Стало: http.get(API.storageUnits...)
- * Кандидат на удаление в пункте 8 вместе с "StorageUnitNavbar copy.js".
+ * Кандидат на удаление: нигде не импортируется (дубль ParentStorageUnits).
+ * "StorageUnitNavbar copy.js" удалён в пункте 8.
  */
 const fetchUnits = async () => {
 	const response = await http.get(API.storageUnits);

@@ -1,11 +1,28 @@
 import React, { Component } from "react";
-import axios from "axios";
 import ResearchTeamHubGrid from "../components/ResearchTeamHubGrid";
 import ResearchTeamsMap from "../components/ResearchTeamsMap";
 import ResearchDetailsModal from "../components/ResearchDetailsModal";
+import { API } from "../config/api";
+import { http } from "../config/http";
 
-const API_BASE = "http://localhost:3000/api/research-teams";
-
+/**
+ * ResearchTeamsPage — команды исследований (пункт 8).
+ *
+ * Было:
+ *   const API_BASE = "http://localhost:3000/api/research-teams";  // уже с ресурсом
+ *   axios.get(`${API_BASE}/summary...`)
+ *   axios.get(`http://localhost:3000/api/researches/${id}`)
+ *
+ * Стало:
+ *   http.get(`${API.researchTeams}/summary`, { params })
+ *   http.get(`${API.researchTeams}/graph`, { params })
+ *   http.get(`${API.researchTeams}/unassigned`)
+ *   http.get(`${API.researches}/${id}`)
+ *
+ * Проверить (/members-teams/research-teams):
+ *   GET /api/research-teams/summary|graph|unassigned
+ *   GET /api/researches/:id при открытии модалки
+ */
 const STATUS_OPTIONS = [
     { value: "", label: "All statuses" },
     { value: "Ongoing", label: "Ongoing" },
@@ -40,21 +57,22 @@ class ResearchTeamsPage extends Component {
 
     buildQueryParams() {
         const { statusFilter } = this.state;
-        const params = new URLSearchParams();
-        if (statusFilter) params.set("status", statusFilter);
-        return params.toString();
+        const params = {};
+        if (statusFilter) params.status = statusFilter;
+        return params;
     }
 
     loadData = async () => {
         this.setState({ loading: true, error: null });
-        const qs = this.buildQueryParams();
-        const suffix = qs ? `?${qs}` : "";
+        const params = this.buildQueryParams();
 
         try {
             const [summaryRes, graphRes, unassignedRes] = await Promise.all([
-                axios.get(`${API_BASE}/summary${suffix}`),
-                axios.get(`${API_BASE}/graph?groupBy=none${qs ? `&${qs}` : ""}`),
-                axios.get(`${API_BASE}/unassigned`),
+                http.get(`${API.researchTeams}/summary`, { params }),
+                http.get(`${API.researchTeams}/graph`, {
+                    params: { groupBy: "none", ...params },
+                }),
+                http.get(`${API.researchTeams}/unassigned`),
             ]);
 
             this.setState({
@@ -91,9 +109,7 @@ class ResearchTeamsPage extends Component {
                 modalError: null,
             });
 
-            const researchResponse = await axios.get(
-                `http://localhost:3000/api/researches/${research.id}`
-            );
+            const researchResponse = await http.get(`${API.researches}/${research.id}`);
 
             this.setState({
                 selectedResearch: { ...research, ...researchResponse.data },

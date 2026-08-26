@@ -1,8 +1,22 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import { API } from "../config/api";
+import { http } from "../config/http";
 
-const API_BASE = "http://localhost:3000";
-
+/**
+ * AdminLogsPage — журнал действий (пункт 8).
+ *
+ * Было:
+ *   const API_BASE = "http://localhost:3000";  // без /api
+ *   axios.get(`${API_BASE}/api/logs`, ...)     // → /api/logs
+ *
+ * Стало:
+ *   http.get(API.logs, { params })             // baseURL .../api + /logs
+ *
+ * Важно: не писать /api/logs при baseURL уже с /api — иначе /api/api/logs.
+ *
+ * Проверить (/management/userlog):
+ *   GET /api/logs?limit=&offset=&search=... + Authorization Bearer
+ */
 const INITIAL_FILTERS = {
   search: "",
   status: "",
@@ -68,7 +82,7 @@ function AdminLogsPage() {
     setLoading(true);
     const offset = (page - 1) * logsPerPage;
     try {
-      const response = await axios.get(`${API_BASE}/api/logs`, {
+      const response = await http.get(API.logs, {
         params: {
           limit: logsPerPage,
           offset,

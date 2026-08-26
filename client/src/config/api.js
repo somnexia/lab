@@ -13,9 +13,10 @@
  *   http.js знает baseURL (API_BASE), компонент знает только ресурс (/researches).
  *   Смена хоста/порта — одно место (API_BASE), не 30 файлов.
  *
- *   Пункт 5 закрыл Inventory / reagents / lots / mixtures.
- *   Абсолютные константы API_INVENTORIES и т.п. удалены — только API.* + http.
- *
+ *   Пункт 5: Inventory / reagents / lots / mixtures; абсолютные API_* удалены.
+ *   Пункт 8: AdminLogs + ResearchTeams на http; setupApiClient удалён;
+ *            index.js импортирует только ./config/http.
+ */
 export const API_BASE = 'http://localhost:3000/api';
 export const API = {
   inventories: '/inventories',

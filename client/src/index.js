@@ -5,12 +5,12 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from './context/AuthContext';
-import { setupApiClient } from './config/setupApiClient';
-
-setupApiClient();
-
-//
-
+/**
+ * Пункт 8: вместо setupApiClient() подключаем единый http-клиент.
+ * Side-effect import регистрирует interceptors на axios.create() из config/http.js.
+ * Глобальный axios больше не используется для API.
+ */
+import './config/http';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -19,8 +19,6 @@ root.render(
       <App />
     </CartProvider>
   </AuthProvider>
-
-
 );
 
 reportWebVitals();

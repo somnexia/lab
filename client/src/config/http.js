@@ -10,30 +10,27 @@ export function setAuthRedirectEnabled(enabled) {
 /**
  * Единый HTTP-клиент к REST API (axios-инстанс).
  *
+ * Пункт 8: setupApiClient удалён. Все экраны API ходят через этот инстанс.
+ * index.js импортирует './config/http' один раз при старте приложения.
+ *
  * Зачем отдельный инстанс, а не глобальный axios:
  *   - baseURL задан один раз — компоненты пишут только путь ресурса.
- *   - Interceptors (токен, 401) живут только на этом инстансе,
- *     не конфликтуя со старым setupApiClient во время миграции.
- *   - После полного перехода setupApiClient удаляется (пункт 5).
+ *   - Interceptors (Bearer-токен, 401 → sign in) живут только здесь.
  *
- * Использование в компоненте:
+ * Использование:
  *   import { http } from '../config/http';
- *   const { data } = await http.get('/researches');        // GET
- *   await http.post('/tasks', body);                       // POST
- *   await http.put(`/inventories/${id}`, body);            // PUT
- *   await http.delete(`/carts/item/${lineId}`);            // DELETE
+ *   import { API } from '../config/api';
+ *   const { data } = await http.get(API.researches);
+ *   await http.post(API.tasks, body);
  *
- * Сейчас переведены: Auth, SignUp, Cart, Projects/Experiments,
- * ResearchDetailsModal, Inventory/Reagents/Lots/Mixtures,
- * ResearchList / AddResearch / TaskList / TaskCreate / ParticipantList,
- * Storage (warehouses, tree, units, hierarchy) + Equipment.
- * Остальные экраны пока ходят через глобальный axios + setupApiClient.
+ * Переведено (пункты 1–8): Auth, Cart, Projects/Experiments, Inventory,
+ * Research/Tasks/Members, Storage, Equipment, AdminLogs, ResearchTeams.
  *
  * Проверить:
- *   1. Войти (Sign In) — запрос POST /api/users/login уходит с Bearer после получения токена.
- *   2. Обновить страницу — GET /api/users/profile с Bearer, сессия жива.
- *   3. Открыть корзину — запросы /api/carts/... с Bearer.
- *   4. Ввести неверный пароль — ошибка на форме, без бесконечного редиректа.
+ *   1. Sign in → POST /api/users/login, затем GET /api/users/profile + Bearer
+ *   2. F5 — сессия жива (profile с Bearer)
+ *   3. /management/userlog → GET /api/logs (не /api/api/logs)
+ *   4. /members-teams/research-teams → GET /api/research-teams/summary|graph
  */
 export const http = axios.create({
   baseURL: API_BASE,

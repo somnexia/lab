@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import { Link } from "react-router-dom";
 import { FaRegUserCircle } from "react-icons/fa";
 
-import axios from 'axios';
-
-
+/**
+ * ProfileDropdown — меню профиля в Header (пункт 8).
+ * Убран неиспользуемый import axios; API-вызовов нет.
+ */
 class ProfileDropdown extends Component {
     state = {}
     render() {
