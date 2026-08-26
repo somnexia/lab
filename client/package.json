@@ -32,7 +32,8 @@
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "start": "serve -s dist",
     "prod": "cross-env NODE_ENV=production serve -s dist",
-    "lint": "eslint src --fix"
+    "lint": "eslint src --fix",
+    "check:api": "node scripts/check-api-migration.js"
   },
   "proxy": "http://localhost:3000",
   "eslintConfig": {

@@ -6,9 +6,9 @@ import reportWebVitals from './reportWebVitals';
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from './context/AuthContext';
 /**
- * Пункт 8: вместо setupApiClient() подключаем единый http-клиент.
- * Side-effect import регистрирует interceptors на axios.create() из config/http.js.
- * Глобальный axios больше не используется для API.
+ * Пункты 8–9: единый http-клиент (вместо setupApiClient).
+ * Side-effect import: interceptors на axios.create() из config/http.js.
+ * Проверка миграции: npm run check:api + smoke в комментарии http.js.
  */
 import './config/http';
 

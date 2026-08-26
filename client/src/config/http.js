@@ -10,27 +10,37 @@ export function setAuthRedirectEnabled(enabled) {
 /**
  * Единый HTTP-клиент к REST API (axios-инстанс).
  *
- * Пункт 8: setupApiClient удалён. Все экраны API ходят через этот инстанс.
- * index.js импортирует './config/http' один раз при старте приложения.
+ * Пункты 1–8: Auth, Cart, Projects/Experiments, Inventory, Research/Tasks,
+ * Storage, Equipment, AdminLogs, ResearchTeams → http + API.*.
+ * setupApiClient удалён; index.js: import './config/http'.
  *
- * Зачем отдельный инстанс, а не глобальный axios:
- *   - baseURL задан один раз — компоненты пишут только путь ресурса.
- *   - Interceptors (Bearer-токен, 401 → sign in) живут только здесь.
+ * Пункт 9 — закрытие миграции:
+ *   Grep (автомат):  npm run check:api
+ *     — нет живого localhost:3000 вне API_BASE
+ *     — import axios только здесь
+ *     — нет axios.* / fetch(API) в UI
+ *     — нет setupApiClient и *-copy.js
+ *
+ *   Smoke (ручной обход, DevTools → Network):
+ *     1. /management/signin → POST /api/users/login, GET /api/users/profile + Bearer
+ *     2. / (dashboard) → страница открывается без 401-цикла
+ *     3. /projects/research-list → GET /api/researches; открыть research → tasks/files/members
+ *     4. /projects/task-list → GET /api/tasks
+ *     5. /inventory/overview или /inventory/lots → GET /api/inventories...
+ *     6. /storage-locations/warehouses → GET /api/storages
+ *     7. /lab-equipment → GET /api/chemEquipments/...
+ *     8. experiment detail → GET /api/experiments/:id
+ *     9. /customer/cart → GET /api/carts/...
+ *    10. /management/userlog → GET /api/logs (не /api/api/logs)
+ *    11. /members-teams/research-teams → GET /api/research-teams/...
+ *
+ * Критерий успеха: все запросы на один хост из API_BASE, с Bearer где нужна авторизация,
+ * без дублирующих /api/api и без редиректов на signin при валидной сессии.
  *
  * Использование:
  *   import { http } from '../config/http';
  *   import { API } from '../config/api';
  *   const { data } = await http.get(API.researches);
- *   await http.post(API.tasks, body);
- *
- * Переведено (пункты 1–8): Auth, Cart, Projects/Experiments, Inventory,
- * Research/Tasks/Members, Storage, Equipment, AdminLogs, ResearchTeams.
- *
- * Проверить:
- *   1. Sign in → POST /api/users/login, затем GET /api/users/profile + Bearer
- *   2. F5 — сессия жива (profile с Bearer)
- *   3. /management/userlog → GET /api/logs (не /api/api/logs)
- *   4. /members-teams/research-teams → GET /api/research-teams/summary|graph
  */
 export const http = axios.create({
   baseURL: API_BASE,

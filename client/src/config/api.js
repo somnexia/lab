@@ -16,6 +16,9 @@
  *   Пункт 5: Inventory / reagents / lots / mixtures; абсолютные API_* удалены.
  *   Пункт 8: AdminLogs + ResearchTeams на http; setupApiClient удалён;
  *            index.js импортирует только ./config/http.
+ *   Пункт 9: npm run check:api (grep) + smoke-чеклист в config/http.js.
+ *
+ * Единственное место с хостом API — API_BASE ниже.
  */
 export const API_BASE = 'http://localhost:3000/api';
 export const API = {
