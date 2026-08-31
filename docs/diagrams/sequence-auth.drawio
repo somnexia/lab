@@ -1,0 +1,161 @@
+<mxfile host="app.diagrams.net" modified="2026-08-31T00:00:00.000Z" agent="lab-docs" version="22.1.0" type="device">
+  <diagram id="seq-auth" name="Sequence — login → API">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Вход и запрос к API: Cookie + Bearer + authorize&#xa;Что происходит «по дороге», когда пользователь открывает защищённый экран" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontStyle=1;fontSize=17;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="720" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Participants -->
+        <mxCell id="p1" value="Браузер&#xa;(React)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;fontColor=#0c4a6e;fontStyle=1;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="80" y="100" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" value="Express API&#xa;authenticate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ecfdf5;strokeColor=#0f766e;fontColor=#134e4a;fontStyle=1;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="320" y="100" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" value="authorize&#xa;(CAN_*)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#ca8a04;fontColor=#713f12;fontStyle=1;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="560" y="100" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" value="Сервис&#xa;+ scope lab" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#64748b;fontColor=#334155;fontStyle=1;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="780" y="100" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p5" value="MySQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fce7f3;strokeColor=#db2777;fontColor=#9d174d;fontStyle=1;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="100" width="100" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Lifelines -->
+        <mxCell id="l1" style="endArrow=none;dashed=1;strokeColor=#94a3b8;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="140" y="160" as="sourcePoint" />
+            <mxPoint x="140" y="980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l2" style="endArrow=none;dashed=1;strokeColor=#94a3b8;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="390" y="160" as="sourcePoint" />
+            <mxPoint x="390" y="980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l3" style="endArrow=none;dashed=1;strokeColor=#94a3b8;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="625" y="160" as="sourcePoint" />
+            <mxPoint x="625" y="980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l4" style="endArrow=none;dashed=1;strokeColor=#94a3b8;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="845" y="160" as="sourcePoint" />
+            <mxPoint x="845" y="980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l5" style="endArrow=none;dashed=1;strokeColor=#94a3b8;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1050" y="160" as="sourcePoint" />
+            <mxPoint x="1050" y="980" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Phase A banner -->
+        <mxCell id="phA" value="А. Логин" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=13;fontColor=#0f766e;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="180" width="100" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Messages login -->
+        <mxCell id="m1" value="1. POST /api/users/login&#xa;   { email, password }" style="endArrow=block;html=1;fontSize=11;fontColor=#334155;strokeColor=#0284c7;rounded=0;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry x="0.1" y="20" relative="1" as="geometry">
+            <mxPoint x="140" y="220" as="sourcePoint" />
+            <mxPoint x="390" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m2" value="2. проверить bcrypt,&#xa;   собрать JWT&#xa;   (id, email, role, laboratory_id)" style="endArrow=block;html=1;fontSize=11;strokeColor=#db2777;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="390" y="280" as="sourcePoint" />
+            <mxPoint x="1050" y="280" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="390" y="280" />
+              <mxPoint x="845" y="280" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m3" value="3. ответ: { token, user }&#xa;   + Set-Cookie: token=… (httpOnly)" style="endArrow=block;html=1;fontSize=11;strokeColor=#0f766e;dashed=0;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="390" y="350" as="sourcePoint" />
+            <mxPoint x="140" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m3n" value="Клиент кладёт token&#xa;в localStorage (Bearer)" style="shape=note;size=10;whiteSpace=wrap;html=1;fillColor=#e0f2fe;strokeColor=#0284c7;fontSize=10;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="370" width="150" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Phase B -->
+        <mxCell id="phB" value="Б. Защищённый запрос (например GET /api/logs или GET /api/storages)" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=13;fontColor=#0369a1;align=left;" vertex="1" parent="1">
+          <mxGeometry x="40" y="450" width="560" height="24" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m4" value="4. GET /api/…&#xa;   Cookie: token=…&#xa;   и/или Authorization: Bearer …" style="endArrow=block;html=1;fontSize=11;strokeColor=#0284c7;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="140" y="500" as="sourcePoint" />
+            <mxPoint x="390" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m5" value="5. authenticate:&#xa;   cookie → иначе Bearer&#xa;   → req.user { role, laboratory_id }" style="endArrow=block;html=1;fontSize=11;strokeColor=#0f766e;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="560" as="sourcePoint" />
+            <mxPoint x="460" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m5box" value="если нет токена → 401" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fee2e2;strokeColor=#dc2626;fontColor=#991b1b;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="280" y="580" width="140" height="36" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m6" value="6. authorize(CAN_…):&#xa;   роль в списке?" style="endArrow=block;html=1;fontSize=11;strokeColor=#ca8a04;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="390" y="650" as="sourcePoint" />
+            <mxPoint x="625" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m6box" value="нет → 403 Forbidden" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#ca8a04;fontColor=#713f12;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="560" y="670" width="140" height="36" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m7" value="7. сервис: если не system_admin —&#xa;   фильтр по laboratory_id" style="endArrow=block;html=1;fontSize=11;strokeColor=#64748b;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="625" y="740" as="sourcePoint" />
+            <mxPoint x="845" y="740" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m8" value="8. SQL SELECT … WHERE lab…" style="endArrow=block;html=1;fontSize=11;strokeColor=#db2777;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="845" y="800" as="sourcePoint" />
+            <mxPoint x="1050" y="800" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m9" value="9. данные → JSON 200" style="endArrow=open;html=1;dashed=1;fontSize=11;strokeColor=#64748b;labelBackgroundColor=#ffffff;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1050" y="860" as="sourcePoint" />
+            <mxPoint x="140" y="860" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1050" y="860" />
+              <mxPoint x="140" y="860" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Summary -->
+        <mxCell id="sum" value="Зачем два способа токена?&#xa;• Bearer — удобно для React (localStorage + axios interceptor)&#xa;• Cookie — тот же JWT для сценариев «как в booking» и будущих server-page&#xa;authenticate принимает оба; authorize смотрит на role; сервис режет по lab." style="rounded=1;whiteSpace=wrap;html=1;align=left;spacingLeft=12;spacingTop=8;fillColor=#f8fafc;strokeColor=#64748b;fontSize=12;fontColor=#334155;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="200" y="900" width="720" height="100" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

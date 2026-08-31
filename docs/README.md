@@ -117,21 +117,30 @@ student       → только своя laboratory_id
 
 ## 6. Какие диаграммы важнее всего для описания проекта
 
+Готовые файлы для draw.io: **[diagrams/](./diagrams/)**  
+Открыть в [diagrams.net](https://app.diagrams.net) → Open Existing Diagram.
+
+| Файл | Содержание |
+|------|------------|
+| [diagrams/erd-tenant.drawio](./diagrams/erd-tenant.drawio) | ERD: данные и tenant |
+| [diagrams/use-case-roles.drawio](./diagrams/use-case-roles.drawio) | Use Case: 4 роли |
+| [diagrams/crud-matrix.drawio](./diagrams/crud-matrix.drawio) | CRUD-матрица (визуал) |
+| [diagrams/sequence-auth.drawio](./diagrams/sequence-auth.drawio) | Sequence: login → API |
+
 Для диплома / пояснительной по **этому** LIMS приоритет такой:
 
 | Приоритет | Диаграмма | Зачем |
 |-----------|-----------|--------|
 | **1** | **ERD** (логическое) | Ядро: users–employees–laboratories, storage/inventory, research–tasks–experiments. Показывает tenant (`lab_id` / `laboratory_id`) и связи, по которым строится изоляция. |
 | **2** | **Use Case** | Акторы = 4 роли; кейсы: вход, управление складом, исследования, журнал. Прямо стыкуется с матрицей CRUD. |
-| **3** | **CRUD-матрица** (таблица / draw.io) | Уже черновик в `04-crud-matrix.md` — обязательный артефакт прав доступа. |
+| **3** | **CRUD-матрица** (таблица / draw.io) | Черновик в `04-crud-matrix.md` + визуал в `diagrams/crud-matrix.drawio`. |
 | **4** | **Диаграмма компонентов / развёртывания** | Client (React :3001) ↔ API (Express :3000) ↔ MySQL; JWT Cookie+Bearer. |
-| **5** | **Sequence: Login + запрос API** | Login → JWT/cookie → `authenticate`/`authorize` → сервис с фильтром `laboratory_id`. Одна картинка закрывает auth. |
+| **5** | **Sequence: Login + запрос API** | Login → JWT/cookie → `authenticate`/`authorize` → сервис с фильтром `laboratory_id`. |
 | **6** | **Activity / state** (по желанию) | Жизненный цикл research/task или лота inventory — если в ТЗ есть процессы. |
 
 **Use Case vs ERD:** оба нужны, но для *разных* глав.  
 - Use Case — «кто что может» (роли, границы системы).  
 - ERD — «как устроены данные и tenant».  
-Без ERD сложно объяснить вариант B (`laboratory_id`); без Use Case — зачем 4 роли.
 
 **Не обязательно** на первом этапе: полная BPMN, C4 Level 3 на каждый модуль, копирование booking-диаграмм.
 
@@ -146,4 +155,7 @@ student       → только своя laboratory_id
 - [x] Cookie + Bearer согласованы  
 - [x] Черновик CRUD-матрицы написан  
 - [x] Правило изоляции system_admin vs остальные описано  
-- [ ] Код ещё не менялся — со следующей фазы (миграция `role`)
+- [x] Фаза 1 (код): миграция `users.role`, модель, сидер демо, регистрация → student
+  - migrate: `npx sequelize-cli db:migrate`
+  - seed демо: `npx sequelize-cli db:seed --seed 20260831190500-seed-role-demo-users.js`
+  - пароль демо: `Password123!` (system.admin@lab.local, lab.admin@lab.local, researcher@lab.local, student@lab.local)

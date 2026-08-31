@@ -1,0 +1,143 @@
+<mxfile host="app.diagrams.net" modified="2026-08-31T00:00:00.000Z" agent="lab-docs" version="22.1.0" type="device">
+  <diagram id="erd-tenant" name="ERD — данные и tenant">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Как связаны данные и лаборатория (tenant)&#xa;LIMS · laboratory_id = граница видимости" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontStyle=1;fontSize=18;fontColor=#1e293b;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="560" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Note bubble -->
+        <mxCell id="note" value="Простыми словами: почти все «рабочие» данные&#xa;принадлежат лаборатории. system_admin видит все;&#xa;остальные — только свою lab." style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#fef9c3;strokeColor=#ca8a04;fontColor=#713f12;align=left;spacingLeft=8;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="640" y="20" width="320" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- LABORATORY hub -->
+        <mxCell id="lab" value="«Лаборатория»&#xa;laboratories&#xa;─────────────&#xa;id&#xa;lab_name&#xa;location&#xa;&#xa;★ TENANT-КОРЕНЬ" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#0f766e;strokeColor=#115e59;fontColor=#ffffff;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="520" y="160" width="200" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- Employee -->
+        <mxCell id="emp" value="Сотрудник&#xa;employees&#xa;─────────────&#xa;id&#xa;name, surname&#xa;lab_id ← tenant&#xa;position" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#ecfdf5;strokeColor=#0f766e;fontColor=#134e4a;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="200" y="160" width="180" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- User -->
+        <mxCell id="user" value="Учётка&#xa;users&#xa;─────────────&#xa;id, email&#xa;password (bcrypt)&#xa;role (4 роли)&#xa;employee_id" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#e0f2fe;strokeColor=#0284c7;fontColor=#0c4a6e;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="160" width="140" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Storage -->
+        <mxCell id="storage" value="Склад&#xa;chemstorages&#xa;─────────────&#xa;id&#xa;laboratory_id ← tenant&#xa;name" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#ecfdf5;strokeColor=#0f766e;fontColor=#134e4a;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="800" y="140" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Storage unit -->
+        <mxCell id="unit" value="Ячейка хранения&#xa;storageunits&#xa;─────────────&#xa;id&#xa;storage_id&#xa;(lab через склад)" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#f1f5f9;strokeColor=#64748b;fontColor=#334155;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="140" width="170" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Inventory -->
+        <mxCell id="inv" value="Лот / инвентарь&#xa;inventories&#xa;─────────────&#xa;id, qty, status&#xa;(lab: unit → storage)" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#f1f5f9;strokeColor=#64748b;fontColor=#334155;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="300" width="170" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Experiment -->
+        <mxCell id="exp" value="Эксперимент&#xa;experiments&#xa;─────────────&#xa;id&#xa;laboratory_id ← tenant&#xa;research_id?" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#ecfdf5;strokeColor=#0f766e;fontColor=#134e4a;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="800" y="320" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Research -->
+        <mxCell id="res" value="Исследование&#xa;researches&#xa;─────────────&#xa;id, title, status&#xa;(lab через участников)" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#f1f5f9;strokeColor=#64748b;fontColor=#334155;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="200" y="400" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ResearchEmployee -->
+        <mxCell id="re" value="Участие&#xa;researchemployees&#xa;─────────────&#xa;research_id&#xa;employee_id&#xa;→ lab через employee" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#fff7ed;strokeColor=#ea580c;fontColor=#9a3412;fontSize=11;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="420" y="400" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Task -->
+        <mxCell id="task" value="Задача&#xa;tasks&#xa;─────────────&#xa;id, research_id&#xa;assignee…&#xa;(lab через research)" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#f1f5f9;strokeColor=#64748b;fontColor=#334155;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="200" y="560" width="180" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Equipment -->
+        <mxCell id="eq" value="Оборудование&#xa;chemequipments&#xa;─────────────&#xa;справочник / парк&#xa;(mutating: admin)" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#f8fafc;strokeColor=#94a3b8;fontColor=#475569;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="800" y="480" width="180" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Logs -->
+        <mxCell id="log" value="Журнал&#xa;logs&#xa;─────────────&#xa;user_id, action&#xa;(в основном system_admin)" style="rounded=1;whiteSpace=wrap;html=1;align=center;fillColor=#fce7f3;strokeColor=#db2777;fontColor=#9d174d;fontSize=12;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="140" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="leg" value="Легенда цвета&#xa;• бирюзовый — прямая связь с laboratory_id / lab_id&#xa;• серый — lab через цепочку&#xa;• оранжевый — связка для вычисления tenant&#xa;• розовый — аудит (особый доступ)" style="rounded=1;whiteSpace=wrap;html=1;align=left;fillColor=#ffffff;strokeColor=#cbd5e1;fontColor=#334155;fontSize=11;spacingLeft=10;spacingTop=6;arcSize=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="720" width="420" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="jwt" value="В JWT после логина:&#xa;role + laboratory_id&#xa;(из employee.lab_id;&#xa;у system_admin → null)" style="rounded=1;whiteSpace=wrap;html=1;align=left;fillColor=#e0f2fe;strokeColor=#0284c7;fontColor=#0c4a6e;fontSize=12;spacingLeft=10;arcSize=6;" vertex="1" parent="1">
+          <mxGeometry x="500" y="720" width="240" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Edges -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0284c7;fontSize=11;fontColor=#0369a1;endArrow=block;endFill=1;" edge="1" parent="1" source="user" target="emp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1l" value="1 : 0..1" style="edgeLabel;html=1;align=center;fontSize=10;fontColor=#0369a1;" vertex="1" connectable="0" parent="e1">
+          <mxGeometry x="-0.1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0f766e;strokeWidth=2;fontSize=11;endArrow=block;endFill=1;" edge="1" parent="1" source="emp" target="lab">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2l" value="lab_id" style="edgeLabel;html=1;align=center;fontSize=11;fontStyle=1;fontColor=#0f766e;" vertex="1" connectable="0" parent="e2">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0f766e;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="storage" target="lab">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3l" value="laboratory_id" style="edgeLabel;html=1;fontSize=11;fontStyle=1;fontColor=#0f766e;" vertex="1" connectable="0" parent="e3">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748b;endArrow=block;endFill=1;" edge="1" parent="1" source="unit" target="storage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748b;endArrow=block;endFill=1;" edge="1" parent="1" source="inv" target="unit">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#0f766e;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="exp" target="lab">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#ea580c;endArrow=block;endFill=1;" edge="1" parent="1" source="re" target="emp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#ea580c;endArrow=block;endFill=1;" edge="1" parent="1" source="re" target="res">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#64748b;endArrow=block;endFill=1;" edge="1" parent="1" source="task" target="res">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#db2777;dashed=1;endArrow=block;endFill=1;" edge="1" parent="1" source="log" target="user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10l" value="кто сделал" style="edgeLabel;html=1;fontSize=10;fontColor=#9d174d;" vertex="1" connectable="0" parent="e10">
+          <mxGeometry x="-0.1" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

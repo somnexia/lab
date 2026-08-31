@@ -7,6 +7,21 @@
 
 ---
 
+## Демо-учётные записи (фаза 1)
+
+Пароль: `Password123!`
+
+| Роль | Email | employee → lab |
+|------|-------|----------------|
+| system_admin | system.admin@lab.local | нет (`laboratory_id` будет null) |
+| lab_admin | lab.admin@lab.local | employee 5 → lab 1 |
+| researcher | researcher@lab.local | employee 1 → lab 1 |
+| student | student@lab.local | employee 4 → lab 4 |
+
+Сидер: `server/seeders/20260831190500-seed-role-demo-users.js`
+
+---
+
 ## Сводная таблица ролей
 
 | Код в БД | Роль | Описание | Основные полномочия |
@@ -53,26 +68,13 @@
 
 ---
 
-## Соответствие в коде (план)
+## Соответствие в коде
 
-| Артефакт | Назначение |
-|----------|------------|
-| `server/config/roles.js` | `ROLES`, `CAN_*`, `DEFAULT_REGISTER_ROLE` |
-| JWT payload | `id`, `email`, `role`, `laboratory_id` |
-| `authenticate` | Cookie или Bearer → `req.user` |
-| `authorize(CAN_*)` | 403 при недостаточной роли |
-| Client `navPerms` | Пункты меню Aside по роли |
+| Артефакт | Статус |
+|----------|--------|
+| `server/config/roles.js` | фаза 1: `ROLES`, `DEFAULT_REGISTER_ROLE` (CAN_* — фаза 2) |
+| JWT payload | фаза 3: `role`, `laboratory_id` |
+| `authenticate` / Cookie | фаза 4 |
+| `authorize(CAN_*)` | фазы 4–6 |
+| Client `navPerms` | фаза 7 |
 
----
-
-## Демо-учётные записи (после сидов)
-
-Планируется по одному пользователю на роль (пароль задать в сидере, например `Password123!`).  
-Конкретные email — в сидере / README корня репозитория после реализации фазы 1.
-
-| Роль | Ожидаемый tenant |
-|------|------------------|
-| system_admin | `laboratory_id = null` |
-| lab_admin | конкретный `lab_id` (например 1) |
-| researcher | тот же или другой `lab_id` |
-| student | привязанный `lab_id` через employee |
