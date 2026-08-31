@@ -1,15 +1,18 @@
-
 'use strict';
 const { Model } = require('sequelize');
-
 const bcrypt = require('bcrypt');
+const { ROLE_VALUES, DEFAULT_REGISTER_ROLE } = require('../config/roles');
 
+/**
+ * User — учётная запись LIMS.
+ *
+ * Фаза 1: поле role (4 значения). Связь с tenant: User → Employee → lab_id
+ * (laboratory_id в JWT появится в фазе 3, колонки на users нет).
+ */
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       User.belongsTo(models.Employee, { foreignKey: 'employee_id', as: 'employee' });
-
-
     }
   }
 
@@ -18,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     name: {
       type: DataTypes.STRING,
@@ -36,34 +39,48 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    /**
+     * Роль приложения (не MySQL GRANT-пользователь).
+     * Публичная регистрация всегда пишет student — см. userService.createUser.
+     */
+    role: {
+      type: DataTypes.ENUM(...ROLE_VALUES),
+      allowNull: false,
+      defaultValue: DEFAULT_REGISTER_ROLE,
+      validate: {
+        isIn: {
+          args: [ROLE_VALUES],
+          msg: `role must be one of: ${ROLE_VALUES.join(', ')}`,
+        },
+      },
+    },
     employee_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
       defaultValue: null,
       references: {
-        model: 'employees', // Должно совпадать с названием таблицы Laboratory
-        key: 'id'
+        model: 'employees',
+        key: 'id',
       },
       onUpdate: 'CASCADE',
-      onDelete: 'SET NULL'
+      onDelete: 'SET NULL',
     },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW
+      defaultValue: DataTypes.NOW,
     },
     updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW
-    }
-
+      defaultValue: DataTypes.NOW,
+    },
   }, {
     sequelize,
     modelName: 'User',
-    tableName: 'users',  // Название таблицы в БД
+    tableName: 'users',
     timestamps: true,
-    silent: false  
+    silent: false,
   });
 
   User.beforeCreate(async (user) => {
