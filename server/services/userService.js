@@ -5,35 +5,54 @@ const logService = require('./logService');
 const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key'; // Убедитесь, что SECRET_KEY определен
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 
+const { DEFAULT_REGISTER_ROLE } = require('../config/roles');
+
 function toPublicUser(user) {
   const plain = user.get ? user.get({ plain: true }) : { ...user };
   delete plain.password;
   return plain;
 }
-// Создание нового пользователя
+
+/**
+ * Создание пользователя (фаза 1).
+ *
+ * Публичная регистрация: роль всегда student — role из req.body игнорируется.
+ * Назначение lab_admin / system_admin / researcher — только админом (фаза 6 + authorize).
+ *
+ * context.forceRole — внутренний обход для сидеров/админ-API (пока не используется с роутов).
+ */
 const createUser = async (data, meta, context = {}) => {
   try {
     const existing = await User.findOne({ where: { email: data.email } });
     if (existing) {
       throw new Error('Пользователь с таким email уже существует');
     }
-    const user = await User.create(data);
 
+    const role =
+      context.forceRole && context.allowPrivilegedRole
+        ? context.forceRole
+        : DEFAULT_REGISTER_ROLE;
 
-    // Логирование события регистрации
+    const user = await User.create({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      employee_id: data.employee_id ?? null,
+      role,
+    });
+
     await logService.recordAuditLog({
       action: logService.LOG_ACTIONS.REGISTER,
       userId: user.id,
       resourceType: 'User',
       resourceId: user.id,
-      description: `Пользователь с email ${user.email} зарегистрирован`,
+      description: `Пользователь с email ${user.email} зарегистрирован (role=${user.role})`,
       status: logService.LOG_STATUS.SUCCESS,
       ...logService.mergeMeta(meta),
     });
-    console.log('Пользователь успешно создан:', user);
+    console.log('Пользователь успешно создан:', toPublicUser(user));
 
-
-    return user;
+    return toPublicUser(user);
   } catch (error) {
     console.error('Ошибка при создании пользователя:', error);
     await logService.recordAuditLog({

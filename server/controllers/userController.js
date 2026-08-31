@@ -1,13 +1,16 @@
 const userService = require('../services/userService');
 const jwt = require('jsonwebtoken');
-// Создание нового пользователя
+
+/**
+ * POST /api/users — публичная регистрация (фаза 1).
+ * Тело может содержать role, но сервис принудительно ставит student.
+ */
 const createUser = async (req, res) => {
   try {
-    // const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const ipList = req.headers['x-forwarded-for']?.split(',') || [];
     const ip = ipList[0]?.trim() || req.ip;
     const userAgent = req.headers['user-agent'];
-    const sessionId = req.session?.id || null; // если у тебя используется express-session
+    const sessionId = req.session?.id || null;
 
     const user = await userService.createUser(req.body, {
       ip,
