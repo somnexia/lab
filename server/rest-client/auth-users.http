@@ -1,0 +1,213 @@
+### =============================================================================
+### Auth & users — REST Client
+### Фаза 3: JWT = { id, email, role, laboratory_id, employee_id }, expires ~2h
+### После login в ответе user.role / roleLabel / laboratory_id (без password).
+### Старые токены без role — сделай logout и login заново.
+### authorize(CAN_*) на роутах — ещё фаза 4+.
+### =============================================================================
+
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+### Демо (сидер seed-role-demo-users), пароль Password123!
+@demoPassword = Password123!
+@adminEmail = system.admin@lab.local
+@labAdminEmail = lab.admin@lab.local
+@researcherEmail = researcher@lab.local
+@studentEmail = student@lab.local
+
+### После логина скопируй token из ответа сюда (или Send and Download → вручную):
+@token = {{login.response.body.token}}
+
+### =============================================================================
+### 1. РЕГИСТРАЦИЯ (публично, без Bearer)
+### Сервер всегда ставит role=student, даже если в body указан system_admin
+### =============================================================================
+
+# @name registerStudent
+POST {{baseUrl}}/api/users
+Content-Type: {{contentType}}
+
+{
+  "name": "Rest Client Student",
+  "email": "rest.student@lab.local",
+  "password": "Password123!"
+}
+
+###
+
+# Попытка «украсть» роль — в ответе всё равно student
+# @name registerWithFakeRole
+POST {{baseUrl}}/api/users
+Content-Type: {{contentType}}
+
+{
+  "name": "Fake Admin",
+  "email": "fake.admin@lab.local",
+  "password": "Password123!",
+  "role": "system_admin"
+}
+
+### =============================================================================
+### 2. АУТЕНТИФИКАЦИЯ (login) — получение JWT
+### Ответ: { message, token, user }  — user должен содержать role из БД
+### =============================================================================
+
+### Ответ login (фаза 3):
+### {
+###   "token": "<jwt>",
+###   "user": { "id", "email", "role", "roleLabel", "laboratory_id", "employee_id", "employee": {...} }
+### }
+### JWT payload (jwt.io): id, email, role, laboratory_id, employee_id
+### system_admin → laboratory_id: null | lab_admin/researcher → число lab
+
+# @name login
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{demoPassword}}"
+}
+
+###
+
+# @name loginLabAdmin
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{labAdminEmail}}",
+  "password": "{{demoPassword}}"
+}
+
+###
+
+# @name loginResearcher
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{researcherEmail}}",
+  "password": "{{demoPassword}}"
+}
+
+###
+
+# @name loginStudent
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{studentEmail}}",
+  "password": "{{demoPassword}}"
+}
+
+###
+
+# Неверный пароль → 401
+# @name loginFail
+POST {{baseUrl}}/api/users/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{studentEmail}}",
+  "password": "wrong-password"
+}
+
+### =============================================================================
+### 3. ПРОФИЛЬ (нужен Bearer) — «я вошёл?»
+### Подставь @token вручную, если {{login.response.body.token}} не подхватился
+### =============================================================================
+
+# @name profile
+GET {{baseUrl}}/api/users/profile
+Authorization: Bearer {{token}}
+
+###
+
+# Без токена → 401
+# @name profileNoAuth
+GET {{baseUrl}}/api/users/profile
+
+###
+
+# @name updateProfile
+PUT {{baseUrl}}/api/users/profile
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "System Admin (updated)"
+}
+
+### =============================================================================
+### 4. ПОЛЬЗОВАТЕЛИ (CRUD) — сейчас защищены только JWT, не ролью
+### После фазы 4: без CAN_MANAGE_USERS → 403
+### =============================================================================
+
+# @name listUsers
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
+
+###
+
+# @name getUserById
+GET {{baseUrl}}/api/users/1
+Authorization: Bearer {{token}}
+
+###
+
+# Обновление чужого пользователя (role менять смогут только админы — фаза 6)
+# @name updateUser
+PUT {{baseUrl}}/api/users/1
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Updated via REST"
+}
+
+### =============================================================================
+### 5. АВТОРИЗАЦИЯ ПО РОЛИ (заготовка)
+### Пока middleware только authenticate. Раскомментируй/добавь после фазы 4–6.
+### Ожидание позже: student + GET /api/logs → 403; system_admin → 200
+### =============================================================================
+
+# @name logsAsCurrentUser
+GET {{baseUrl}}/api/logs?limit=5&offset=0
+Authorization: Bearer {{token}}
+
+###
+
+### Логин студентом, затем вручную токен студента → снова GET /api/logs
+### (сравни статус с запросом от system_admin)
+
+### =============================================================================
+### 6. LOGOUT
+### =============================================================================
+
+# @name logout
+POST {{baseUrl}}/api/users/logout
+Authorization: Bearer {{token}}
+
+### =============================================================================
+### Где хранится информация
+###
+### Пользователи (данные): таблица MySQL `users`
+###   - password: bcrypt-хеш
+###   - role: ENUM system_admin | lab_admin | researcher | student
+###   - employee_id → employees.lab_id = tenant (лаборатория)
+###
+### Права (кто что может): НЕ в БД, а в коде
+###   server/config/roles.js  → ROLES, CAN_*, hasRole, isSystemAdmin
+###
+### Важные файлы:
+###   server/models/User.js              — модель + валидация role
+###   server/config/roles.js             — центр прав (фаза 2)
+###   server/services/userService.js     — login, register→student, profile
+###   server/middleware/authMiddleware.js — JWT на /api/* (authorize — фаза 4)
+###   server/routes/userRoutes.js        — маршруты /api/users
+###   server/seeders/20260831190500-seed-role-demo-users.js — демо-аккаунты
+###   docs/02-users-and-roles.md, docs/04-crud-matrix.md
+### =============================================================================

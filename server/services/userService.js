@@ -1,16 +1,83 @@
-const { User, Employee } = require('../models');
+const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const logService = require('./logService');
-const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key'; // Убедитесь, что SECRET_KEY определен
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+const {
+  DEFAULT_REGISTER_ROLE,
+  ROLE_LABELS,
+  ROLES,
+} = require('../config/roles');
 
-const { DEFAULT_REGISTER_ROLE } = require('../config/roles');
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+/** Фаза 3: было 1h; чуть длиннее для удобства REST/UI. Refresh-токен — позже. */
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '2h';
+
+/** User → Employee → Laboratory (tenant через employees.lab_id) */
+const USER_LAB_INCLUDE = {
+  association: 'employee',
+  include: [{ association: 'laboratory', required: false }],
+};
 
 function toPublicUser(user) {
   const plain = user.get ? user.get({ plain: true }) : { ...user };
   delete plain.password;
   return plain;
+}
+
+/**
+ * Tenant для JWT/профиля (фаза 3).
+ * system_admin → null (= все лаборатории).
+ * Остальные → employees.lab_id или null, если employee не привязан.
+ */
+function resolveLaboratoryId(user) {
+  if (user.role === ROLES.SYSTEM_ADMIN) {
+    return null;
+  }
+  const labId = user.employee?.lab_id;
+  return labId == null ? null : Number(labId);
+}
+
+function resolveEmployeeId(user) {
+  if (user.employee_id != null) return Number(user.employee_id);
+  if (user.employee?.id != null) return Number(user.employee.id);
+  return null;
+}
+
+/**
+ * Payload JWT (фаза 3).
+ * Было: { id, email }
+ * Стало: { id, email, role, laboratory_id, employee_id }
+ */
+function buildTokenPayload(user) {
+  return {
+    id: user.id,
+    email: user.email,
+    role: user.role || DEFAULT_REGISTER_ROLE,
+    laboratory_id: resolveLaboratoryId(user),
+    employee_id: resolveEmployeeId(user),
+  };
+}
+
+/**
+ * Ответ login/profile для клиента (navPerms на фазе 7).
+ * Добавляет laboratory_id, roleLabel; пароль никогда не отдаём.
+ */
+function toAuthUser(user) {
+  const plain = toPublicUser(user);
+  const role = plain.role || DEFAULT_REGISTER_ROLE;
+  return {
+    ...plain,
+    role,
+    roleLabel: ROLE_LABELS[role] || role,
+    laboratory_id: resolveLaboratoryId(user),
+    employee_id: resolveEmployeeId(user),
+  };
+}
+
+function signAccessToken(user) {
+  return jwt.sign(buildTokenPayload(user), JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN,
+  });
 }
 
 /**
@@ -67,11 +134,11 @@ const createUser = async (data, meta, context = {}) => {
   }
 };
 
-// Получение всех пользователей с включением связанных данных (например, Employee)
 const getAllUsers = async () => {
   try {
     return await User.findAll({
-      include: { association: 'employee' }, // Связь с Employee
+      include: { association: 'employee' },
+      attributes: { exclude: ['password'] },
     });
   } catch (error) {
     console.error('Ошибка при получении списка пользователей:', error);
@@ -79,11 +146,11 @@ const getAllUsers = async () => {
   }
 };
 
-// Получение пользователя по ID
 const getUserById = async (id) => {
   try {
     const user = await User.findByPk(id, {
       include: { association: 'employee' },
+      attributes: { exclude: ['password'] },
     });
     if (!user) {
       throw new Error(`Пользователь с id ${id} не найден`);
@@ -95,7 +162,6 @@ const getUserById = async (id) => {
   }
 };
 
-// Обновление данных пользователя по ID
 const updateUser = async (id, data) => {
   try {
     const user = await User.findByPk(id);
@@ -103,14 +169,13 @@ const updateUser = async (id, data) => {
       throw new Error(`Пользователь с id ${id} не найден`);
     }
     await user.update(data);
-    return user;
+    return toPublicUser(user);
   } catch (error) {
     console.error('Ошибка при обновлении пользователя:', error);
     throw error;
   }
 };
 
-// Удаление пользователя по ID
 const deleteUser = async (id) => {
   try {
     const user = await User.findByPk(id);
@@ -124,13 +189,19 @@ const deleteUser = async (id) => {
     throw error;
   }
 };
-// аутентификация — проверка email и пароля, и выдача JWT токена. После этого пользователь считается «вошедшим».
+
+/**
+ * Login (фаза 3): bcrypt → JWT с role + laboratory_id.
+ * Не логируем пароль/хеш в консоль.
+ */
 const loginUser = async (email, password, meta = {}) => {
   try {
-    // Проверка существования пользователя
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({
+      where: { email },
+      include: [USER_LAB_INCLUDE],
+    });
+
     if (!user) {
-      // Логируем неудачную попытку входа
       await logService.recordAuditLog({
         action: logService.LOG_ACTIONS.LOGIN_FAILED,
         userId: null,
@@ -138,18 +209,11 @@ const loginUser = async (email, password, meta = {}) => {
         status: logService.LOG_STATUS.FAILED,
         ...logService.mergeMeta(meta),
       });
-      console.error('Пользователь не найден, неверный email');
       throw new Error('Пользователь не найден, неверный email');
     }
 
-    // Проверка пароля
-    console.log('Введённый пароль:', password);
-    console.log('Хеш из базы:', user.password);
-
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    console.log('Пароль верен?', isPasswordValid);
     if (!isPasswordValid) {
-      // Логируем неправильный пароль
       await logService.recordAuditLog({
         action: logService.LOG_ACTIONS.LOGIN_FAILED,
         userId: user.id,
@@ -157,64 +221,49 @@ const loginUser = async (email, password, meta = {}) => {
         status: logService.LOG_STATUS.FAILED,
         ...logService.mergeMeta(meta),
       });
-      console.error('Неверный пароль для пользователя');
       throw new Error('Неверный пароль для пользователя');
     }
-    // Обновляем время последнего входа
+
     user.setDataValue('updatedAt', new Date());
     await user.save();
 
+    const token = signAccessToken(user);
+    const authUser = toAuthUser(user);
 
-    // Генерация токена (используем секретный ключ)
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET || 'your_jwt_secret',
-      { expiresIn: '1h' } // Токен действителен 1 час
-    );
-    // Логируем успешный вход
     await logService.recordAuditLog({
       action: logService.LOG_ACTIONS.LOGIN,
       userId: user.id,
       resourceType: 'User',
       resourceId: user.id,
-      description: `Пользователь с email ${user.email} вошёл в систему`,
+      description: `Пользователь ${user.email} вошёл (role=${authUser.role}, lab=${authUser.laboratory_id})`,
       status: logService.LOG_STATUS.SUCCESS,
       ...logService.mergeMeta(meta),
     });
 
-    // Возвращаем токен и данные пользователя
-    console.log('Пользователь успешно вошёл в систему:', user);
-    return { token, user };
+    return { token, user: authUser };
   } catch (error) {
-    console.error('Ошибка при авторизации пользователя:', error);
+    console.error('Ошибка при авторизации пользователя:', error.message);
     throw error;
   }
 };
 
+/**
+ * GET profile: свежие role / laboratory_id / roleLabel из БД (+ employee.laboratory).
+ */
 const getProfile = async (token) => {
   try {
-    // Декодируем токен
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-    const userId = decoded.id;
-    console.log(decoded);
-
-    // Получаем пользователя по ID
-    const user = await User.findByPk(userId, {
-      include: [
-        {
-          association: 'employee',
-          include: [{ association: 'laboratory', required: false }],
-        },
-      ],
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findByPk(decoded.id, {
+      include: [USER_LAB_INCLUDE],
     });
 
     if (!user) {
       throw new Error('Пользователь не найден');
     }
 
-    return toPublicUser(user);
+    return toAuthUser(user);
   } catch (error) {
-    console.error('Ошибка при получении профиля пользователя:', error);
+    console.error('Ошибка при получении профиля пользователя:', error.message);
     throw new Error('Не удалось получить профиль');
   }
 };
@@ -224,7 +273,7 @@ const updateProfile = async (token, data = {}) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findByPk(decoded.id, {
-      include: { association: 'employee', include: [{ association: 'laboratory', required: false }] },
+      include: [USER_LAB_INCLUDE],
     });
     if (!user) {
       throw new Error('Пользователь не найден');
@@ -235,14 +284,14 @@ const updateProfile = async (token, data = {}) => {
       updates.name = String(data.name).trim();
     }
     if (data.email != null && String(data.email).trim()) {
-      const email = String(data.email).trim().toLowerCase();
-      if (email !== user.email) {
-        const existing = await User.findOne({ where: { email } });
+      const nextEmail = String(data.email).trim().toLowerCase();
+      if (nextEmail !== user.email) {
+        const existing = await User.findOne({ where: { email: nextEmail } });
         if (existing && existing.id !== user.id) {
           throw new Error('Пользователь с таким email уже существует');
         }
       }
-      updates.email = email;
+      updates.email = nextEmail;
     }
 
     if (data.password) {
@@ -260,21 +309,20 @@ const updateProfile = async (token, data = {}) => {
       updates.password = data.password;
     }
 
+    // role с клиента в профиль не принимаем
     if (!Object.keys(updates).length) {
       throw new Error('Нет данных для обновления');
     }
 
     await user.update(updates);
-    await user.reload({
-      include: { association: 'employee', include: [{ association: 'laboratory', required: false }] },
-    });
+    await user.reload({ include: [USER_LAB_INCLUDE] });
 
-    return toPublicUser(user);
+    return toAuthUser(user);
   } catch (error) {
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
       throw new Error('Токен недействителен');
     }
-    console.error('Ошибка при обновлении профиля:', error);
+    console.error('Ошибка при обновлении профиля:', error.message);
     throw error;
   }
 };
@@ -308,4 +356,7 @@ module.exports = {
   updateProfile,
   logoutUser,
   toPublicUser,
+  toAuthUser,
+  buildTokenPayload,
+  resolveLaboratoryId,
 };

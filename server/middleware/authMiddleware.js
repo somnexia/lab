@@ -24,14 +24,12 @@ function isPublicApiRoute(req) {
 }
 
 /**
- * Сейчас (фазы 1–2): только «есть валидный JWT или нет».
- * Роли и CAN_* живут в config/roles.js, но сюда ещё не подключены.
+ * Фаза 3: JWT несёт role, laboratory_id, employee_id.
+ * Кладём их в req.user / req.auth для будущих authorize и tenant-scope.
  *
- * Фаза 4: authenticate (Cookie || Bearer) + authorize(CAN_VIEW_LOGS) и т.д.
- * Фаза 3: в JWT появятся role и laboratory_id → класть их в req.user.
+ * Фаза 4: Cookie || Bearer + authorize(CAN_*).
  *
- * Требует валидный JWT в Authorization: Bearer <token>.
- * Кладёт req.auth = { userId, email } для контроллеров.
+ * Старые токены без role: req.user.role будет undefined → нужна перелогинка.
  */
 function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization || '';
@@ -46,8 +44,30 @@ function requireAuth(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.auth = { userId: decoded.id, email: decoded.email };
+
+    req.user = {
+      id: decoded.id,
+      email: decoded.email,
+      role: decoded.role,
+      laboratory_id:
+        decoded.laboratory_id === undefined || decoded.laboratory_id === null
+          ? null
+          : Number(decoded.laboratory_id),
+      employee_id:
+        decoded.employee_id === undefined || decoded.employee_id === null
+          ? null
+          : Number(decoded.employee_id),
+    };
+
+    req.auth = {
+      userId: decoded.id,
+      email: decoded.email,
+      role: decoded.role,
+      laboratory_id: req.user.laboratory_id,
+      employee_id: req.user.employee_id,
+    };
     req.userId = decoded.id;
+
     return next();
   } catch (error) {
     const message =

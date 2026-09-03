@@ -74,6 +74,8 @@ const loginUser = async (req, res) => {
   const userAgent = req.headers['user-agent'];
   const sessionId = req.session?.id || null;
   try {
+    // Фаза 3: token = JWT(id, email, role, laboratory_id, employee_id);
+    // user = профиль без password + roleLabel
     const { token, user } = await userService.loginUser(email, password, {
       ip,
       userAgent,
@@ -103,7 +105,7 @@ const updateProfile = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
-  // Проверяем наличие токена в заголовке Authorization
+  // Профиль всегда из БД (не только из JWT), чтобы role/lab были актуальны
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
@@ -112,7 +114,7 @@ const getProfile = async (req, res) => {
   }
 
   try {
-    const user = await userService.getProfile(token); // Передаем токен в сервис для получения профиля
+    const user = await userService.getProfile(token);
     res.status(200).json(user);
   } catch (error) {
     console.error('Ошибка при получении профиля:', error);

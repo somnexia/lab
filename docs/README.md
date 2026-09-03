@@ -159,3 +159,5 @@ student       → только своя laboratory_id
   - migrate: `npx sequelize-cli db:migrate`
   - seed демо: `npx sequelize-cli db:seed --seed 20260831190500-seed-role-demo-users.js`
 - [x] Фаза 2: центр прав `CAN_*` + хелперы в `server/config/roles.js` (ещё не повешены на роуты)
+- [x] Фаза 3: JWT + profile с `role` / `laboratory_id` / `roleLabel`; пароль в консоль не пишется
+  - проверить: login демо → jwt.io / REST Client `auth-users.http`

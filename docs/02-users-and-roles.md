@@ -73,7 +73,7 @@
 | Артефакт | Статус |
 |----------|--------|
 | `server/config/roles.js` | фаза 2: `ROLES`, `CAN_*`, `hasRole` / `isSystemAdmin` |
-| JWT payload | фаза 3: `role`, `laboratory_id` |
+| JWT payload | фаза 3 ✓: `id`, `email`, `role`, `laboratory_id`, `employee_id` |
 | `authenticate` / Cookie | фаза 4 |
 | `authorize(CAN_*)` | фазы 4–6 |
 | Client `navPerms` | фаза 7 |
