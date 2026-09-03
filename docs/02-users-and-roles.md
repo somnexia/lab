@@ -72,7 +72,7 @@
 
 | Артефакт | Статус |
 |----------|--------|
-| `server/config/roles.js` | фаза 1: `ROLES`, `DEFAULT_REGISTER_ROLE` (CAN_* — фаза 2) |
+| `server/config/roles.js` | фаза 2: `ROLES`, `CAN_*`, `hasRole` / `isSystemAdmin` |
 | JWT payload | фаза 3: `role`, `laboratory_id` |
 | `authenticate` / Cookie | фаза 4 |
 | `authorize(CAN_*)` | фазы 4–6 |

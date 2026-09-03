@@ -41,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     /**
      * Роль приложения (не MySQL GRANT-пользователь).
+     * Списки «кто что может»: config/roles.js (CAN_* , фаза 2).
      * Публичная регистрация всегда пишет student — см. userService.createUser.
      */
     role: {

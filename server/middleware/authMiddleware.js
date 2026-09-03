@@ -24,6 +24,12 @@ function isPublicApiRoute(req) {
 }
 
 /**
+ * Сейчас (фазы 1–2): только «есть валидный JWT или нет».
+ * Роли и CAN_* живут в config/roles.js, но сюда ещё не подключены.
+ *
+ * Фаза 4: authenticate (Cookie || Bearer) + authorize(CAN_VIEW_LOGS) и т.д.
+ * Фаза 3: в JWT появятся role и laboratory_id → класть их в req.user.
+ *
  * Требует валидный JWT в Authorization: Bearer <token>.
  * Кладёт req.auth = { userId, email } для контроллеров.
  */

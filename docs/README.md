@@ -158,4 +158,4 @@ student       → только своя laboratory_id
 - [x] Фаза 1 (код): миграция `users.role`, модель, сидер демо, регистрация → student
   - migrate: `npx sequelize-cli db:migrate`
   - seed демо: `npx sequelize-cli db:seed --seed 20260831190500-seed-role-demo-users.js`
-  - пароль демо: `Password123!` (system.admin@lab.local, lab.admin@lab.local, researcher@lab.local, student@lab.local)
+- [x] Фаза 2: центр прав `CAN_*` + хелперы в `server/config/roles.js` (ещё не повешены на роуты)

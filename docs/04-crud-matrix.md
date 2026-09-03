@@ -4,7 +4,7 @@
 Субъекты: **4 роли**. Tenant: **`laboratory_id`**.
 
 Связанные документы: [README.md](./README.md) (контракт), [02-users-and-roles.md](./02-users-and-roles.md).  
-Центр прав в коде (план): `server/config/roles.js`.
+Центр прав в коде: `server/config/roles.js` (`CAN_*`, фаза 2). Tenant-фильтр в сервисах — позже.
 
 Это **черновик фазы 0** — уточняется при навешивании `authorize` и scope в сервисах.
 

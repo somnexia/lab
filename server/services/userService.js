@@ -17,7 +17,8 @@ function toPublicUser(user) {
  * Создание пользователя (фаза 1).
  *
  * Публичная регистрация: роль всегда student — role из req.body игнорируется.
- * Назначение lab_admin / system_admin / researcher — только админом (фаза 6 + authorize).
+ * Права на назначение других ролей: CAN_MANAGE_USERS в config/roles.js (фаза 2).
+ * Навесить authorize на админ-создание учёток — фазы 4 и 6.
  *
  * context.forceRole — внутренний обход для сидеров/админ-API (пока не используется с роутов).
  */
