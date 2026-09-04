@@ -40,7 +40,7 @@
 
 
 
-# GET http://localhost:3000/api/inventories/locations/equipment/1
+GET http://localhost:3000/api/inventories/locations/equipment/1
 
 # put http://localhost:3000/api/inventories/1`, { status:  });
 

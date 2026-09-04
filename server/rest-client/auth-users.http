@@ -1,9 +1,9 @@
 ### =============================================================================
 ### Auth & users — REST Client
-### Фаза 3: JWT = { id, email, role, laboratory_id, employee_id }, expires ~2h
-### После login в ответе user.role / roleLabel / laboratory_id (без password).
-### Старые токены без role — сделай logout и login заново.
-### authorize(CAN_*) на роутах — ещё фаза 4+.
+### Фаза 4: Cookie + Bearer (authenticate) + authorize(CAN_*)
+### Login → Set-Cookie: token=… + JSON.token
+### GET /api/logs: admin 200, student 403
+### GET /api/users (список): student 403, lab_admin/system_admin 200
 ### =============================================================================
 
 @baseUrl = http://localhost:3000
@@ -16,8 +16,9 @@
 @researcherEmail = researcher@lab.local
 @studentEmail = student@lab.local
 
-### После логина скопируй token из ответа сюда (или Send and Download → вручную):
+### После логина:
 @token = {{login.response.body.token}}
+@studentToken = {{loginStudent.response.body.token}}
 
 ### =============================================================================
 ### 1. РЕГИСТРАЦИЯ (публично, без Bearer)
@@ -169,22 +170,44 @@ Content-Type: {{contentType}}
 }
 
 ### =============================================================================
-### 5. АВТОРИЗАЦИЯ ПО РОЛИ (заготовка)
-### Пока middleware только authenticate. Раскомментируй/добавь после фазы 4–6.
-### Ожидание позже: student + GET /api/logs → 403; system_admin → 200
+### 5. АВТОРИЗАЦИЯ ПО РОЛИ (фаза 4)
+### system_admin → 200 на /api/logs и GET /api/users
+### student → 403 на оба
 ### =============================================================================
 
-# @name logsAsCurrentUser
+# Сначала выполни # @name login (admin) — токен в @token
+# @name logsAsAdmin
 GET {{baseUrl}}/api/logs?limit=5&offset=0
 Authorization: Bearer {{token}}
 
 ###
 
-### Логин студентом, затем вручную токен студента → снова GET /api/logs
-### (сравни статус с запросом от system_admin)
+# @name listUsersAsAdmin
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
+
+###
+
+# Сначала выполни # @name loginStudent
+# @name logsAsStudent
+GET {{baseUrl}}/api/logs?limit=5&offset=0
+Authorization: Bearer {{studentToken}}
+
+###
+
+# @name listUsersAsStudent
+GET {{baseUrl}}/api/users
+Authorization: Bearer {{studentToken}}
+
+###
+
+# Только cookie (без Bearer) — после login, если REST Client сохранил Set-Cookie
+# @name profileByCookieOnly
+GET {{baseUrl}}/api/users/profile
+Cookie: token={{token}}
 
 ### =============================================================================
-### 6. LOGOUT
+### 6. LOGOUT (чистит cookie token)
 ### =============================================================================
 
 # @name logout
@@ -194,20 +217,7 @@ Authorization: Bearer {{token}}
 ### =============================================================================
 ### Где хранится информация
 ###
-### Пользователи (данные): таблица MySQL `users`
-###   - password: bcrypt-хеш
-###   - role: ENUM system_admin | lab_admin | researcher | student
-###   - employee_id → employees.lab_id = tenant (лаборатория)
-###
-### Права (кто что может): НЕ в БД, а в коде
-###   server/config/roles.js  → ROLES, CAN_*, hasRole, isSystemAdmin
-###
-### Важные файлы:
-###   server/models/User.js              — модель + валидация role
-###   server/config/roles.js             — центр прав (фаза 2)
-###   server/services/userService.js     — login, register→student, profile
-###   server/middleware/authMiddleware.js — JWT на /api/* (authorize — фаза 4)
-###   server/routes/userRoutes.js        — маршруты /api/users
-###   server/seeders/20260831190500-seed-role-demo-users.js — демо-аккаунты
-###   docs/02-users-and-roles.md, docs/04-crud-matrix.md
+### Пользователи: MySQL `users` (role, employee_id → lab)
+### Права: server/config/roles.js (CAN_*)
+### Auth: server/middleware/authMiddleware.js — Cookie || Bearer + authorize
 ### =============================================================================

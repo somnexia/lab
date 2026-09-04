@@ -1,5 +1,9 @@
 const userService = require('../services/userService');
-const jwt = require('jsonwebtoken');
+const {
+  extractToken,
+  setAuthCookie,
+  clearAuthCookie,
+} = require('../middleware/authMiddleware');
 
 /**
  * POST /api/users — публичная регистрация (фаза 1).
@@ -24,7 +28,6 @@ const createUser = async (req, res) => {
   }
 };
 
-// Получение всех пользователей
 const getAllUsers = async (req, res) => {
   try {
     const users = await userService.getAllUsers();
@@ -34,7 +37,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// Получение пользователя по ID
 const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -45,7 +47,6 @@ const getUserById = async (req, res) => {
   }
 };
 
-// Обновление пользователя
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -56,7 +57,6 @@ const updateUser = async (req, res) => {
   }
 };
 
-// Удаление пользователя
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -67,6 +67,10 @@ const deleteUser = async (req, res) => {
   }
 };
 
+/**
+ * Login (фазы 3–4): JWT в JSON + httpOnly cookie.
+ * Клиент может пользоваться Bearer из body и/или cookie (credentials).
+ */
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const ipList = req.headers['x-forwarded-for']?.split(',') || [];
@@ -74,13 +78,12 @@ const loginUser = async (req, res) => {
   const userAgent = req.headers['user-agent'];
   const sessionId = req.session?.id || null;
   try {
-    // Фаза 3: token = JWT(id, email, role, laboratory_id, employee_id);
-    // user = профиль без password + roleLabel
     const { token, user } = await userService.loginUser(email, password, {
       ip,
       userAgent,
       sessionId,
     });
+    setAuthCookie(res, token);
     res.status(200).json({ message: 'Авторизация успешна', token, user });
   } catch (error) {
     res.status(401).json({ message: error.message });
@@ -88,9 +91,7 @@ const loginUser = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-
+  const token = extractToken(req);
   if (!token) {
     return res.status(401).json({ message: 'Токен не предоставлен или недействителен' });
   }
@@ -105,10 +106,8 @@ const updateProfile = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
-  // Профиль всегда из БД (не только из JWT), чтобы role/lab были актуальны
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-
+  // Cookie или Bearer — тот же extractToken, что и authenticate
+  const token = extractToken(req);
   if (!token) {
     return res.status(401).json({ message: 'Токен не предоставлен или недействителен' });
   }
@@ -124,27 +123,33 @@ const getProfile = async (req, res) => {
 
 const logoutUser = async (req, res) => {
   try {
-    const authHeader = req.headers.authorization || '';
-    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-    if (!token) return res.status(401).json({ message: 'Токен не предоставлен' });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-    const userId = decoded.id;
-
+    const token = extractToken(req);
     const ipList = req.headers['x-forwarded-for']?.split(',') || [];
     const ip = ipList[0]?.trim() || req.ip;
     const userAgent = req.headers['user-agent'];
     const sessionId = req.session?.id || null;
 
-    await userService.logoutUser(userId, {
-      ip,
-      userAgent,
-      sessionId,
-    });
+    // userId из authenticate (если был) или из токена
+    let userId = req.user?.id ?? req.userId ?? null;
+    if (!userId && token) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+        userId = decoded.id;
+      } catch (_) {
+        /* cookie/token уже невалиден — всё равно чистим cookie */
+      }
+    }
 
+    if (userId) {
+      await userService.logoutUser(userId, { ip, userAgent, sessionId });
+    }
+
+    clearAuthCookie(res);
     res.status(200).json({ message: 'Пользователь вышел из системы' });
   } catch (error) {
     console.error('Ошибка при выходе из системы:', error);
+    clearAuthCookie(res);
     res.status(500).json({ message: 'Ошибка при выходе' });
   }
 };
@@ -158,5 +163,5 @@ module.exports = {
   loginUser,
   getProfile,
   updateProfile,
-  logoutUser
+  logoutUser,
 };

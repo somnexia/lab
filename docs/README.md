@@ -161,3 +161,6 @@ student       → только своя laboratory_id
 - [x] Фаза 2: центр прав `CAN_*` + хелперы в `server/config/roles.js` (ещё не повешены на роуты)
 - [x] Фаза 3: JWT + profile с `role` / `laboratory_id` / `roleLabel`; пароль в консоль не пишется
   - проверить: login демо → jwt.io / REST Client `auth-users.http`
+- [x] Фаза 4: Cookie + Bearer, `authorize`; logs и manage-users режутся по роли
+  - student → GET /api/logs = 403; system_admin = 200
+  - CORS credentials + client `withCredentials: true`

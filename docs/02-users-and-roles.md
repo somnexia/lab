@@ -74,7 +74,7 @@
 |----------|--------|
 | `server/config/roles.js` | фаза 2: `ROLES`, `CAN_*`, `hasRole` / `isSystemAdmin` |
 | JWT payload | фаза 3 ✓: `id`, `email`, `role`, `laboratory_id`, `employee_id` |
-| `authenticate` / Cookie | фаза 4 |
-| `authorize(CAN_*)` | фазы 4–6 |
+| `authenticate` / Cookie | фаза 4 ✓: Cookie \|\| Bearer |
+| `authorize(CAN_*)` | фаза 4 ✓ на `/api/logs`, manage users; дальше — inventory/research |
 | Client `navPerms` | фаза 7 |
 

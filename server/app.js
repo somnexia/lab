@@ -1,6 +1,7 @@
 const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const routes = require('./routes'); // Импортируем основной файл маршрутов
 const path = require("path")
 const exphbs = require("express-handlebars")
@@ -24,9 +25,12 @@ const hbs = exphbs.create({
   extname: "hbs"
 })
 app.use(morgan('dev'));
+// credentials: true — cookie token с клиента :3001 (фаза 4 Cookie + Bearer)
 app.use(cors({
-  origin: 'http://localhost:3001'
+  origin: 'http://localhost:3001',
+  credentials: true,
 }));
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(express.json());
 app.engine("hbs", hbs.engine)
