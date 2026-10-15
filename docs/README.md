@@ -164,3 +164,6 @@ student       → только своя laboratory_id
 - [x] Фаза 4: Cookie + Bearer, `authorize`; logs и manage-users режутся по роли
   - student → GET /api/logs = 403; system_admin = 200
   - CORS credentials + client `withCredentials: true`
+- [x] Фаза 5a: `server/utils/labScope.js` + tenant на `/api/laboratories`
+  - 5b (ещё нет): storages, experiments, inventory, research…
+  - REST: `server/rest-client/laboratories-scope.http`

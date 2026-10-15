@@ -1,60 +1,73 @@
-const laboratoryService = require('../services/laboratoryService'); // Путь к вашему сервису
+const laboratoryService = require('../services/laboratoryService');
 
-// Создание новой лаборатории
-const createLaboratory = async (req, res) => {
-  try {
-    const newLaboratory = await laboratoryService.createLaboratory(req.body);
-    return res.status(201).json(newLaboratory);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+function sendServiceError(res, error) {
+  const status = error.status || (error.code === 'FORBIDDEN' || error.code === 'LAB_REQUIRED' ? 403 : 500);
+  if (status === 404 || (error.message && /не найдена/i.test(error.message) && status === 500)) {
+    // findByPk not found без status — 404
   }
-};
-
-// Получение всех лабораторий
-const getAllLaboratories = async (req, res) => {
-  try {
-    const laboratories = await laboratoryService.getAllLaboratories();
-    return res.status(200).json(laboratories);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+  const code = error.code;
+  if (code === 'FORBIDDEN' || code === 'LAB_REQUIRED') {
+    return res.status(403).json({ error: error.message, code });
   }
-};
-
-// Получение лаборатории по уникальному идентификатору
-const getLaboratoryById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const laboratory = await laboratoryService.getLaboratoryById(id);
-    return res.status(200).json(laboratory);
-  } catch (error) {
-    console.error(error);
+  if (/не найдена/i.test(error.message || '')) {
     return res.status(404).json({ error: error.message });
   }
-};
+  console.error(error);
+  return res.status(status >= 400 && status < 600 ? status : 500).json({
+    error: error.message,
+    code: error.code,
+  });
+}
 
-// Обновление данных лаборатории по уникальному идентификатору
-const updateLaboratory = async (req, res) => {
-  const { id } = req.params;
+/**
+ * Фаза 5a: во все вызовы сервиса передаём req.user (из authenticate).
+ */
+const createLaboratory = async (req, res) => {
   try {
-    const updatedLaboratory = await laboratoryService.updateLaboratory(id, req.body);
-    return res.status(200).json(updatedLaboratory);
+    const newLaboratory = await laboratoryService.createLaboratory(req.body, req.user);
+    return res.status(201).json(newLaboratory);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendServiceError(res, error);
   }
 };
 
-// Удаление лаборатории по уникальному идентификатору
-const deleteLaboratory = async (req, res) => {
-  const { id } = req.params;
+const getAllLaboratories = async (req, res) => {
   try {
-    const result = await laboratoryService.deleteLaboratory(id);
+    const laboratories = await laboratoryService.getAllLaboratories(req.user);
+    return res.status(200).json(laboratories);
+  } catch (error) {
+    return sendServiceError(res, error);
+  }
+};
+
+const getLaboratoryById = async (req, res) => {
+  try {
+    const laboratory = await laboratoryService.getLaboratoryById(req.params.id, req.user);
+    return res.status(200).json(laboratory);
+  } catch (error) {
+    return sendServiceError(res, error);
+  }
+};
+
+const updateLaboratory = async (req, res) => {
+  try {
+    const updatedLaboratory = await laboratoryService.updateLaboratory(
+      req.params.id,
+      req.body,
+      req.user
+    );
+    return res.status(200).json(updatedLaboratory);
+  } catch (error) {
+    return sendServiceError(res, error);
+  }
+};
+
+const deleteLaboratory = async (req, res) => {
+  try {
+    const result = await laboratoryService.deleteLaboratory(req.params.id, req.user);
     return res.status(200).json(result);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendServiceError(res, error);
   }
 };
 
@@ -63,5 +76,5 @@ module.exports = {
   getAllLaboratories,
   getLaboratoryById,
   updateLaboratory,
-  deleteLaboratory
+  deleteLaboratory,
 };
