@@ -165,5 +165,8 @@ student       → только своя laboratory_id
   - student → GET /api/logs = 403; system_admin = 200
   - CORS credentials + client `withCredentials: true`
 - [x] Фаза 5a: `server/utils/labScope.js` + tenant на `/api/laboratories`
-  - 5b (ещё нет): storages, experiments, inventory, research…
   - REST: `server/rest-client/laboratories-scope.http`
+- [x] Фаза 5b: tenant на storages, storage units, employees, experiments,
+  inventory (через storage), research-teams, logs
+  - хелперы: `listChemStorageIdsForUser`, `scopeByStorageIds`, `isScopeForbidden`
+  - REST: `server/rest-client/tenant-scope-5b.http`

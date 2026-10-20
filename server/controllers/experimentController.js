@@ -1,7 +1,12 @@
 const experimentService = require('../services/experimentService');
 const CatalogReferenceError = require('../errors/CatalogReferenceError');
+const { isScopeForbidden } = require('../utils/labScope');
 
 const sendExperimentError = (error, res) => {
+  if (isScopeForbidden(error)) {
+    return res.status(403).json({ error: error.message, code: error.code });
+  }
+
   if (error instanceof experimentService.ExperimentValidationError) {
     return res.status(error.statusCode || 400).json({
       error: error.message,
@@ -26,7 +31,7 @@ const sendExperimentError = (error, res) => {
 
 const createExperiment = async (req, res) => {
   try {
-    const experiment = await experimentService.createExperiment(req.body);
+    const experiment = await experimentService.createExperiment(req.body, req.user);
     return res.status(201).json(experiment);
   } catch (error) {
     return sendExperimentError(error, res);
@@ -36,7 +41,10 @@ const createExperiment = async (req, res) => {
 const getAllExperiments = async (req, res) => {
   try {
     const { research_id: researchId } = req.query;
-    const experiments = await experimentService.getExperiments({ researchId });
+    const experiments = await experimentService.getExperiments({
+      researchId,
+      user: req.user,
+    });
     return res.status(200).json(experiments);
   } catch (error) {
     return sendExperimentError(error, res);
@@ -45,7 +53,10 @@ const getAllExperiments = async (req, res) => {
 
 const getExperimentById = async (req, res) => {
   try {
-    const experiment = await experimentService.getExperimentDetail(req.params.id);
+    const experiment = await experimentService.getExperimentDetail(
+      req.params.id,
+      req.user
+    );
     return res.status(200).json(experiment);
   } catch (error) {
     return sendExperimentError(error, res);
@@ -54,7 +65,11 @@ const getExperimentById = async (req, res) => {
 
 const updateExperiment = async (req, res) => {
   try {
-    const experiment = await experimentService.updateExperiment(req.params.id, req.body);
+    const experiment = await experimentService.updateExperiment(
+      req.params.id,
+      req.body,
+      req.user
+    );
     return res.status(200).json(experiment);
   } catch (error) {
     return sendExperimentError(error, res);
@@ -63,7 +78,7 @@ const updateExperiment = async (req, res) => {
 
 const deleteExperiment = async (req, res) => {
   try {
-    const result = await experimentService.deleteExperiment(req.params.id);
+    const result = await experimentService.deleteExperiment(req.params.id, req.user);
     return res.status(200).json(result);
   } catch (error) {
     return sendExperimentError(error, res);
@@ -74,7 +89,8 @@ const replaceExperimentInputs = async (req, res) => {
   try {
     const experiment = await experimentService.replaceExperimentInputs(
       req.params.id,
-      req.body.inputs
+      req.body.inputs,
+      req.user
     );
     return res.status(200).json(experiment);
   } catch (error) {
@@ -86,7 +102,8 @@ const replaceExperimentOutputs = async (req, res) => {
   try {
     const experiment = await experimentService.replaceExperimentOutputs(
       req.params.id,
-      req.body.outputs
+      req.body.outputs,
+      req.user
     );
     return res.status(200).json(experiment);
   } catch (error) {
@@ -96,7 +113,9 @@ const replaceExperimentOutputs = async (req, res) => {
 
 const checkExperimentStock = async (req, res) => {
   try {
-    const stockCheck = await experimentService.checkExperimentStock(req.params.id);
+    const stockCheck = await experimentService.checkExperimentStock(req.params.id, {
+      user: req.user,
+    });
     return res.status(200).json(stockCheck);
   } catch (error) {
     return sendExperimentError(error, res);
@@ -105,7 +124,7 @@ const checkExperimentStock = async (req, res) => {
 
 const runExperiment = async (req, res) => {
   try {
-    const result = await experimentService.runExperiment(req.params.id);
+    const result = await experimentService.runExperiment(req.params.id, req.user);
     return res.status(200).json(result);
   } catch (error) {
     return sendExperimentError(error, res);
@@ -114,7 +133,10 @@ const runExperiment = async (req, res) => {
 
 const completeExperiment = async (req, res) => {
   try {
-    const experiment = await experimentService.completeExperiment(req.params.id);
+    const experiment = await experimentService.completeExperiment(
+      req.params.id,
+      req.user
+    );
     return res.status(200).json(experiment);
   } catch (error) {
     return sendExperimentError(error, res);

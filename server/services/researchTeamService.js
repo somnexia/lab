@@ -26,6 +26,7 @@ function employeeDisplayName(employee) {
 /**
  * Graph payload for research-teams visualization (D3, React Flow, Cytoscape, etc.)
  * @param {{ groupBy?: 'department'|'laboratory'|'none', status?: string, labId?: number }} options
+ * Фаза 5b: labId принудительно из actor, если не system_admin
  */
 async function getResearchTeamsGraph(options = {}) {
   const groupBy = parseGroupBy(options.groupBy);
@@ -169,21 +170,28 @@ async function getResearchTeamsSummary(options = {}) {
   const where = {};
   if (options.status) where.status = options.status;
 
+  const employeeInclude = {
+    model: Employee,
+    as: 'employee',
+    required: false,
+    include: [{ model: Laboratory, as: 'laboratory', required: false }],
+  };
+
+  // Фаза 5b: фильтр по lab — research виден, если есть участник из своей lab
+  const participantsRequired = options.labId != null;
+  if (options.labId != null) {
+    employeeInclude.required = true;
+    employeeInclude.where = { lab_id: Number(options.labId) };
+  }
+
   const researches = await Research.findAll({
     where: Object.keys(where).length ? where : undefined,
     include: [
       {
         model: ResearchEmployee,
         as: 'participants',
-        required: false,
-        include: [
-          {
-            model: Employee,
-            as: 'employee',
-            required: false,
-            include: [{ model: Laboratory, as: 'laboratory', required: false }],
-          },
-        ],
+        required: participantsRequired,
+        include: [employeeInclude],
       },
     ],
     order: [['start_date', 'DESC']],
@@ -218,7 +226,7 @@ async function getResearchTeamsSummary(options = {}) {
 }
 
 /** Employees with no research assignment (orphans for UI warnings) */
-async function getUnassignedEmployees() {
+async function getUnassignedEmployees(options = {}) {
   const assignedIds = await ResearchEmployee.findAll({
     attributes: ['employee_id'],
     where: { employee_id: { [Op.ne]: null } },
@@ -226,8 +234,13 @@ async function getUnassignedEmployees() {
   });
   const ids = [...new Set(assignedIds.map((r) => r.employee_id).filter(Boolean))];
 
+  const where = ids.length ? { id: { [Op.notIn]: ids } } : {};
+  if (options.labId != null) {
+    where.lab_id = Number(options.labId);
+  }
+
   return Employee.findAll({
-    where: ids.length ? { id: { [Op.notIn]: ids } } : {},
+    where,
     include: [{ model: Laboratory, as: 'laboratory', required: false }],
     order: [['surname', 'ASC'], ['name', 'ASC']],
   });

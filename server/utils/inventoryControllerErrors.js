@@ -1,6 +1,11 @@
 const CatalogReferenceError = require('../errors/CatalogReferenceError');
+const { isScopeForbidden } = require('./labScope');
 
 const sendInventoryError = (error, res) => {
+  if (isScopeForbidden(error)) {
+    return res.status(403).json({ error: error.message, code: error.code });
+  }
+
   if (error instanceof CatalogReferenceError) {
     return res.status(error.statusCode).json({
       error: error.message,

@@ -16,6 +16,11 @@ const {
   resolveCatalogDisplayName,
 } = require('./catalogReferenceService');
 const { planReagentConsumption } = require('./experimentConsumptionPlanner');
+const {
+  scopeByLab,
+  assertLabAccess,
+  enforceLabOnCreate,
+} = require('../utils/labScope');
 
 const EXPERIMENT_STATUSES = Object.freeze(['Completed', 'Ongoing', 'Pending']);
 
@@ -149,12 +154,16 @@ const enrichConsumptions = async (rows) => {
   );
 };
 
-const getExperimentOrThrow = async (id) => {
+const getExperimentOrThrow = async (id, user) => {
   const experiment = await Experiment.findByPk(id);
   if (!experiment) {
     const error = new ExperimentValidationError(`Experiment with id ${id} not found`, { id });
     error.statusCode = 404;
     throw error;
+  }
+  // Фаза 5b: tenant по laboratory_id
+  if (user !== undefined) {
+    assertLabAccess(user, experiment.laboratory_id, 'доступа к эксперименту');
   }
   return experiment;
 };
@@ -200,8 +209,8 @@ const normalizeInputPayload = (raw, index) => {
   };
 };
 
-const getExperiments = async ({ researchId } = {}) => {
-  const where = {};
+const getExperiments = async ({ researchId, user } = {}) => {
+  const where = scopeByLab(user, {}, { field: 'laboratory_id' });
   if (researchId != null && researchId !== '') {
     where.research_id = Number(researchId);
   }
@@ -216,7 +225,7 @@ const getExperiments = async ({ researchId } = {}) => {
   });
 };
 
-const getExperimentDetail = async (id) => {
+const getExperimentDetail = async (id, user) => {
   const experiment = await Experiment.findByPk(id, {
     include: [
       { model: Research, as: 'research' },
@@ -248,6 +257,8 @@ const getExperimentDetail = async (id) => {
     throw error;
   }
 
+  assertLabAccess(user, experiment.laboratory_id, 'просмотра эксперимента');
+
   const plain = experiment.toJSON();
   plain.inputs = await enrichInputs(experiment.inputs || []);
   plain.outputs = await enrichOutputs(experiment.outputs || []);
@@ -255,7 +266,7 @@ const getExperimentDetail = async (id) => {
   return plain;
 };
 
-const createExperiment = async (data) => {
+const createExperiment = async (data, user) => {
   if (!data.research_id) {
     throw new ExperimentValidationError('research_id is required');
   }
@@ -269,8 +280,14 @@ const createExperiment = async (data) => {
     throw new ExperimentValidationError('name is required');
   }
 
+  const laboratory_id = enforceLabOnCreate(
+    user,
+    data.laboratory_id ?? data.laboratoryId
+  );
+
   return Experiment.create({
     ...data,
+    laboratory_id,
     name: data.name.trim(),
     status: data.status && EXPERIMENT_STATUSES.includes(data.status) ? data.status : 'Pending',
   });
@@ -300,26 +317,30 @@ const pickUpdatableFields = (data) => {
   return payload;
 };
 
-const updateExperiment = async (id, data) => {
-  const experiment = await getExperimentOrThrow(id);
+const updateExperiment = async (id, data, user) => {
+  const experiment = await getExperimentOrThrow(id, user);
   const payload = pickUpdatableFields(data);
 
   if (!Object.keys(payload).length) {
     throw new ExperimentValidationError('No valid fields to update');
   }
 
+  if (payload.laboratory_id !== undefined) {
+    payload.laboratory_id = enforceLabOnCreate(user, payload.laboratory_id);
+  }
+
   await experiment.update(payload);
-  return getExperimentDetail(id);
+  return getExperimentDetail(id, user);
 };
 
-const deleteExperiment = async (id) => {
-  const experiment = await getExperimentOrThrow(id);
+const deleteExperiment = async (id, user) => {
+  const experiment = await getExperimentOrThrow(id, user);
   await experiment.destroy();
   return { message: `Experiment with id ${id} deleted` };
 };
 
-const replaceExperimentInputs = async (experimentId, incoming = []) => {
-  const experiment = await getExperimentOrThrow(experimentId);
+const replaceExperimentInputs = async (experimentId, incoming = [], user) => {
+  const experiment = await getExperimentOrThrow(experimentId, user);
 
   if (experiment.status === 'Completed') {
     throw new ExperimentValidationError(
@@ -360,7 +381,7 @@ const replaceExperimentInputs = async (experimentId, incoming = []) => {
 
     await transaction.commit();
 
-    const detail = await getExperimentDetail(experimentId);
+    const detail = await getExperimentDetail(experimentId, user);
     detail.runInvalidated = runInvalidated;
     return detail;
   } catch (error) {
@@ -369,8 +390,8 @@ const replaceExperimentInputs = async (experimentId, incoming = []) => {
   }
 };
 
-const replaceExperimentOutputs = async (experimentId, incoming = []) => {
-  await getExperimentOrThrow(experimentId);
+const replaceExperimentOutputs = async (experimentId, incoming = [], user) => {
+  await getExperimentOrThrow(experimentId, user);
 
   if (!Array.isArray(incoming)) {
     throw new ExperimentValidationError('outputs must be an array');
@@ -419,7 +440,7 @@ const replaceExperimentOutputs = async (experimentId, incoming = []) => {
     }
 
     await transaction.commit();
-    return getExperimentDetail(experimentId);
+    return getExperimentDetail(experimentId, user);
   } catch (error) {
     await transaction.rollback();
     throw error;
@@ -563,8 +584,8 @@ const applyExperimentConsumptions = async (experimentId, phase, transaction) => 
   return ExperimentConsumption.bulkCreate(createdRows, { transaction });
 };
 
-const checkExperimentStock = async (experimentId, { forRun = false } = {}) => {
-  const experiment = await getExperimentDetail(experimentId);
+const checkExperimentStock = async (experimentId, { forRun = false, user } = {}) => {
+  const experiment = await getExperimentDetail(experimentId, user);
   const reagentInputs = (experiment.inputs || [])
     .filter((input) => (input.inputRole || input.input_role) === 'reagent');
 
@@ -595,8 +616,8 @@ const checkExperimentStock = async (experimentId, { forRun = false } = {}) => {
   };
 };
 
-const runExperiment = async (experimentId) => {
-  const experiment = await getExperimentOrThrow(experimentId);
+const runExperiment = async (experimentId, user) => {
+  const experiment = await getExperimentOrThrow(experimentId, user);
 
   if (experiment.status === 'Completed') {
     throw new ExperimentValidationError('Experiment is already completed');
@@ -606,7 +627,7 @@ const runExperiment = async (experimentId) => {
     throw new ExperimentValidationError('Experiment is already running');
   }
 
-  const stockCheck = await checkExperimentStock(experimentId, { forRun: true });
+  const stockCheck = await checkExperimentStock(experimentId, { forRun: true, user });
   if (!stockCheck.ready) {
     const detail = stockCheck.checks?.find((check) => check.status === 'insufficient');
     const error = new ExperimentValidationError(
@@ -634,12 +655,12 @@ const runExperiment = async (experimentId) => {
     throw error;
   }
 
-  const detail = await getExperimentDetail(experimentId);
+  const detail = await getExperimentDetail(experimentId, user);
   return { experiment: detail, stockCheck };
 };
 
-const completeExperiment = async (experimentId) => {
-  const experiment = await getExperimentOrThrow(experimentId);
+const completeExperiment = async (experimentId, user) => {
+  const experiment = await getExperimentOrThrow(experimentId, user);
 
   if (experiment.status === 'Completed') {
     throw new ExperimentValidationError('Experiment is already completed');
@@ -655,7 +676,7 @@ const completeExperiment = async (experimentId) => {
 
     if (existingCount === 0) {
       if (experiment.status === 'Pending') {
-        const stockCheck = await checkExperimentStock(experimentId, { forRun: true });
+        const stockCheck = await checkExperimentStock(experimentId, { forRun: true, user });
         if (!stockCheck.ready) {
           const error = new ExperimentValidationError('Cannot complete — stock or input amounts are insufficient', {
             stockCheck,
@@ -687,7 +708,7 @@ const completeExperiment = async (experimentId) => {
     throw error;
   }
 
-  return getExperimentDetail(experimentId);
+  return getExperimentDetail(experimentId, user);
 };
 
 module.exports = {

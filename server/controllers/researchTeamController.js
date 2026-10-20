@@ -1,12 +1,27 @@
 const researchTeamService = require('../services/researchTeamService');
+const {
+  skipLabScope,
+  resolveActorLabId,
+} = require('../utils/labScope');
+
+/**
+ * Фаза 5b: lab_admin / researcher / student — принудительно своя lab.
+ * system_admin может передать ?labId=; без параметра — все labs.
+ */
+function resolveQueryLabId(req) {
+  if (skipLabScope(req.user)) {
+    return req.query.labId != null ? Number(req.query.labId) : undefined;
+  }
+  return resolveActorLabId(req.user);
+}
 
 const getGraph = async (req, res) => {
   try {
-    const { groupBy, status, labId } = req.query;
+    const { groupBy, status } = req.query;
     const graph = await researchTeamService.getResearchTeamsGraph({
       groupBy,
       status,
-      labId: labId != null ? Number(labId) : undefined,
+      labId: resolveQueryLabId(req),
     });
     return res.status(200).json(graph);
   } catch (error) {
@@ -18,7 +33,10 @@ const getGraph = async (req, res) => {
 const getSummary = async (req, res) => {
   try {
     const { status } = req.query;
-    const summary = await researchTeamService.getResearchTeamsSummary({ status });
+    const summary = await researchTeamService.getResearchTeamsSummary({
+      status,
+      labId: resolveQueryLabId(req),
+    });
     return res.status(200).json(summary);
   } catch (error) {
     console.error('researchTeamController.getSummary:', error);
@@ -28,7 +46,9 @@ const getSummary = async (req, res) => {
 
 const getUnassigned = async (req, res) => {
   try {
-    const employees = await researchTeamService.getUnassignedEmployees();
+    const employees = await researchTeamService.getUnassignedEmployees({
+      labId: resolveQueryLabId(req),
+    });
     return res.status(200).json(employees);
   } catch (error) {
     console.error('researchTeamController.getUnassigned:', error);

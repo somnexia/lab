@@ -24,6 +24,7 @@ const getLogs = async (req, res) => {
       userId: userId === '' ? '' : userId,
       dateFrom: String(dateFrom),
       dateTo: String(dateTo),
+      user: req.user,
     });
 
     res.json(logsData);

@@ -1,60 +1,63 @@
-const employeeService = require('../services/employeeService'); // Путь к вашему сервису
+const employeeService = require('../services/employeeService');
+const { isScopeForbidden } = require('../utils/labScope');
 
-// Создание нового сотрудника
-const createEmployee = async (req, res) => {
-  try {
-    const newEmployee = await employeeService.createEmployee(req.body);
-    return res.status(201).json(newEmployee);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+function sendError(res, error, fallbackStatus = 500) {
+  if (isScopeForbidden(error)) {
+    return res.status(403).json({ error: error.message, code: error.code });
   }
-};
-
-// Получение всех сотрудников
-const getAllEmployees = async (req, res) => {
-  try {
-    const employees = await employeeService.getAllEmployees();
-    return res.status(200).json(employees);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-// Получение сотрудника по ID
-const getEmployeeById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const employee = await employeeService.getEmployeeById(id);
-    return res.status(200).json(employee);
-  } catch (error) {
-    console.error(error);
+  if (/не найден/i.test(error.message || '')) {
     return res.status(404).json({ error: error.message });
   }
-};
+  console.error(error);
+  return res.status(fallbackStatus).json({ error: error.message });
+}
 
-// Обновление данных сотрудника по ID
-const updateEmployee = async (req, res) => {
-  const { id } = req.params;
+const createEmployee = async (req, res) => {
   try {
-    const updatedEmployee = await employeeService.updateEmployee(id, req.body);
-    return res.status(200).json(updatedEmployee);
+    const newEmployee = await employeeService.createEmployee(req.body, req.user);
+    return res.status(201).json(newEmployee);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Удаление сотрудника по ID
-const deleteEmployee = async (req, res) => {
-  const { id } = req.params;
+const getAllEmployees = async (req, res) => {
   try {
-    const result = await employeeService.deleteEmployee(id);
+    const employees = await employeeService.getAllEmployees(req.user);
+    return res.status(200).json(employees);
+  } catch (error) {
+    return sendError(res, error);
+  }
+};
+
+const getEmployeeById = async (req, res) => {
+  try {
+    const employee = await employeeService.getEmployeeById(req.params.id, req.user);
+    return res.status(200).json(employee);
+  } catch (error) {
+    return sendError(res, error);
+  }
+};
+
+const updateEmployee = async (req, res) => {
+  try {
+    const updatedEmployee = await employeeService.updateEmployee(
+      req.params.id,
+      req.body,
+      req.user
+    );
+    return res.status(200).json(updatedEmployee);
+  } catch (error) {
+    return sendError(res, error);
+  }
+};
+
+const deleteEmployee = async (req, res) => {
+  try {
+    const result = await employeeService.deleteEmployee(req.params.id, req.user);
     return res.status(200).json(result);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
@@ -63,5 +66,5 @@ module.exports = {
   getAllEmployees,
   getEmployeeById,
   updateEmployee,
-  deleteEmployee
+  deleteEmployee,
 };

@@ -3,7 +3,10 @@ const { sendInventoryError } = require('../utils/inventoryControllerErrors');
 
 const createInventoryItem = async (req, res) => {
   try {
-    const newInventoryItem = await inventoryService.createInventoryItem(req.body);
+    const newInventoryItem = await inventoryService.createInventoryItem(
+      req.body,
+      req.user
+    );
     return res.status(201).json(newInventoryItem);
   } catch (error) {
     return sendInventoryError(error, res);
@@ -21,6 +24,7 @@ const getAllInventoryItems = async (req, res) => {
       itemType: item_type,
       itemTypes,
       includeCatalog: include_catalog !== 'false',
+      user: req.user,
     });
     return res.status(200).json(inventoryItems);
   } catch (error) {
@@ -31,7 +35,9 @@ const getAllInventoryItems = async (req, res) => {
 const getInventoryItemById = async (req, res) => {
   const { id } = req.params;
   try {
-    const inventoryItem = await inventoryService.getInventoryItemById(id);
+    const inventoryItem = await inventoryService.getInventoryItemById(id, {
+      user: req.user,
+    });
     return res.status(200).json(inventoryItem);
   } catch (error) {
     return sendInventoryError(error, res);
@@ -41,7 +47,11 @@ const getInventoryItemById = async (req, res) => {
 const updateInventoryItem = async (req, res) => {
   const { id } = req.params;
   try {
-    const updatedInventoryItem = await inventoryService.updateInventoryItem(id, req.body);
+    const updatedInventoryItem = await inventoryService.updateInventoryItem(
+      id,
+      req.body,
+      req.user
+    );
     return res.status(200).json(updatedInventoryItem);
   } catch (error) {
     return sendInventoryError(error, res);
@@ -51,7 +61,7 @@ const updateInventoryItem = async (req, res) => {
 const deleteInventoryItem = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await inventoryService.deleteInventoryItem(id);
+    const result = await inventoryService.deleteInventoryItem(id, req.user);
     return res.status(200).json(result);
   } catch (error) {
     return sendInventoryError(error, res);
@@ -70,7 +80,8 @@ const getInventoriesByReferenceAndType = async (req, res) => {
 
     const inventories = await inventoryService.getInventoriesByReferenceAndType(
       reference_id,
-      item_type
+      item_type,
+      req.user
     );
 
     return res.status(200).json(inventories);
@@ -98,7 +109,7 @@ const validateCatalogReference = async (req, res) => {
 
 const getOrphanInventoryLots = async (req, res) => {
   try {
-    const orphans = await inventoryService.findOrphanInventoryLots();
+    const orphans = await inventoryService.findOrphanInventoryLots(req.user);
     return res.status(200).json({
       count: orphans.length,
       orphans,
@@ -121,7 +132,7 @@ const getLocationsForEntity = async (req, res) => {
 
 const getChemicalCount = async (req, res) => {
   try {
-    const count = await inventoryService.countChemicals();
+    const count = await inventoryService.countChemicals(req.user);
     return res.json({ count });
   } catch (error) {
     return sendInventoryError(error, res);
@@ -130,7 +141,7 @@ const getChemicalCount = async (req, res) => {
 
 const getEquipmentCount = async (req, res) => {
   try {
-    const count = await inventoryService.countEquipment();
+    const count = await inventoryService.countEquipment(req.user);
     return res.json({ count });
   } catch (error) {
     return sendInventoryError(error, res);

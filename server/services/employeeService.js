@@ -1,25 +1,30 @@
 const { Employee, User, Laboratory } = require('../models');
+const {
+  scopeByLab,
+  assertLabAccess,
+  enforceLabOnCreate,
+} = require('../utils/labScope');
 
-// Создание нового сотрудника
-const createEmployee = async (data) => {
+/** Фаза 5b: employees.lab_id */
+
+const createEmployee = async (data, user) => {
   try {
-    const employee = await Employee.create(data);
-    return employee;
+    const lab_id = enforceLabOnCreate(user, data.lab_id ?? data.laboratory_id);
+    return await Employee.create({ ...data, lab_id });
   } catch (error) {
     console.error('Ошибка при создании сотрудника:', error);
     throw error;
   }
 };
 
-// Получение всех сотрудников с возможностью включения лаборатории
-const getAllEmployees = async () => {
+const getAllEmployees = async (user) => {
   try {
     return await Employee.findAll({
+      where: scopeByLab(user, {}, { field: 'lab_id' }),
       include: [
         { model: User, as: 'user' },
-        { model: Laboratory, as: 'laboratory' }
-      ]
-      
+        { model: Laboratory, as: 'laboratory' },
+      ],
     });
   } catch (error) {
     console.error('Ошибка при получении списка сотрудников:', error);
@@ -27,15 +32,15 @@ const getAllEmployees = async () => {
   }
 };
 
-// Получение сотрудника по уникальному идентификатору
-const getEmployeeById = async (id) => {
+const getEmployeeById = async (id, user) => {
   try {
     const employee = await Employee.findByPk(id, {
-      include: { association: 'laboratory' }
+      include: { association: 'laboratory' },
     });
     if (!employee) {
       throw new Error(`Сотрудник с id ${id} не найден`);
     }
+    assertLabAccess(user, employee.lab_id, 'просмотра сотрудника');
     return employee;
   } catch (error) {
     console.error('Ошибка при получении сотрудника по id:', error);
@@ -43,12 +48,15 @@ const getEmployeeById = async (id) => {
   }
 };
 
-// Обновление данных сотрудника по уникальному идентификатору
-const updateEmployee = async (id, data) => {
+const updateEmployee = async (id, data, user) => {
   try {
     const employee = await Employee.findByPk(id);
     if (!employee) {
       throw new Error(`Сотрудник с id ${id} не найден`);
+    }
+    assertLabAccess(user, employee.lab_id, 'изменения сотрудника');
+    if (data.lab_id != null || data.laboratory_id != null) {
+      data.lab_id = enforceLabOnCreate(user, data.lab_id ?? data.laboratory_id);
     }
     await employee.update(data);
     return employee;
@@ -58,13 +66,13 @@ const updateEmployee = async (id, data) => {
   }
 };
 
-// Удаление сотрудника по уникальному идентификатору
-const deleteEmployee = async (id) => {
+const deleteEmployee = async (id, user) => {
   try {
     const employee = await Employee.findByPk(id);
     if (!employee) {
       throw new Error(`Сотрудник с id ${id} не найден`);
     }
+    assertLabAccess(user, employee.lab_id, 'удаления сотрудника');
     await employee.destroy();
     return { message: `Сотрудник с id ${id} удален` };
   } catch (error) {
@@ -78,5 +86,5 @@ module.exports = {
   getAllEmployees,
   getEmployeeById,
   updateEmployee,
-  deleteEmployee
+  deleteEmployee,
 };

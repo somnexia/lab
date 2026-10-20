@@ -1,5 +1,9 @@
 const { Op, Sequelize } = require('sequelize');
-const { Log, User } = require('../models');
+const { Log, User, Employee } = require('../models');
+const {
+  skipLabScope,
+  resolveActorLabId,
+} = require('../utils/labScope');
 
 /** Canonical audit action names — use these from services/controllers for consistent filtering */
 const LOG_ACTIONS = {
@@ -139,6 +143,7 @@ const createLog = async (action, userId, details = null) =>
  * @param {string|number} [options.userId]
  * @param {string} [options.dateFrom] ISO date string
  * @param {string} [options.dateTo] ISO date string
+ * @param {object} [options.user] req.user — фаза 5b: lab_admin видит только users своей lab
  */
 const getAllLogs = async ({
   limit = 10,
@@ -150,6 +155,7 @@ const getAllLogs = async ({
   userId = '',
   dateFrom = '',
   dateTo = '',
+  user = null,
 } = {}) => {
   const whereClause = {};
 
@@ -196,19 +202,35 @@ const getAllLogs = async ({
     }
   }
 
+  // Фаза 5b: не-system_admin — только логи пользователей своей лаборатории
+  const userInclude = {
+    model: User,
+    as: 'user',
+    attributes: ['id', 'name', 'email'],
+    required: false,
+  };
+
+  if (!skipLabScope(user)) {
+    const labId = resolveActorLabId(user);
+    userInclude.required = true;
+    userInclude.include = [
+      {
+        model: Employee,
+        as: 'employee',
+        attributes: ['id', 'lab_id'],
+        required: true,
+        where: { lab_id: labId == null ? -1 : labId },
+      },
+    ];
+  }
+
   const { rows: logs, count: totalLogs } = await Log.findAndCountAll({
     where: whereClause,
     limit: Math.min(Math.max(Number(limit) || 10, 1), 100),
     offset: Math.max(Number(offset) || 0, 0),
-    include: [
-      {
-        model: User,
-        as: 'user',
-        attributes: ['id', 'name', 'email'],
-        required: false,
-      },
-    ],
+    include: [userInclude],
     order: [['timestamp', 'DESC']],
+    distinct: true,
   });
 
   return { logs, totalLogs };

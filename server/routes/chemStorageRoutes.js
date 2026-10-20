@@ -1,20 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const chemStorageController = require('../controllers/chemStorageController'); // Путь к вашему контроллеру
+const chemStorageController = require('../controllers/chemStorageController');
+const { authorize } = require('../middleware/authMiddleware');
+const {
+  CAN_VIEW_STORAGE,
+  CAN_MANAGE_STORAGE,
+} = require('../config/roles');
 
-// Создание новой записи в хранилище
-router.post('/', chemStorageController.createStorage);
-
-// Получение всех хранилищ
-router.get('/', chemStorageController.getAllStorages);
-
-// Получение хранилища по ID
-router.get('/:id', chemStorageController.getStorageById);
-
-// Обновление данных хранилища по ID
-router.put('/:id', chemStorageController.updateStorage);
-
-// Удаление хранилища по ID
-router.delete('/:id', chemStorageController.deleteStorage);
+/** Фаза 5b: роль + tenant (laboratory_id на chemstorages) */
+router.post('/', authorize(CAN_MANAGE_STORAGE), chemStorageController.createStorage);
+router.get('/', authorize(CAN_VIEW_STORAGE), chemStorageController.getAllStorages);
+router.get('/:id', authorize(CAN_VIEW_STORAGE), chemStorageController.getStorageById);
+router.put('/:id', authorize(CAN_MANAGE_STORAGE), chemStorageController.updateStorage);
+router.delete('/:id', authorize(CAN_MANAGE_STORAGE), chemStorageController.deleteStorage);
 
 module.exports = router;

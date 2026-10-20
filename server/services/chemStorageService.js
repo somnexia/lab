@@ -1,9 +1,22 @@
 const { ChemStorage } = require('../models');
+const {
+  scopeByLab,
+  assertLabAccess,
+  enforceLabOnCreate,
+} = require('../utils/labScope');
 
-// Создание новой записи в хранилище
-const createStorage = async (data) => {
+/** Фаза 5b: chemstorages.laboratory_id */
+
+const createStorage = async (data, user) => {
   try {
-    const storage = await ChemStorage.create(data);
+    const laboratory_id = enforceLabOnCreate(
+      user,
+      data.laboratory_id ?? data.laboratoryId
+    );
+    const storage = await ChemStorage.create({
+      ...data,
+      laboratory_id,
+    });
     return storage;
   } catch (error) {
     console.error('Ошибка при создании хранилища:', error);
@@ -11,23 +24,24 @@ const createStorage = async (data) => {
   }
 };
 
-// Получение всех хранилищ
-const getAllStorages = async () => {
+const getAllStorages = async (user) => {
   try {
-    return await ChemStorage.findAll();
+    return await ChemStorage.findAll({
+      where: scopeByLab(user, {}, { field: 'laboratory_id' }),
+    });
   } catch (error) {
     console.error('Ошибка при получении списка хранилищ:', error);
     throw error;
   }
 };
 
-// Получение хранилища по ID
-const getStorageById = async (id) => {
+const getStorageById = async (id, user) => {
   try {
     const storage = await ChemStorage.findByPk(id);
     if (!storage) {
       throw new Error(`Хранилище с id ${id} не найдено`);
     }
+    assertLabAccess(user, storage.laboratory_id, 'просмотра хранилища');
     return storage;
   } catch (error) {
     console.error('Ошибка при получении хранилища по id:', error);
@@ -35,12 +49,15 @@ const getStorageById = async (id) => {
   }
 };
 
-// Обновление данных хранилища по ID
-const updateStorage = async (id, data) => {
+const updateStorage = async (id, data, user) => {
   try {
     const storage = await ChemStorage.findByPk(id);
     if (!storage) {
       throw new Error(`Хранилище с id ${id} не найдено`);
+    }
+    assertLabAccess(user, storage.laboratory_id, 'изменения хранилища');
+    if (data.laboratory_id != null || data.laboratoryId != null) {
+      enforceLabOnCreate(user, data.laboratory_id ?? data.laboratoryId);
     }
     await storage.update(data);
     return storage;
@@ -50,13 +67,13 @@ const updateStorage = async (id, data) => {
   }
 };
 
-// Удаление хранилища по ID
-const deleteStorage = async (id) => {
+const deleteStorage = async (id, user) => {
   try {
     const storage = await ChemStorage.findByPk(id);
     if (!storage) {
       throw new Error(`Хранилище с id ${id} не найдено`);
     }
+    assertLabAccess(user, storage.laboratory_id, 'удаления хранилища');
     await storage.destroy();
     return { message: `Хранилище с id ${id} удалено` };
   } catch (error) {
@@ -70,5 +87,5 @@ module.exports = {
   getAllStorages,
   getStorageById,
   updateStorage,
-  deleteStorage
+  deleteStorage,
 };

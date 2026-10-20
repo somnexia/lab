@@ -1,23 +1,63 @@
 // services/storageUnitService.js
+/** Фаза 5b: tenant через storage_id → chemstorages.laboratory_id */
 
-const { StorageUnit } = require('../models');
+const { StorageUnit, ChemStorage } = require('../models');
+const {
+  skipLabScope,
+  assertLabAccess,
+  scopeByStorageIds,
+  listChemStorageIdsForUser,
+} = require('../utils/labScope');
 
-// Создание нового блока хранения
-const createStorageUnit = async (data) => {
+async function assertUnitLabAccess(user, storageUnit, action = 'доступа к блоку хранения') {
+  if (skipLabScope(user)) return;
+
+  if (!storageUnit.storage_id) {
+    const err = new Error(`Недостаточно прав для ${action}: блок без склада`);
+    err.code = 'FORBIDDEN';
+    err.status = 403;
+    throw err;
+  }
+
+  const storage = await ChemStorage.findByPk(storageUnit.storage_id);
+  assertLabAccess(user, storage?.laboratory_id, action);
+}
+
+async function assertStorageIdForUser(user, storageId) {
+  if (storageId == null || storageId === '') {
+    if (skipLabScope(user)) return null;
+    const err = new Error('storage_id обязателен для привязки к лаборатории');
+    err.code = 'LAB_REQUIRED';
+    err.status = 403;
+    throw err;
+  }
+
+  const storage = await ChemStorage.findByPk(Number(storageId));
+  if (!storage) {
+    const err = new Error(`Хранилище с id ${storageId} не найдено`);
+    err.status = 404;
+    throw err;
+  }
+  assertLabAccess(user, storage.laboratory_id, 'привязки к хранилищу');
+  return storage;
+}
+
+const createStorageUnit = async (data, user) => {
   try {
-    const storageUnit = await StorageUnit.create(data);
-    return storageUnit;
+    await assertStorageIdForUser(user, data.storage_id);
+    return await StorageUnit.create(data);
   } catch (error) {
     console.error('Ошибка при создании блока хранения:', error);
     throw error;
   }
 };
 
-// Получение всех блоков хранения
-const getAllStorageUnits = async () => {
+const getAllStorageUnits = async (user) => {
   try {
+    const where = await scopeByStorageIds(user, {}, 'storage_id');
     return await StorageUnit.findAll({
-      include: ['children', 'inventories']  // Пример использования связей
+      where,
+      include: ['children', 'inventories'],
     });
   } catch (error) {
     console.error('Ошибка при получении списка блоков хранения:', error);
@@ -25,15 +65,15 @@ const getAllStorageUnits = async () => {
   }
 };
 
-// Получение блока хранения по ID
-const getStorageUnitById = async (id) => {
+const getStorageUnitById = async (id, user) => {
   try {
     const storageUnit = await StorageUnit.findByPk(id, {
-      include: ['children', 'inventories']
+      include: ['children', 'inventories'],
     });
     if (!storageUnit) {
       throw new Error(`Блок хранения с id ${id} не найден`);
     }
+    await assertUnitLabAccess(user, storageUnit, 'просмотра блока хранения');
     return storageUnit;
   } catch (error) {
     console.error('Ошибка при получении блока хранения по id:', error);
@@ -41,12 +81,15 @@ const getStorageUnitById = async (id) => {
   }
 };
 
-// Обновление блока хранения по ID
-const updateStorageUnit = async (id, data) => {
+const updateStorageUnit = async (id, data, user) => {
   try {
     const storageUnit = await StorageUnit.findByPk(id);
     if (!storageUnit) {
       throw new Error(`Блок хранения с id ${id} не найден`);
+    }
+    await assertUnitLabAccess(user, storageUnit, 'изменения блока хранения');
+    if (data.storage_id !== undefined) {
+      await assertStorageIdForUser(user, data.storage_id);
     }
     await storageUnit.update(data);
     return storageUnit;
@@ -56,13 +99,13 @@ const updateStorageUnit = async (id, data) => {
   }
 };
 
-// Удаление блока хранения по ID
-const deleteStorageUnit = async (id) => {
+const deleteStorageUnit = async (id, user) => {
   try {
     const storageUnit = await StorageUnit.findByPk(id);
     if (!storageUnit) {
       throw new Error(`Блок хранения с id ${id} не найден`);
     }
+    await assertUnitLabAccess(user, storageUnit, 'удаления блока хранения');
     await storageUnit.destroy();
     return { message: `Блок хранения с id ${id} удален` };
   } catch (error) {
@@ -70,47 +113,32 @@ const deleteStorageUnit = async (id) => {
     throw error;
   }
 };
-async function buildLocationChain(storageUnitId) {
-    console.log('[buildLocationChain] Вызов метода с storageUnitId:', storageUnitId);
 
-    const locationChain = [];
-    let currentUnit = await StorageUnit.findByPk(storageUnitId);
+async function buildLocationChain(storageUnitId, user) {
+  const locationChain = [];
+  let currentUnit = await StorageUnit.findByPk(storageUnitId);
 
-    if (!currentUnit) {
-        console.error('[buildLocationChain] Единица хранения не найдена для ID:', storageUnitId);
-        return locationChain;
-    }
-
-    console.log('[buildLocationChain] Начало построения цепочки');
-    console.log('[buildLocationChain] Текущая единица хранения:', currentUnit.dataValues);
-
-    // Итеративно поднимаемся по цепочке родительских узлов
-    while (currentUnit) {
-        console.log('[buildLocationChain] Добавляем в цепочку:', currentUnit.unit_name);
-        locationChain.unshift({
-            id: currentUnit.id,
-            name: currentUnit.unit_name,
-            
-        });
-
-        if (currentUnit.parent_id) {
-            console.log('[buildLocationChain] Переход к родительской единице с ID:', currentUnit.parent_id);
-            currentUnit = await StorageUnit.findByPk(currentUnit.parent_id);
-            if (!currentUnit) {
-                console.error('[buildLocationChain] Родительская единица не найдена для ID:', currentUnit.parent_id);
-            } else {
-                console.log('[buildLocationChain] Родительская единица найдена:', currentUnit.dataValues);
-            }
-        } else {
-            console.log('[buildLocationChain] Родительская единица отсутствует, цепочка завершена');
-            currentUnit = null;
-        }
-    }
-
-    console.log('[buildLocationChain] Построение завершено, итоговая цепочка:', locationChain);
+  if (!currentUnit) {
     return locationChain;
-}
+  }
 
+  await assertUnitLabAccess(user, currentUnit, 'просмотра цепочки хранения');
+
+  while (currentUnit) {
+    locationChain.unshift({
+      id: currentUnit.id,
+      name: currentUnit.unit_name,
+    });
+
+    if (currentUnit.parent_id) {
+      currentUnit = await StorageUnit.findByPk(currentUnit.parent_id);
+    } else {
+      currentUnit = null;
+    }
+  }
+
+  return locationChain;
+}
 
 module.exports = {
   createStorageUnit,
@@ -119,4 +147,5 @@ module.exports = {
   updateStorageUnit,
   deleteStorageUnit,
   buildLocationChain,
+  listChemStorageIdsForUser,
 };

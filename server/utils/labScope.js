@@ -1,17 +1,16 @@
 /**
- * Фаза 5a — tenant-scope по лаборатории.
+ * Фаза 5a/5b — tenant-scope по лаборатории.
  *
- * Зачем: JWT уже несёт laboratory_id (фаза 3), authorize режет роли (фаза 4).
- * Здесь режем ДАННЫЕ: lab_admin/researcher/student видят только свою lab;
- * system_admin — все (skipLabScope).
+ * 5a: laboratories (field: id)
+ * 5b: chemstorages, storageUnits (через storage), employees (lab_id),
+ *     experiments (laboratory_id), inventory (storage_id → chemstorage),
+ *     research-teams / researches (через employee.lab_id), logs (users своей lab)
  *
- * Фаза 5a: утилита + домен laboratories.
- * Фаза 5b: storages, experiments, inventory, research, logs…
- *
- * Контракт: docs/README.md (вариант B, laboratory_id).
+ * system_admin → skipLabScope → без фильтра.
  */
 'use strict';
 
+const { Op } = require('sequelize');
 const {
   skipLabScope,
   isSystemAdmin,
@@ -19,10 +18,6 @@ const {
   ROLES,
 } = require('../config/roles');
 
-/**
- * Достаёт laboratory_id актёра из req.user / JWT-подобнойго объекта.
- * system_admin → null (нет «своей» lab, видит все).
- */
 function resolveActorLabId(user) {
   if (!user) return null;
   if (skipLabScope(user)) return null;
@@ -33,30 +28,20 @@ function resolveActorLabId(user) {
 }
 
 /**
- * Добавляет фильтр Sequelize where по tenant.
- *
- * @param {object|null} user — req.user после authenticate
- * @param {object} [where={}] — уже собранный where
- * @param {object} [options]
- * @param {string} [options.field='id'] — для Laboratory таблица фильтруется по id;
- *   для ChemStorage будет field: 'laboratory_id' (фаза 5b)
- * @returns {object} where для Model.findAll({ where })
- *
- * Пример:
- *   Laboratory.findAll({ where: scopeByLab(req.user, {}, { field: 'id' }) })
- *   ChemStorage.findAll({ where: scopeByLab(req.user, {}, { field: 'laboratory_id' }) })
+ * @param {object|null} user
+ * @param {object} [where={}]
+ * @param {{ field?: string }} [options] field: 'id' | 'laboratory_id' | 'lab_id'
  */
 function scopeByLab(user, where = {}, options = {}) {
   const field = options.field || 'id';
   const next = { ...where };
 
   if (skipLabScope(user)) {
-    return next; // system_admin — без фильтра
+    return next;
   }
 
   const labId = resolveActorLabId(user);
   if (labId == null) {
-    // Нет lab в токене (student без employee и т.п.) — пустая выборка, не «все»
     next[field] = -1;
     return next;
   }
@@ -65,10 +50,6 @@ function scopeByLab(user, where = {}, options = {}) {
   return next;
 }
 
-/**
- * Проверка доступа к одной записи с известным laboratory id.
- * @throws Error с code FORBIDDEN | LAB_REQUIRED
- */
 function assertLabAccess(user, resourceLabId, action = 'access') {
   if (skipLabScope(user)) return;
 
@@ -95,10 +76,6 @@ function assertLabAccess(user, resourceLabId, action = 'access') {
   }
 }
 
-/**
- * Для create: запретить подставить чужой laboratory_id в body.
- * Возвращает labId, который нужно записать (или null для system_admin без принуждения).
- */
 function enforceLabOnCreate(user, requestedLabId) {
   if (skipLabScope(user)) {
     return requestedLabId == null ? null : Number(requestedLabId);
@@ -112,10 +89,7 @@ function enforceLabOnCreate(user, requestedLabId) {
     throw err;
   }
 
-  if (
-    requestedLabId != null &&
-    Number(requestedLabId) !== actorLab
-  ) {
+  if (requestedLabId != null && Number(requestedLabId) !== actorLab) {
     const err = new Error('Нельзя создать запись в чужой лаборатории');
     err.code = 'FORBIDDEN';
     err.status = 403;
@@ -125,12 +99,50 @@ function enforceLabOnCreate(user, requestedLabId) {
   return actorLab;
 }
 
+/**
+ * ID складов (chemstorages) своей lab.
+ * @returns {Promise<number[]|null>} null = все (system_admin); [] = ничего
+ */
+async function listChemStorageIdsForUser(user) {
+  if (skipLabScope(user)) return null;
+
+  const { ChemStorage } = require('../models');
+  const labId = resolveActorLabId(user);
+  if (labId == null) return [];
+
+  const rows = await ChemStorage.findAll({
+    where: { laboratory_id: labId },
+    attributes: ['id'],
+  });
+  return rows.map((r) => r.id);
+}
+
+/**
+ * where.storage_id IN (...) для inventory / storageUnits.
+ * system_admin → where без изменений.
+ */
+async function scopeByStorageIds(user, where = {}, field = 'storage_id') {
+  const next = { ...where };
+  const ids = await listChemStorageIdsForUser(user);
+  if (ids === null) return next;
+  next[field] = { [Op.in]: ids.length ? ids : [-1] };
+  return next;
+}
+
+/** HTTP-хелпер для контроллеров */
+function isScopeForbidden(error) {
+  return error && (error.code === 'FORBIDDEN' || error.code === 'LAB_REQUIRED');
+}
+
 module.exports = {
   skipLabScope,
   resolveActorLabId,
   scopeByLab,
   assertLabAccess,
   enforceLabOnCreate,
+  listChemStorageIdsForUser,
+  scopeByStorageIds,
+  isScopeForbidden,
   isSystemAdmin,
   getUserRole,
   ROLES,

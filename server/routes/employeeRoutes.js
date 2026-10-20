@@ -1,20 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const employeeController = require('../controllers/employeeController'); // Путь к вашему контроллеру
+const employeeController = require('../controllers/employeeController');
+const { authorize } = require('../middleware/authMiddleware');
+const {
+  CAN_MANAGE_EMPLOYEES,
+  CAN_VIEW_RESEARCH,
+} = require('../config/roles');
 
-// Создание нового сотрудника
-router.post('/', employeeController.createEmployee);
-
-// Получение всех сотрудников
-router.get('/', employeeController.getAllEmployees);
-
-// Получение сотрудника по ID
-router.get('/:id', employeeController.getEmployeeById);
-
-// Обновление данных сотрудника по ID
-router.put('/:id', employeeController.updateEmployee);
-
-// Удаление сотрудника по ID
-router.delete('/:id', employeeController.deleteEmployee);
+/** Фаза 5b: список — все роли с доступом к research; мутации — admins */
+router.post('/', authorize(CAN_MANAGE_EMPLOYEES), employeeController.createEmployee);
+router.get('/', authorize(CAN_VIEW_RESEARCH), employeeController.getAllEmployees);
+router.get('/:id', authorize(CAN_VIEW_RESEARCH), employeeController.getEmployeeById);
+router.put('/:id', authorize(CAN_MANAGE_EMPLOYEES), employeeController.updateEmployee);
+router.delete('/:id', authorize(CAN_MANAGE_EMPLOYEES), employeeController.deleteEmployee);
 
 module.exports = router;

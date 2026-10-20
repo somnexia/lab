@@ -1,60 +1,63 @@
-const storageService = require('../services/chemStorageService'); // Путь к вашему сервису
+const storageService = require('../services/chemStorageService');
+const { isScopeForbidden } = require('../utils/labScope');
 
-// Создание новой записи в хранилище
-const createStorage = async (req, res) => {
-  try {
-    const newStorage = await storageService.createStorage(req.body);
-    return res.status(201).json(newStorage);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+function sendError(res, error, fallbackStatus = 500) {
+  if (isScopeForbidden(error)) {
+    return res.status(403).json({ error: error.message, code: error.code });
   }
-};
-
-// Получение всех хранилищ
-const getAllStorages = async (req, res) => {
-  try {
-    const storages = await storageService.getAllStorages();
-    return res.status(200).json(storages);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
-  }
-};
-
-// Получение хранилища по ID
-const getStorageById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const storage = await storageService.getStorageById(id);
-    return res.status(200).json(storage);
-  } catch (error) {
-    console.error(error);
+  if (/не найдено/i.test(error.message || '')) {
     return res.status(404).json({ error: error.message });
   }
-};
+  console.error(error);
+  return res.status(fallbackStatus).json({ error: error.message });
+}
 
-// Обновление данных хранилища по ID
-const updateStorage = async (req, res) => {
-  const { id } = req.params;
+const createStorage = async (req, res) => {
   try {
-    const updatedStorage = await storageService.updateStorage(id, req.body);
-    return res.status(200).json(updatedStorage);
+    const newStorage = await storageService.createStorage(req.body, req.user);
+    return res.status(201).json(newStorage);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Удаление хранилища по ID
-const deleteStorage = async (req, res) => {
-  const { id } = req.params;
+const getAllStorages = async (req, res) => {
   try {
-    const result = await storageService.deleteStorage(id);
+    const storages = await storageService.getAllStorages(req.user);
+    return res.status(200).json(storages);
+  } catch (error) {
+    return sendError(res, error);
+  }
+};
+
+const getStorageById = async (req, res) => {
+  try {
+    const storage = await storageService.getStorageById(req.params.id, req.user);
+    return res.status(200).json(storage);
+  } catch (error) {
+    return sendError(res, error);
+  }
+};
+
+const updateStorage = async (req, res) => {
+  try {
+    const updatedStorage = await storageService.updateStorage(
+      req.params.id,
+      req.body,
+      req.user
+    );
+    return res.status(200).json(updatedStorage);
+  } catch (error) {
+    return sendError(res, error);
+  }
+};
+
+const deleteStorage = async (req, res) => {
+  try {
+    const result = await storageService.deleteStorage(req.params.id, req.user);
     return res.status(200).json(result);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
@@ -63,5 +66,5 @@ module.exports = {
   getAllStorages,
   getStorageById,
   updateStorage,
-  deleteStorage
+  deleteStorage,
 };

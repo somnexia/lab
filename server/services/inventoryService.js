@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Inventory, sequelize } = require('../models');
+const { Inventory, sequelize, ChemStorage } = require('../models');
 const {
   ChemElement,
   ChemEquipment,
@@ -15,8 +15,37 @@ const {
   validateInventoryCatalogPair,
   validateInventoryCatalogPatch,
 } = require('./catalogReferenceService');
+const {
+  skipLabScope,
+  assertLabAccess,
+  scopeByStorageIds,
+} = require('../utils/labScope');
 
-const createInventoryItem = async (data) => {
+/** Фаза 5b: inventory.storage_id → chemstorages.laboratory_id */
+async function assertInventoryLabAccess(user, lot, action = 'доступа к инвентарю') {
+  if (skipLabScope(user)) return;
+  if (!lot?.storage_id) {
+    const err = new Error(`Недостаточно прав для ${action}: партия без склада`);
+    err.code = 'FORBIDDEN';
+    err.status = 403;
+    throw err;
+  }
+  const storage = await ChemStorage.findByPk(lot.storage_id);
+  assertLabAccess(user, storage?.laboratory_id, action);
+}
+
+async function assertStorageIdForInventory(user, storageId) {
+  const storage = await ChemStorage.findByPk(Number(storageId));
+  if (!storage) {
+    throw new CatalogReferenceError(`ChemStorage ${storageId} not found`, {
+      field: 'storage_id',
+    });
+  }
+  assertLabAccess(user, storage.laboratory_id, 'привязки инвентаря к хранилищу');
+  return storage;
+}
+
+const createInventoryItem = async (data, user) => {
   const transaction = await sequelize.transaction();
 
   try {
@@ -34,6 +63,8 @@ const createInventoryItem = async (data) => {
         field: 'storage_id',
       });
     }
+
+    await assertStorageIdForInventory(user, data.storage_id);
 
     const validated = await validateInventoryCatalogPair({
       item_type,
@@ -67,7 +98,7 @@ const createInventoryItem = async (data) => {
 
     await transaction.commit();
 
-    return getInventoryItemById(inventoryItem.id, { includeRelations: true });
+    return getInventoryItemById(inventoryItem.id, { includeRelations: true, user });
   } catch (error) {
     await transaction.rollback();
     if (error instanceof CatalogReferenceError) {
@@ -78,14 +109,14 @@ const createInventoryItem = async (data) => {
   }
 };
 
-const getAllInventoryItems = async () => {
-  return getInventoryLots();
+const getAllInventoryItems = async (user) => {
+  return getInventoryLots({ user });
 };
 
 const getInventoryLots = async (options = {}) => {
   try {
-    const { itemType, itemTypes, includeCatalog = true } = options;
-    const where = {};
+    const { itemType, itemTypes, includeCatalog = true, user } = options;
+    let where = {};
 
     if (itemType) {
       if (!isInventoryItemType(itemType)) {
@@ -99,6 +130,8 @@ const getInventoryLots = async (options = {}) => {
       }
       where.item_type = { [Op.in]: itemTypes };
     }
+
+    where = await scopeByStorageIds(user, where, 'storage_id');
 
     const include = [
       {
@@ -149,6 +182,9 @@ const getInventoryItemById = async (id, options = {}) => {
     if (!inventoryItem) {
       throw new Error(`Запись Inventory с id ${id} не найдена`);
     }
+    if (options.user !== undefined) {
+      await assertInventoryLabAccess(options.user, inventoryItem, 'просмотра инвентаря');
+    }
     return inventoryItem;
   } catch (error) {
     console.error('Ошибка при получении записи Inventory по id:', error);
@@ -156,11 +192,16 @@ const getInventoryItemById = async (id, options = {}) => {
   }
 };
 
-const updateInventoryItem = async (id, data) => {
+const updateInventoryItem = async (id, data, user) => {
   try {
     const inventoryItem = await Inventory.findByPk(id);
     if (!inventoryItem) {
       throw new Error(`Запись Inventory с id ${id} не найдена`);
+    }
+    await assertInventoryLabAccess(user, inventoryItem, 'изменения инвентаря');
+
+    if (data.storage_id != null) {
+      await assertStorageIdForInventory(user, data.storage_id);
     }
 
     const touchesCatalogLink = Object.prototype.hasOwnProperty.call(data, 'item_type')
@@ -182,12 +223,13 @@ const updateInventoryItem = async (id, data) => {
   }
 };
 
-const deleteInventoryItem = async (id) => {
+const deleteInventoryItem = async (id, user) => {
   try {
     const inventoryItem = await Inventory.findByPk(id);
     if (!inventoryItem) {
       throw new Error(`Запись Inventory с id ${id} не найдена`);
     }
+    await assertInventoryLabAccess(user, inventoryItem, 'удаления инвентаря');
     await inventoryItem.destroy();
     return { message: `Запись Inventory с id ${id} удалена` };
   } catch (error) {
@@ -196,7 +238,7 @@ const deleteInventoryItem = async (id) => {
   }
 };
 
-const getInventoriesByReferenceAndType = async (referenceId, itemType) => {
+const getInventoriesByReferenceAndType = async (referenceId, itemType, user) => {
   try {
     await assertCatalogReference(itemType, referenceId);
 
@@ -233,11 +275,17 @@ const getInventoriesByReferenceAndType = async (referenceId, itemType) => {
       as: 'storageUnits',
     });
 
-    return await Inventory.findAll({
-      where: {
+    const where = await scopeByStorageIds(
+      user,
+      {
         reference_id: Number(referenceId),
         item_type: itemType,
       },
+      'storage_id'
+    );
+
+    return await Inventory.findAll({
+      where,
       include: includeOptions,
     });
   } catch (error) {
@@ -311,26 +359,28 @@ const getLocationsForEntity = async (entityType, entityId) => {
   }
 };
 
-const countChemicals = async () => {
+const countChemicals = async (user) => {
   try {
-    return await Inventory.count({
-      where: {
-        item_type: { [Op.in]: ['element', 'compound', 'mixture'] },
-      },
-    });
+    const where = await scopeByStorageIds(
+      user,
+      { item_type: { [Op.in]: ['element', 'compound', 'mixture'] } },
+      'storage_id'
+    );
+    return await Inventory.count({ where });
   } catch (error) {
     console.error('Ошибка при подсчете химикатов:', error);
     throw error;
   }
 };
 
-const countEquipment = async () => {
+const countEquipment = async (user) => {
   try {
-    return await Inventory.count({
-      where: {
-        item_type: 'equipment',
-      },
-    });
+    const where = await scopeByStorageIds(
+      user,
+      { item_type: 'equipment' },
+      'storage_id'
+    );
+    return await Inventory.count({ where });
   } catch (error) {
     console.error('Ошибка при подсчете оборудования:', error);
     throw error;
@@ -340,8 +390,10 @@ const countEquipment = async () => {
 /**
  * Reports inventory rows whose (item_type, reference_id) do not resolve in catalog.
  */
-const findOrphanInventoryLots = async () => {
+const findOrphanInventoryLots = async (user) => {
+  const where = await scopeByStorageIds(user, {}, 'storage_id');
   const lots = await Inventory.findAll({
+    where,
     attributes: ['id', 'item_type', 'reference_id', 'item_name'],
   });
 
