@@ -3,11 +3,9 @@
  *
  * HTTP-клиент: config/http.js (Bearer из localStorage).
  *
- * Фаза 3 (сервер): login/profile отдают
- *   user.role, user.roleLabel, user.laboratory_id, user.employee_id
- *
- * Фаза 7a: perms = buildNavPerms(user) — флаги для Aside / Header / Profile.
- *   UI скрывает пункты; API по-прежнему режет через authorize (фазы 4–6).
+ * login/profile отдают: role, roleLabel, laboratory_id, employee_id
+ * perms = buildNavPerms(user) — флаги для Aside / Header / RequirePerm.
+ * UI скрывает пункты и URL; API по-прежнему режет через authorize.
  */
 import React, { createContext, Component } from 'react';
 import { API } from '../config/api';
@@ -107,7 +105,7 @@ class AuthProvider extends Component {
     };
 
     /**
-     * Фаза 7a/7b: проверка одного флага из perms.
+     * Проверка одного флага из perms.
      * Пример: can('showUserLog') / can('canManageInventory')
      */
     can = (permKey) => {

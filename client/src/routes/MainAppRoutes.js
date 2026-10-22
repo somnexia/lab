@@ -30,11 +30,18 @@ import LabEquipmentPlaceholder from "../pages/LabEquipmentPlaceholder";
 import InventoryMaterialsPlaceholder from "../pages/InventoryMaterialsPlaceholder";
 import ExperimentDetailPage from "../pages/ExperimentDetailPage";
 import ResearchExperimentsPage from "../pages/ResearchExperimentsPage";
+import RequirePerm from "../components/RequirePerm";
 
 const LEGACY_STORAGE_INVENTORY_PATHS = ["warehouses", "storage-units", "ladder", "dropdown", "location"];
 
+/** Обёртка: страница только при наличии флага в navPerms */
+function gated(perm, element, fallback = "/") {
+    return <RequirePerm perm={perm} fallback={fallback}>{element}</RequirePerm>;
+}
+
 /**
- * Все маршруты основного layout (Header + Aside + Main).
+ * Маршруты основного layout (Header + Aside + Main).
+ * Чувствительные URL дополнительно закрыты RequirePerm (меню можно обойти вручную).
  */
 const MainAppRoutes = () => (
     <Routes>
@@ -45,7 +52,10 @@ const MainAppRoutes = () => (
         <Route path="/inventory/overview" element={<InventoryStockOverview />} />
         <Route path="/inventory/list" element={<Navigate to="/inventory/lots" replace />} />
         <Route path="/inventory/lots" element={<InventoryLotsPage />} />
-        <Route path="/inventory/lots/register" element={<RegisterInventoryLotPage />} />
+        <Route
+            path="/inventory/lots/register"
+            element={gated("showRegisterLot", <RegisterInventoryLotPage />, "/inventory/lots")}
+        />
         <Route path="/inventory/chemicals" element={<ReagentCatalogPage />} />
         <Route path="/inventory/samples-specimens" element={<InventoryMaterialsPlaceholder />} />
         <Route path="/inventory/consumables" element={<InventoryMaterialsPlaceholder />} />
@@ -73,9 +83,15 @@ const MainAppRoutes = () => (
         <Route path="/projects" element={<ProjectsOverviewPage />} />
         <Route path="/projects/overview" element={<Navigate to="/projects" replace />} />
         <Route path="/projects/research-list" element={<ResearchList />} />
-        <Route path="/projects/research-create" element={<AddResearch />} />
+        <Route
+            path="/projects/research-create"
+            element={gated("showCreateResearch", <AddResearch />, "/projects/research-list")}
+        />
         <Route path="/projects/task-list" element={<TaskList />} />
-        <Route path="/projects/task-create" element={<TaskCreate />} />
+        <Route
+            path="/projects/task-create"
+            element={gated("showCreateTask", <TaskCreate />, "/projects/task-list")}
+        />
         <Route path="/projects/tasks" element={<Navigate to="/projects/task-list" replace />} />
         <Route path="/projects/research/:researchId/experiments/:experimentId" element={<ExperimentDetailPage />} />
         <Route path="/projects/research/:researchId/experiments" element={<ResearchExperimentsPage />} />
@@ -103,7 +119,10 @@ const MainAppRoutes = () => (
         <Route path="/members-teams/invitations" element={<MembersTeamsPlaceholder />} />
 
         {/* ---------- Management ---------- */}
-        <Route path="/management/userlog" element={<AdminLogsPage />} />
+        <Route
+            path="/management/userlog"
+            element={gated("showUserLog", <AdminLogsPage />, "/")}
+        />
     </Routes>
 );
 

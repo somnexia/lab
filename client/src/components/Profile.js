@@ -79,7 +79,6 @@ class Profile extends Component {
                             )}
                         </p>
                     </div>
-                    {/* Фаза 7a: роль и tenant из JWT/profile */}
                     <div className="lab-profile__detail-row">
                         <p className="lab-profile__detail-label">Role</p>
                         <p className="lab-profile__detail-value">

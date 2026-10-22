@@ -1,11 +1,12 @@
 /**
- * Фаза 7a — navPerms: флаги UI из user.role.
+ * navPerms — флаги UI из user.role.
  *
  * Использование:
  *   const { perms } = useContext(AuthContext);
  *   if (perms.showUserLog) …
  *
- * Это НЕ защита API. RoleRoute (фаза 7b) + authorize на сервере — да.
+ * Это не замена API: меню можно скрыть, URL — защитить RequirePerm,
+ * данные — только через authorize на сервере.
  */
 import {
   ROLE_LABELS,

@@ -1,5 +1,5 @@
 /**
- * Фаза 7a — удобный хук к navPerms из AuthContext.
+ * Удобный хук к navPerms из AuthContext.
  * @example
  *   const { perms, can } = useNavPerms();
  *   if (can('showUserLog')) …

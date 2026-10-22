@@ -129,7 +129,7 @@ function MyWorkMenuBody({ user, closeMenus }) {
 function Header() {
     const navigate = useNavigate();
     const location = useLocation();
-    /** Фаза 7a: Create-меню режется navPerms */
+    /** Create-меню режется navPerms */
     const { user, perms } = useContext(AuthContext);
     const { openPanel } = usePanel();
 

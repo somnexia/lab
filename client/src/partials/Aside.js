@@ -77,7 +77,7 @@ function Aside() {
     const location = useLocation();
     const { openPanel } = usePanel();
     const { asideCollapsed, toggleAsideCollapsed } = useAsideLayout();
-    /** Фаза 7a: пункты меню по navPerms (роль), не по «всем подряд» */
+    /** Пункты меню по navPerms (роль), не по «всем подряд» */
     const { perms } = useContext(AuthContext);
     const [expanded, setExpanded] = useState(() => ({
         inventoryMaterials: false,
