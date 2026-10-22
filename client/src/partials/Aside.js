@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { IoHome } from "react-icons/io5";
 import { BsBoxes } from "react-icons/bs";
@@ -10,6 +10,7 @@ import { FaRegUserCircle } from "react-icons/fa";
 import { IoSettingsOutline } from "react-icons/io5";
 import { usePanel } from "../context/PanelContext";
 import { useAsideLayout } from "../context/AsideLayoutContext";
+import { AuthContext } from "../context/AuthContext";
 import { MEMBERS_TEAMS_NAV_ITEMS } from "../pages/membersTeamsSections";
 
 const SOON_HINT = "Planned in a future release";
@@ -76,6 +77,8 @@ function Aside() {
     const location = useLocation();
     const { openPanel } = usePanel();
     const { asideCollapsed, toggleAsideCollapsed } = useAsideLayout();
+    /** Фаза 7a: пункты меню по navPerms (роль), не по «всем подряд» */
+    const { perms } = useContext(AuthContext);
     const [expanded, setExpanded] = useState(() => ({
         inventoryMaterials: false,
         storageLocations: false,
@@ -142,21 +145,25 @@ function Aside() {
                                         Researches
                                     </NavLink>
                                 </li>
-                                <li>
-                                    <NavLink to="/projects/research-create" className={subLinkClass}>
-                                        New research
-                                    </NavLink>
-                                </li>
+                                {perms.showCreateResearch ? (
+                                    <li>
+                                        <NavLink to="/projects/research-create" className={subLinkClass}>
+                                            New research
+                                        </NavLink>
+                                    </li>
+                                ) : null}
                                 <li>
                                     <NavLink to="/projects/task-list" className={subLinkClass}>
                                         Tasks
                                     </NavLink>
                                 </li>
-                                <li>
-                                    <NavLink to="/projects/task-create" className={subLinkClass}>
-                                        New task
-                                    </NavLink>
-                                </li>
+                                {perms.showCreateTask ? (
+                                    <li>
+                                        <NavLink to="/projects/task-create" className={subLinkClass}>
+                                            New task
+                                        </NavLink>
+                                    </li>
+                                ) : null}
                             </NavGroup>
 
                             <NavGroup id="membersTeams" title="Members & Teams" icon={GrGroup} expanded={expanded} onToggle={toggle}>
@@ -204,6 +211,13 @@ function Aside() {
                                         Lots &amp; batches
                                     </NavLink>
                                 </li>
+                                {perms.showRegisterLot ? (
+                                    <li>
+                                        <NavLink to="/inventory/lots/register" className={subLinkClass}>
+                                            Register lot
+                                        </NavLink>
+                                    </li>
+                                ) : null}
                             </NavGroup>
                         </ul>
 
@@ -291,26 +305,34 @@ function Aside() {
                         <h6 className="lab-aside__section-label navbar-heading text-secondary">Management</h6>
                         <ul className="lab-aside__list navbar-nav flex-column">
                             <NavGroup id="management" title="Management" icon={MdOutlineAdminPanelSettings} expanded={expanded} onToggle={toggle}>
-                                <li>
-                                    <NavLink to="/management/signin" className={subLinkClass}>
-                                        Sign in
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/management/signup" className={subLinkClass}>
-                                        Sign up
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/management/signout" className={subLinkClass}>
-                                        Sign out
-                                    </NavLink>
-                                </li>
-                                <li>
-                                    <NavLink to="/management/userlog" className={subLinkClass}>
-                                        User log
-                                    </NavLink>
-                                </li>
+                                {perms.showAuthLinks ? (
+                                    <>
+                                        <li>
+                                            <NavLink to="/management/signin" className={subLinkClass}>
+                                                Sign in
+                                            </NavLink>
+                                        </li>
+                                        <li>
+                                            <NavLink to="/management/signup" className={subLinkClass}>
+                                                Sign up
+                                            </NavLink>
+                                        </li>
+                                    </>
+                                ) : null}
+                                {perms.showSignOut ? (
+                                    <li>
+                                        <NavLink to="/management/signout" className={subLinkClass}>
+                                            Sign out
+                                        </NavLink>
+                                    </li>
+                                ) : null}
+                                {perms.showUserLog ? (
+                                    <li>
+                                        <NavLink to="/management/userlog" className={subLinkClass}>
+                                            User log
+                                        </NavLink>
+                                    </li>
+                                ) : null}
                             </NavGroup>
                         </ul>
 

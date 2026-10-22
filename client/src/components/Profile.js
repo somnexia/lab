@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { FaPen } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
+import { roleBadgeClass } from "../config/navPerms";
 import ProfileEdit from "./ProfileEdit";
 
 function initialsFromName(name) {
@@ -76,6 +77,29 @@ class Profile extends Component {
                             ) : (
                                 "—"
                             )}
+                        </p>
+                    </div>
+                    {/* Фаза 7a: роль и tenant из JWT/profile */}
+                    <div className="lab-profile__detail-row">
+                        <p className="lab-profile__detail-label">Role</p>
+                        <p className="lab-profile__detail-value">
+                            {user.role ? (
+                                <span className={roleBadgeClass(user.role)}>
+                                    {user.roleLabel || user.role}
+                                </span>
+                            ) : (
+                                "—"
+                            )}
+                        </p>
+                    </div>
+                    <div className="lab-profile__detail-row">
+                        <p className="lab-profile__detail-label">Laboratory ID</p>
+                        <p className="lab-profile__detail-value">
+                            {user.laboratory_id == null
+                                ? user.role === "system_admin"
+                                    ? "All laboratories"
+                                    : "—"
+                                : String(user.laboratory_id)}
                         </p>
                     </div>
                     <div className="lab-profile__detail-row">

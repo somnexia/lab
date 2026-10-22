@@ -129,7 +129,8 @@ function MyWorkMenuBody({ user, closeMenus }) {
 function Header() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useContext(AuthContext);
+    /** Фаза 7a: Create-меню режется navPerms */
+    const { user, perms } = useContext(AuthContext);
     const { openPanel } = usePanel();
 
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -222,26 +223,42 @@ function Header() {
                                     <li role="presentation">
                                         <div className="lab-header__dropdown-heading">Research &amp; work</div>
                                     </li>
-                                    <li>
-                                        <NavLink
-                                            to="/projects/research-create"
-                                            className="lab-header__dropdown-item lab-header__dropdown-item--stacked"
-                                            onClick={closeMenus}
-                                        >
-                                            <span className="lab-header__dropdown-item__title">New research</span>
-                                            <span className="lab-header__dropdown-item__hint">Open a new study or experiment record</span>
-                                        </NavLink>
-                                    </li>
-                                    <li>
-                                        <NavLink
-                                            to="/projects/task-create"
-                                            className="lab-header__dropdown-item lab-header__dropdown-item--stacked"
-                                            onClick={closeMenus}
-                                        >
-                                            <span className="lab-header__dropdown-item__title">New task</span>
-                                            <span className="lab-header__dropdown-item__hint">Assign work linked to projects</span>
-                                        </NavLink>
-                                    </li>
+                                    {perms.showCreateResearch ? (
+                                        <li>
+                                            <NavLink
+                                                to="/projects/research-create"
+                                                className="lab-header__dropdown-item lab-header__dropdown-item--stacked"
+                                                onClick={closeMenus}
+                                            >
+                                                <span className="lab-header__dropdown-item__title">New research</span>
+                                                <span className="lab-header__dropdown-item__hint">Open a new study or experiment record</span>
+                                            </NavLink>
+                                        </li>
+                                    ) : null}
+                                    {perms.showCreateTask ? (
+                                        <li>
+                                            <NavLink
+                                                to="/projects/task-create"
+                                                className="lab-header__dropdown-item lab-header__dropdown-item--stacked"
+                                                onClick={closeMenus}
+                                            >
+                                                <span className="lab-header__dropdown-item__title">New task</span>
+                                                <span className="lab-header__dropdown-item__hint">Assign work linked to projects</span>
+                                            </NavLink>
+                                        </li>
+                                    ) : null}
+                                    {perms.showRegisterLot ? (
+                                        <li>
+                                            <NavLink
+                                                to="/inventory/lots/register"
+                                                className="lab-header__dropdown-item lab-header__dropdown-item--stacked"
+                                                onClick={closeMenus}
+                                            >
+                                                <span className="lab-header__dropdown-item__title">Register inventory lot</span>
+                                                <span className="lab-header__dropdown-item__hint">Add a stock lot to a storage</span>
+                                            </NavLink>
+                                        </li>
+                                    ) : null}
                                     <li>
                                         <hr className="dropdown-divider my-1" />
                                     </li>
@@ -334,6 +351,17 @@ function Header() {
                             </button>
                             {menuOpen === "user" ? (
                                 <ul className="lab-header__dropdown lab-header__dropdown--end" role="menu">
+                                    <li role="presentation" className="px-3 pt-2 pb-1">
+                                        <div className="small text-body-secondary text-truncate" title={user.email}>
+                                            {user.name || user.email}
+                                        </div>
+                                        {perms.roleLabel ? (
+                                            <div className="small fw-semibold text-body-highlight">{perms.roleLabel}</div>
+                                        ) : null}
+                                    </li>
+                                    <li>
+                                        <hr className="dropdown-divider my-1" />
+                                    </li>
                                     <li>
                                         <Link to="/customer/profile" className="lab-header__dropdown-item" onClick={closeMenus}>
                                             <FaRegUserCircle style={{ alignContent: "center", marginRight: "0.35rem", verticalAlign: "text-bottom" }} />

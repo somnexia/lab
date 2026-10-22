@@ -149,6 +149,37 @@ $lab-profile-shadow: 0 1rem 2.5rem rgba(4, 3, 22, 0.08);
   word-break: break-word;
 }
 
+/* Фаза 7a: бейдж роли в профиле */
+.lab-role-badge {
+  border-radius: 0.35rem;
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+  padding: 0.2rem 0.55rem;
+}
+
+.lab-role-badge--system {
+  background: rgba(55, 65, 81, 0.12);
+  color: #1f2937;
+}
+
+.lab-role-badge--lab {
+  background: rgba(14, 116, 144, 0.12);
+  color: #0e7490;
+}
+
+.lab-role-badge--researcher {
+  background: rgba(21, 128, 61, 0.12);
+  color: #166534;
+}
+
+.lab-role-badge--student {
+  background: rgba(124, 58, 237, 0.1);
+  color: #5b21b6;
+}
+
 .lab-profile__detail-value a {
   color: var(--link-color);
   text-decoration: none;

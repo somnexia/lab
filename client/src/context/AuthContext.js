@@ -5,21 +5,21 @@
  *
  * Фаза 3 (сервер): login/profile отдают
  *   user.role, user.roleLabel, user.laboratory_id, user.employee_id
- * Клиент пока просто кладёт user в state — navPerms по роли (фаза 7).
  *
- * Проверить в Network:
- *   POST /api/users/login → token + user.role / laboratory_id
- *   GET  /api/users/profile → те же поля (+ employee.laboratory)
+ * Фаза 7a: perms = buildNavPerms(user) — флаги для Aside / Header / Profile.
+ *   UI скрывает пункты; API по-прежнему режет через authorize (фазы 4–6).
  */
 import React, { createContext, Component } from 'react';
 import { API } from '../config/api';
 import { http } from '../config/http';
+import { buildNavPerms, emptyNavPerms } from '../config/navPerms';
 
 const AuthContext = createContext();
 
 class AuthProvider extends Component {
     state = {
         user: null,
+        perms: emptyNavPerms(),
         loading: true,
         error: null,
     };
@@ -28,24 +28,33 @@ class AuthProvider extends Component {
         this.loadUser();
     }
 
+    applyUser = (user) => {
+        this.setState({
+            user: user || null,
+            perms: buildNavPerms(user || null),
+            loading: false,
+            error: null,
+        });
+    };
+
     loadUser = async () => {
         const token = localStorage.getItem('authToken');
         if (token) {
             try {
                 const response = await http.get(`${API.users}/profile`);
-
-                this.setState({ user: response.data, loading: false, error: null });
+                this.applyUser(response.data);
             } catch (error) {
                 console.error('Ошибка при загрузке профиля:', error.response?.data || error.message);
                 if (error.response?.status === 401) {
                     localStorage.removeItem('authToken');
                 }
-                this.setState({ user: null, loading: false, error: null });
+                this.applyUser(null);
             }
         } else {
-            this.setState({ user: null, loading: false, error: null });
+            this.applyUser(null);
         }
     };
+
     login = async (email, password) => {
         try {
             const response = await http.post(`${API.users}/login`, { email, password });
@@ -54,8 +63,7 @@ class AuthProvider extends Component {
             localStorage.setItem('authToken', token);
 
             const userResponse = await http.get(`${API.users}/profile`);
-
-            this.setState({ user: userResponse.data, loading: false, error: null });
+            this.applyUser(userResponse.data);
 
             return { success: true };
         } catch (error) {
@@ -72,7 +80,7 @@ class AuthProvider extends Component {
 
         try {
             const response = await http.put(`${API.users}/profile`, data);
-            this.setState({ user: response.data, error: null });
+            this.applyUser(response.data);
             return { success: true, user: response.data };
         } catch (error) {
             const message =
@@ -95,19 +103,30 @@ class AuthProvider extends Component {
         }
 
         localStorage.removeItem('authToken');
-        this.setState({ user: null });
+        this.applyUser(null);
+    };
+
+    /**
+     * Фаза 7a/7b: проверка одного флага из perms.
+     * Пример: can('showUserLog') / can('canManageInventory')
+     */
+    can = (permKey) => {
+        const { perms } = this.state;
+        return Boolean(perms && perms[permKey]);
     };
 
     render() {
         const { children } = this.props;
-        const { user, loading } = this.state;
+        const { user, perms, loading } = this.state;
 
         return (
             <AuthContext.Provider
                 value={{
                     user,
+                    perms,
                     loading,
                     isAuthenticated: Boolean(user),
+                    can: this.can,
                     login: this.login,
                     logout: this.logout,
                     loadUser: this.loadUser,

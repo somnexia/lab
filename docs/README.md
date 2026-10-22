@@ -179,3 +179,11 @@ student       → только своя laboratory_id
   - student: R researches/tasks; C research → 403; delete task → 403
   - orders list/delete — `CAN_ACCESS_ADMIN_UI`
   - REST: `server/rest-client/authorize-6b.http`
+- [x] Фаза 7a (клиент): `navPerms` + роль в профиле / Header
+  - `client/src/config/roles.js`, `navPerms.js`
+  - AuthContext отдаёт `perms` / `can()`
+  - Aside + Header Create скрывают пункты по роли
+- [ ] Фаза 7b (ещё нет): `RoleRequire` / route-guard для admin-URL
+  (прямой заход на `/management/userlog` без роли → redirect)
+- [ ] Фаза 7c (ещё нет): кнопки на страницах (Register lot, Delete, …)
+  по `perms.canManage*`
