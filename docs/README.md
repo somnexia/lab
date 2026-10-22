@@ -174,5 +174,8 @@ student       → только своя laboratory_id
   equipment, catalog (elements/compounds/mixtures/reagents), inventoryStorageUnit
   - новые `CAN_VIEW_CATALOG` / `CAN_MANAGE_CATALOG`
   - REST: `server/rest-client/authorize-6a.http`
-- [ ] Фаза 6b (ещё нет): research, tasks, taskFiles, researchEmployees
-  (+ cart/orders при необходимости)
+- [x] Фаза 6b: `authorize` на research, researchEmployees, tasks, taskFiles,
+  cart, orders
+  - student: R researches/tasks; C research → 403; delete task → 403
+  - orders list/delete — `CAN_ACCESS_ADMIN_UI`
+  - REST: `server/rest-client/authorize-6b.http`

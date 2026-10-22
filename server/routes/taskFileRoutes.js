@@ -1,21 +1,29 @@
 const express = require('express');
 const router = express.Router();
 const taskFileController = require('../controllers/taskFileController');
+const { authorize } = require('../middleware/authMiddleware');
+const {
+  CAN_VIEW_TASKS,
+  CAN_MANAGE_RESEARCH,
+} = require('../config/roles');
 
-// Загрузка файла для задачи
-router.post('/upload', taskFileController.uploadTaskFile);
+/**
+ * Фаза 6b: файлы задач.
+ * Upload/read — CAN_VIEW_TASKS; delete — CAN_MANAGE_RESEARCH (или владелец позже).
+ */
+router.post('/upload', authorize(CAN_VIEW_TASKS), taskFileController.uploadTaskFile);
 
-// Получение всех файлов, привязанных к задаче
-router.get('/task/:taskId', taskFileController.getTaskFiles);
+router.get('/task/:taskId', authorize(CAN_VIEW_TASKS), taskFileController.getTaskFiles);
 
-// ВАЖНО: более специфичный путь должен идти раньше /:id,
-// иначе "/research/:researchId" попадёт в getTaskFileById как id="research".
-router.get('/research/:researchId', taskFileController.getTaskFilesByResearch);
+// Более специфичный путь раньше /:id
+router.get(
+  '/research/:researchId',
+  authorize(CAN_VIEW_TASKS),
+  taskFileController.getTaskFilesByResearch
+);
 
-// Получение информации о конкретном файле
-router.get('/:id', taskFileController.getTaskFileById);
+router.get('/:id', authorize(CAN_VIEW_TASKS), taskFileController.getTaskFileById);
 
-// Удаление файла
-router.delete('/:id', taskFileController.deleteTaskFile);
+router.delete('/:id', authorize(CAN_MANAGE_RESEARCH), taskFileController.deleteTaskFile);
 
 module.exports = router;
