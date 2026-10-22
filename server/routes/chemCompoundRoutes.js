@@ -1,20 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const chemCompoundController = require('../controllers/chemCompoundController'); // Путь к вашему контроллеру
+const chemCompoundController = require('../controllers/chemCompoundController');
+const { authorize } = require('../middleware/authMiddleware');
+const {
+  CAN_VIEW_CATALOG,
+  CAN_MANAGE_CATALOG,
+} = require('../config/roles');
 
-// Создание нового соединения
-router.post('/', chemCompoundController.createChemCompound);
-
-// Получение всех соединений
-router.get('/', chemCompoundController.getAllChemCompounds);
-
-// Получение соединения по уникальному идентификатору
-router.get('/:id', chemCompoundController.getChemCompoundById);
-
-// Обновление соединения по уникальному идентификатору
-router.put('/:id', chemCompoundController.updateChemCompound);
-
-// Удаление соединения по уникальному идентификатору
-router.delete('/:id', chemCompoundController.deleteChemCompound);
+/** Фаза 6a: справочник соединений */
+router.post('/', authorize(CAN_MANAGE_CATALOG), chemCompoundController.createChemCompound);
+router.get('/', authorize(CAN_VIEW_CATALOG), chemCompoundController.getAllChemCompounds);
+router.get('/:id', authorize(CAN_VIEW_CATALOG), chemCompoundController.getChemCompoundById);
+router.put('/:id', authorize(CAN_MANAGE_CATALOG), chemCompoundController.updateChemCompound);
+router.delete('/:id', authorize(CAN_MANAGE_CATALOG), chemCompoundController.deleteChemCompound);
 
 module.exports = router;

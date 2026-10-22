@@ -1,30 +1,39 @@
 const express = require('express');
 const router = express.Router();
-const chemEquipmentController = require('../controllers/chemEquipmentController'); // Путь к вашему контроллеру
+const chemEquipmentController = require('../controllers/chemEquipmentController');
+const { authorize } = require('../middleware/authMiddleware');
+const {
+  CAN_VIEW_EQUIPMENT,
+  CAN_MANAGE_EQUIPMENT,
+} = require('../config/roles');
 
-// Создание нового оборудования
-router.post('/', chemEquipmentController.createChemEquipment);
+/**
+ * Фаза 6a: authorize на equipment.
+ * Справочник оборудования глобальный (без laboratory_id) — режем только по роли.
+ * Mutating = system_admin | lab_admin; чтение = все аутентифицированные.
+ */
+router.post('/', authorize(CAN_MANAGE_EQUIPMENT), chemEquipmentController.createChemEquipment);
 
-// Получение всех единиц оборудования
-router.get('/', chemEquipmentController.getAllChemEquipments);
+router.get('/', authorize(CAN_VIEW_EQUIPMENT), chemEquipmentController.getAllChemEquipments);
+router.get(
+  '/equipments',
+  authorize(CAN_VIEW_EQUIPMENT),
+  chemEquipmentController.getChemEquipmentByCategory
+);
+router.get(
+  '/groups',
+  authorize(CAN_VIEW_EQUIPMENT),
+  chemEquipmentController.getGroupsByCategory
+);
 
-router.get('/equipments', chemEquipmentController.getChemEquipmentByCategory);
+router.get(
+  '/:id/locations',
+  authorize(CAN_VIEW_EQUIPMENT),
+  chemEquipmentController.getLocationsForEquipment
+);
+router.get('/:id', authorize(CAN_VIEW_EQUIPMENT), chemEquipmentController.getChemEquipmentById);
 
-router.get("/groups", chemEquipmentController.getGroupsByCategory);
-
-// Получение оборудования по уникальному идентификатору
-router.get('/:id', chemEquipmentController.getChemEquipmentById);
-
-// Обновление информации об оборудовании по уникальному идентификатору
-router.put('/:id', chemEquipmentController.updateChemEquipment);
-
-// Удаление оборудования по уникальному идентификатору
-router.delete('/:id', chemEquipmentController.deleteChemEquipment);
-
-
-router.get('/equipments', chemEquipmentController.getChemEquipmentByCategoryAndGroup);
-
-router.get('/:id/locations', chemEquipmentController.getLocationsForEquipment);
-
+router.put('/:id', authorize(CAN_MANAGE_EQUIPMENT), chemEquipmentController.updateChemEquipment);
+router.delete('/:id', authorize(CAN_MANAGE_EQUIPMENT), chemEquipmentController.deleteChemEquipment);
 
 module.exports = router;

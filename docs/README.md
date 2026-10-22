@@ -170,3 +170,9 @@ student       → только своя laboratory_id
   inventory (через storage), research-teams, logs
   - хелперы: `listChemStorageIdsForUser`, `scopeByStorageIds`, `isScopeForbidden`
   - REST: `server/rest-client/tenant-scope-5b.http`
+- [x] Фаза 6a: `authorize` на users (профиль + managed + tenant list),
+  equipment, catalog (elements/compounds/mixtures/reagents), inventoryStorageUnit
+  - новые `CAN_VIEW_CATALOG` / `CAN_MANAGE_CATALOG`
+  - REST: `server/rest-client/authorize-6a.http`
+- [ ] Фаза 6b (ещё нет): research, tasks, taskFiles, researchEmployees
+  (+ cart/orders при необходимости)

@@ -5,8 +5,15 @@ const logService = require('./logService');
 const {
   DEFAULT_REGISTER_ROLE,
   ROLE_LABELS,
+  ROLE_VALUES,
   ROLES,
+  isSystemAdmin,
 } = require('../config/roles');
+const {
+  skipLabScope,
+  resolveActorLabId,
+  assertLabAccess,
+} = require('../utils/labScope');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 /** Фаза 3: было 1h; чуть длиннее для удобства REST/UI. Refresh-токен — позже. */
@@ -81,13 +88,47 @@ function signAccessToken(user) {
 }
 
 /**
- * Создание пользователя (фаза 1).
+ * Фаза 6a: lab_admin не может назначить system_admin;
+ * роль должна быть из ROLE_VALUES.
+ */
+function resolveAssignableRole(actor, requestedRole) {
+  if (requestedRole == null || requestedRole === '') {
+    return null;
+  }
+  const role = String(requestedRole).trim();
+  if (!ROLE_VALUES.includes(role)) {
+    const err = new Error(`Недопустимая роль: ${role}`);
+    err.code = 'VALIDATION';
+    err.status = 400;
+    throw err;
+  }
+  if (role === ROLES.SYSTEM_ADMIN && !isSystemAdmin(actor)) {
+    const err = new Error('Только system_admin может назначать роль system_admin');
+    err.code = 'FORBIDDEN';
+    err.status = 403;
+    throw err;
+  }
+  return role;
+}
+
+/** Target user должен быть в той же lab (через employee.lab_id), кроме system_admin */
+function assertActorCanManageUser(actor, targetUser, action = 'управления пользователем') {
+  if (skipLabScope(actor)) return;
+  const targetLab =
+    targetUser.employee?.lab_id ??
+    targetUser.employee?.get?.('lab_id') ??
+    null;
+  assertLabAccess(actor, targetLab, action);
+}
+
+/**
+ * Создание пользователя (фаза 1 + 6a).
  *
  * Публичная регистрация: роль всегда student — role из req.body игнорируется.
- * Права на назначение других ролей: CAN_MANAGE_USERS в config/roles.js (фаза 2).
- * Навесить authorize на админ-создание учёток — фазы 4 и 6.
+ * Админ-создание (context.actor + allowPrivilegedRole): можно задать role / employee_id
+ * с проверкой, что lab_admin не выдаёт system_admin и не цепляет чужой employee.
  *
- * context.forceRole — внутренний обход для сидеров/админ-API (пока не используется с роутов).
+ * context.forceRole — внутренний обход для сидеров.
  */
 const createUser = async (data, meta, context = {}) => {
   try {
@@ -96,22 +137,42 @@ const createUser = async (data, meta, context = {}) => {
       throw new Error('Пользователь с таким email уже существует');
     }
 
-    const role =
-      context.forceRole && context.allowPrivilegedRole
-        ? context.forceRole
-        : DEFAULT_REGISTER_ROLE;
+    let role = DEFAULT_REGISTER_ROLE;
+    let employeeId = data.employee_id ?? null;
+
+    if (context.forceRole && context.allowPrivilegedRole) {
+      role = context.forceRole;
+    } else if (context.actor && context.allowPrivilegedRole) {
+      const assigned = resolveAssignableRole(context.actor, data.role);
+      role = assigned || DEFAULT_REGISTER_ROLE;
+
+      if (employeeId != null) {
+        const { Employee } = require('../models');
+        const employee = await Employee.findByPk(employeeId);
+        if (!employee) {
+          const err = new Error(`Сотрудник с id ${employeeId} не найден`);
+          err.status = 404;
+          throw err;
+        }
+        assertLabAccess(
+          context.actor,
+          employee.lab_id,
+          'привязки пользователя к сотруднику'
+        );
+      }
+    }
 
     const user = await User.create({
       name: data.name,
       email: data.email,
       password: data.password,
-      employee_id: data.employee_id ?? null,
+      employee_id: employeeId,
       role,
     });
 
     await logService.recordAuditLog({
       action: logService.LOG_ACTIONS.REGISTER,
-      userId: user.id,
+      userId: context.actor?.id ?? user.id,
       resourceType: 'User',
       resourceId: user.id,
       description: `Пользователь с email ${user.email} зарегистрирован (role=${user.role})`,
@@ -125,7 +186,7 @@ const createUser = async (data, meta, context = {}) => {
     console.error('Ошибка при создании пользователя:', error);
     await logService.recordAuditLog({
       action: logService.LOG_ACTIONS.REGISTER_FAILED,
-      userId: null,
+      userId: context.actor?.id ?? null,
       description: `Ошибка при регистрации: ${error.message}`,
       status: logService.LOG_STATUS.FAILED,
       ...logService.mergeMeta(meta),
@@ -134,10 +195,24 @@ const createUser = async (data, meta, context = {}) => {
   }
 };
 
-const getAllUsers = async () => {
+/**
+ * Фаза 6a: system_admin — все; lab_admin — только users с employee.lab_id = своя lab.
+ */
+const getAllUsers = async (actor) => {
   try {
+    const employeeInclude = {
+      association: 'employee',
+      required: false,
+    };
+
+    if (!skipLabScope(actor)) {
+      const labId = resolveActorLabId(actor);
+      employeeInclude.required = true;
+      employeeInclude.where = { lab_id: labId == null ? -1 : labId };
+    }
+
     return await User.findAll({
-      include: { association: 'employee' },
+      include: [employeeInclude],
       attributes: { exclude: ['password'] },
     });
   } catch (error) {
@@ -146,7 +221,7 @@ const getAllUsers = async () => {
   }
 };
 
-const getUserById = async (id) => {
+const getUserById = async (id, actor) => {
   try {
     const user = await User.findByPk(id, {
       include: { association: 'employee' },
@@ -155,6 +230,9 @@ const getUserById = async (id) => {
     if (!user) {
       throw new Error(`Пользователь с id ${id} не найден`);
     }
+    if (actor !== undefined) {
+      assertActorCanManageUser(actor, user, 'просмотра пользователя');
+    }
     return user;
   } catch (error) {
     console.error('Ошибка при получении пользователя по id:', error);
@@ -162,13 +240,40 @@ const getUserById = async (id) => {
   }
 };
 
-const updateUser = async (id, data) => {
+const updateUser = async (id, data, actor) => {
   try {
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, {
+      include: { association: 'employee' },
+    });
     if (!user) {
       throw new Error(`Пользователь с id ${id} не найден`);
     }
-    await user.update(data);
+    if (actor !== undefined) {
+      assertActorCanManageUser(actor, user, 'изменения пользователя');
+    }
+
+    const payload = { ...data };
+    if (Object.prototype.hasOwnProperty.call(payload, 'role')) {
+      const nextRole = resolveAssignableRole(actor, payload.role);
+      if (nextRole == null) {
+        delete payload.role;
+      } else {
+        payload.role = nextRole;
+      }
+    }
+
+    if (payload.employee_id != null && actor) {
+      const { Employee } = require('../models');
+      const employee = await Employee.findByPk(payload.employee_id);
+      if (!employee) {
+        const err = new Error(`Сотрудник с id ${payload.employee_id} не найден`);
+        err.status = 404;
+        throw err;
+      }
+      assertLabAccess(actor, employee.lab_id, 'привязки пользователя к сотруднику');
+    }
+
+    await user.update(payload);
     return toPublicUser(user);
   } catch (error) {
     console.error('Ошибка при обновлении пользователя:', error);
@@ -176,11 +281,16 @@ const updateUser = async (id, data) => {
   }
 };
 
-const deleteUser = async (id) => {
+const deleteUser = async (id, actor) => {
   try {
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, {
+      include: { association: 'employee' },
+    });
     if (!user) {
       throw new Error(`Пользователь с id ${id} не найден`);
+    }
+    if (actor !== undefined) {
+      assertActorCanManageUser(actor, user, 'удаления пользователя');
     }
     await user.destroy();
     return { message: `Пользователь с id ${id} удален` };
