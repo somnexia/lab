@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -203,14 +204,18 @@ class ExperimentMetadataEditor extends Component {
         {!editing ? (
           <>
             {this.renderView()}
-            <div className="experiment-input-editor__toolbar">
-              <button type="button" className="experiment-input-editor__btn" onClick={this.startEditing}>
-                Edit details
-              </button>
-            </div>
+            <Can perm="canManageResearch">
+              <div className="experiment-input-editor__toolbar">
+                <button type="button" className="experiment-input-editor__btn" onClick={this.startEditing}>
+                  Edit details
+                </button>
+              </div>
+            </Can>
           </>
         ) : (
-          this.renderEditor()
+          <Can perm="canManageResearch" fallback={this.renderView()}>
+            {this.renderEditor()}
+          </Can>
         )}
 
         {error && <p className="experiment-input-editor__message experiment-input-editor__message--error">{error}</p>}

@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fa6';
 import { formatDistanceToNow, format } from 'date-fns';
 import { enUS } from 'date-fns/locale';
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -207,10 +208,12 @@ class ParticipantList extends Component {
                                 <FaFileExport aria-hidden />
                                 <span>Export</span>
                             </button>
-                            <button type="button" className="participant-list__btn-primary">
-                                <FaPlus aria-hidden />
-                                <span>Add participant</span>
-                            </button>
+                            <Can perm="canManageEmployees">
+                                <button type="button" className="participant-list__btn-primary">
+                                    <FaPlus aria-hidden />
+                                    <span>Add participant</span>
+                                </button>
+                            </Can>
                         </div>
                     </div>
 

@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Can from "./Can";
 import { CartContext } from "../context/CartContext";
 import { API } from "../config/api";
 import { http } from "../config/http";
@@ -145,12 +146,14 @@ class EquipmentOffcanvas extends Component {
                                                     <td>{unit.storage_id}</td>
                                                     <td>{unit.status || "N/A"}</td>
                                                     <td>
-                                                        <button
-                                                            className="btn btn-primary"
-                                                            onClick={() => this.handleAddToCart(unit)}
-                                                        >
-                                                            Add to Cart
-                                                        </button>
+                                                        <Can perm="canUseCart">
+                                                            <button
+                                                                className="btn btn-primary"
+                                                                onClick={() => this.handleAddToCart(unit)}
+                                                            >
+                                                                Add to Cart
+                                                            </button>
+                                                        </Can>
                                                     </td>
 
                                                 </tr>

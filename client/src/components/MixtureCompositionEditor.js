@@ -302,7 +302,10 @@ class MixtureCompositionEditor extends Component {
             </Can>
           </>
         ) : (
-          <>
+          <Can
+            perm="canManageCatalog"
+            fallback={<MixtureCompositionTable components={components} />}
+          >
             <div className="mixture-composition-editor__rows">
               {this.renderEditorRows()}
             </div>
@@ -322,7 +325,7 @@ class MixtureCompositionEditor extends Component {
                 Cancel
               </button>
             </div>
-          </>
+          </Can>
         )}
 
         {error && <p className="mixture-composition-editor__message mixture-composition-editor__message--error">{error}</p>}

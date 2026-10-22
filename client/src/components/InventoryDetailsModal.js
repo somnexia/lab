@@ -7,6 +7,7 @@ import { FaShareNodes } from "react-icons/fa6";
 import { FaBell } from "react-icons/fa";
 import { FaHistory } from "react-icons/fa";
 import { FaCartPlus } from "react-icons/fa6";
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -274,50 +275,63 @@ class InventoryDetailsModal extends Component {
                                     </button>
                                 </div>
                                 <div className='inventory-modal-actions row px-0 col-xl-2 col-11 mt-0'>
-                                    <div className='dropdown ' >
-                                        <a role="button" className={`btn dropdown-toggle py-2 w-100 text-bg-${status === "available" ? "success" : status === "in use" ? "warning" : status === "reserved" ? "info" : "danger"}`} href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                                            {status === "available" ? "Available" : status === "in use" ? "In Use" : status === "reserved" ? "Reserved" : "Out Of Stock"}
-                                        </a>
-                                        <ul className="dropdown-menu">
-                                            <li>
-                                                <button
-                                                    className="dropdown-item"
-                                                    onClick={() => this.handleStatusChange("available")}
-                                                >
-                                                    Set "Available"
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    className="dropdown-item"
-                                                    onClick={() => this.handleStatusChange("reserved")}
-                                                >
-                                                    Set "Reserved"
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    className="dropdown-item"
-                                                    onClick={() => this.handleStatusChange("in use")}
-                                                >
-                                                    Set "In Use"
-                                                </button>
-                                            </li>
-                                            <li>
-                                                <button
-                                                    className="dropdown-item"
-                                                    onClick={() => this.handleStatusChange("out of stock")}
-                                                >
-                                                    Set "Out Of Stock"
-                                                </button>
-                                            </li>
-
-                                        </ul>
-                                    </div>
+                                    <Can
+                                      perm="canManageInventory"
+                                      fallback={(
+                                        <div
+                                          className={`btn py-2 w-100 text-bg-${status === "available" ? "success" : status === "in use" ? "warning" : status === "reserved" ? "info" : "danger"}`}
+                                          aria-label={`Status: ${status}`}
+                                        >
+                                          {status === "available" ? "Available" : status === "in use" ? "In Use" : status === "reserved" ? "Reserved" : "Out Of Stock"}
+                                        </div>
+                                      )}
+                                    >
+                                      <div className='dropdown ' >
+                                          <a role="button" className={`btn dropdown-toggle py-2 w-100 text-bg-${status === "available" ? "success" : status === "in use" ? "warning" : status === "reserved" ? "info" : "danger"}`} href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                                              {status === "available" ? "Available" : status === "in use" ? "In Use" : status === "reserved" ? "Reserved" : "Out Of Stock"}
+                                          </a>
+                                          <ul className="dropdown-menu">
+                                              <li>
+                                                  <button
+                                                      className="dropdown-item"
+                                                      onClick={() => this.handleStatusChange("available")}
+                                                  >
+                                                      Set "Available"
+                                                  </button>
+                                              </li>
+                                              <li>
+                                                  <button
+                                                      className="dropdown-item"
+                                                      onClick={() => this.handleStatusChange("reserved")}
+                                                  >
+                                                      Set "Reserved"
+                                                  </button>
+                                              </li>
+                                              <li>
+                                                  <button
+                                                      className="dropdown-item"
+                                                      onClick={() => this.handleStatusChange("in use")}
+                                                  >
+                                                      Set "In Use"
+                                                  </button>
+                                              </li>
+                                              <li>
+                                                  <button
+                                                      className="dropdown-item"
+                                                      onClick={() => this.handleStatusChange("out of stock")}
+                                                  >
+                                                      Set "Out Of Stock"
+                                                  </button>
+                                              </li>
+                                          </ul>
+                                      </div>
+                                    </Can>
                                     <div>
                                         <h5 className="text-body-secondary">Quick Actions</h5>
                                         <div className='d-flex flex-column gap-2'>
-                                            <button onClick={() => addToCart(inventory)} type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaCartPlus /><span className='ps-2'></span>Add To Cart</button>
+                                            <Can perm="canUseCart">
+                                              <button onClick={() => addToCart(inventory)} type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaCartPlus /><span className='ps-2'></span>Add To Cart</button>
+                                            </Can>
                                             <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'>< FaHistory /><span className='ps-2'>Mark as Favorite</span></button>
                                             <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaBell /><span className='ps-2'>Set Reminder</span></button>
 
@@ -326,16 +340,18 @@ class InventoryDetailsModal extends Component {
 
 
                                     {/* <div className="mt-auto"></div> */}
-                                    <div>
-                                        <h5 className="text-body-secondary">Management Actions</h5>
-                                        <div className="d-flex flex-column gap-2">
-                                            <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaArrowRightLong /><span className='ps-2'>Move</span></button>
-                                            <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaRegCopy /><span className='ps-2'>Dublicate</span></button>
-                                            <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaTrashAlt /><span className='ps-2'>Remove</span></button>
-                                            <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaBoxArchive /><span className='ps-2'>Archive</span></button>
-                                            <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaShareNodes /><span className='ps-2'>Shate</span></button>
-                                        </div>
-                                    </div>
+                                    <Can perm="canManageInventory">
+                                      <div>
+                                          <h5 className="text-body-secondary">Management Actions</h5>
+                                          <div className="d-flex flex-column gap-2">
+                                              <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaArrowRightLong /><span className='ps-2'>Move</span></button>
+                                              <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaRegCopy /><span className='ps-2'>Dublicate</span></button>
+                                              <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaTrashAlt /><span className='ps-2'>Remove</span></button>
+                                              <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaBoxArchive /><span className='ps-2'>Archive</span></button>
+                                              <button type='button' className='w-100 p-2 text-start btn-outline-secondary btn btn-sm'><FaShareNodes /><span className='ps-2'>Shate</span></button>
+                                          </div>
+                                      </div>
+                                    </Can>
                                 </div>
                             </div>
                         </div>

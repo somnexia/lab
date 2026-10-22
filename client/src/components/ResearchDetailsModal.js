@@ -23,6 +23,7 @@ import { FaFileZipper } from "react-icons/fa6";
 import { FaFileLines } from "react-icons/fa6";
 import { FaImage } from "react-icons/fa6";
 import React, { Component } from 'react';
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 import ExperimentListPanel from './ExperimentListPanel';
@@ -244,8 +245,10 @@ class ResearchDetailsModal extends Component {
                                                     <div aria-labelledby="react-aria7113992956-:r4o:" className="py-2 dropdown-menu dropdown-menu-end" style={{ position: 'absolute', inset: '0px 0px auto auto', transform: 'translate3d(-184px, 273.5px, 0px)' }}>
                                                         <a aria-selected="false" className="dropdown-item" role="button" tabIndex="0" href="#">View</a>
                                                         <a aria-selected="false" className="dropdown-item" role="button" tabIndex="0" href="#">Export</a>
-                                                        <hr className="dropdown-divider" role="separator"></hr>
-                                                        <a aria-selected="false" data-rr-ui-dropdown-item="" className="text-danger dropdown-item" role="button" tabIndex="0" href="#">Remove</a>
+                                                        <Can perm="canManageResearch">
+                                                          <hr className="dropdown-divider" role="separator"></hr>
+                                                          <a aria-selected="false" data-rr-ui-dropdown-item="" className="text-danger dropdown-item" role="button" tabIndex="0" href="#">Remove</a>
+                                                        </Can>
                                                     </div>
                                                 </div>
                                                 <button type="button" className="btn-icon btn-outline-secondary btn-icon-lg btn btn-subtle-secondary">
@@ -307,9 +310,11 @@ class ResearchDetailsModal extends Component {
                                                         </button>
                                                     </div>
                                                 ))}
-                                                <button type="button" className="btn-circle btn btn-secondary ms-2">
-                                                    <FaPlus />
-                                                </button>
+                                                <Can perm="canManageResearch">
+                                                  <button type="button" className="btn-circle btn btn-secondary ms-2">
+                                                      <FaPlus />
+                                                  </button>
+                                                </Can>
                                             </div>
                                         </div>
                                         <div className="d-flex align-items-center mb-2">
@@ -379,18 +384,22 @@ class ResearchDetailsModal extends Component {
                                                 >
                                                     {research.status}
                                                 </span>
-                                                <button type="button" className="p-0 fs-8 text-body-tertiary fw-bolder text-decoration-none lh-1 btn btn-link">
-                                                    <FaPlus />
-                                                    Add another
-                                                </button>
+                                                <Can perm="canManageResearch">
+                                                  <button type="button" className="p-0 fs-8 text-body-tertiary fw-bolder text-decoration-none lh-1 btn btn-link">
+                                                      <FaPlus />
+                                                      Add another
+                                                  </button>
+                                                </Can>
                                             </div>
                                         </div>
                                         <div className="mb-5">
                                             <div className="d-flex align-items-center mb-2">
                                                 <h5 className="me-4">Description</h5>
-                                                <button type="button" className="text-decoration-none p-0 btn btn-link">
-                                                    <FaPenAlt />
-                                                </button>
+                                                <Can perm="canManageResearch">
+                                                  <button type="button" className="text-decoration-none p-0 btn btn-link">
+                                                      <FaPenAlt />
+                                                  </button>
+                                                </Can>
                                             </div>
                                             <p className="text-body-secondary mb-0" style={{ LineClamp: "1", WebkitLineClamp: "1" }}>{research?.goal}
                                                 <a className="d-inline fw-bolder text-decoration-none ps-2" href="">see more</a>
@@ -503,10 +512,12 @@ class ResearchDetailsModal extends Component {
                                                     </div>
                                                 )}
                                             </div>
-                                            <button type="button" className="text-decoration-none p-0 btn btn-link">
-                                                <FaPlus />
-                                                Add new task
-                                            </button>
+                                            <Can perm="showCreateTask">
+                                              <button type="button" className="text-decoration-none p-0 btn btn-link">
+                                                  <FaPlus />
+                                                  Add new task
+                                              </button>
+                                            </Can>
                                         </div>
                                         <div className="mb-5">
                                             <h5 className='mb-4'>Files</h5>
@@ -553,10 +564,12 @@ class ResearchDetailsModal extends Component {
                                                     </div>
                                                 )}
                                             </div>
-                                            <button type="button" className="text-decoration-none p-0 btn btn-link">
-                                                <FaPlus />
-                                                Add new file
-                                            </button>
+                                            <Can perm="canManageResearch">
+                                              <button type="button" className="text-decoration-none p-0 btn btn-link">
+                                                  <FaPlus />
+                                                  Add new file
+                                              </button>
+                                            </Can>
                                         </div>
                                     </div>
                                 </div>

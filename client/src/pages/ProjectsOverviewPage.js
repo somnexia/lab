@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import Can from '../components/Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -20,6 +21,7 @@ const PROJECT_LINKS = [
     to: '/projects/research-create',
     title: 'Create research',
     description: 'Start a new research project and assign metadata.',
+    requirePerm: 'showCreateResearch',
   },
   {
     to: '/projects/task-list',
@@ -30,6 +32,7 @@ const PROJECT_LINKS = [
     to: '/projects/task-create',
     title: 'Create task',
     description: 'Add a task linked to an existing research project.',
+    requirePerm: 'showCreateTask',
   },
 ];
 
@@ -119,12 +122,22 @@ class ProjectsOverviewPage extends Component {
         <section className="inventory-page__content projects-overview__links">
           <h2 className="projects-overview__links-title">Quick navigation</h2>
           <div className="projects-overview__link-grid">
-            {PROJECT_LINKS.map((item) => (
-              <Link key={item.to} to={item.to} className="projects-overview__link-card">
-                <strong>{item.title}</strong>
-                <span>{item.description}</span>
-              </Link>
-            ))}
+            {PROJECT_LINKS.map((item) => {
+              const card = (
+                <Link to={item.to} className="projects-overview__link-card">
+                  <strong>{item.title}</strong>
+                  <span>{item.description}</span>
+                </Link>
+              );
+              if (item.requirePerm) {
+                return (
+                  <Can perm={item.requirePerm} key={item.to}>
+                    {card}
+                  </Can>
+                );
+              }
+              return <React.Fragment key={item.to}>{card}</React.Fragment>;
+            })}
           </div>
         </section>
       </div>

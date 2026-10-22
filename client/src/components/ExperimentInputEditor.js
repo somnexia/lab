@@ -590,7 +590,7 @@ class ExperimentInputEditor extends Component {
             </Can>
           </>
         ) : (
-          <>
+          <Can perm="canManageResearch" fallback={this.renderViewTables()}>
             {this.renderEditorRows()}
             <div className="experiment-input-editor__toolbar">
               <button
@@ -611,7 +611,7 @@ class ExperimentInputEditor extends Component {
                 Cancel
               </button>
             </div>
-          </>
+          </Can>
         )}
 
         {error && <p className="experiment-input-editor__message experiment-input-editor__message--error">{error}</p>}

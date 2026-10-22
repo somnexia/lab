@@ -359,7 +359,15 @@ class ExperimentOutputEditor extends Component {
             </Can>
           </>
         ) : (
-          <>
+          <Can
+            perm="canManageResearch"
+            fallback={(
+              <section className="experiment-input-editor__section">
+                <h4 className="experiment-input-editor__section-title">Expected products</h4>
+                {this.renderViewSection()}
+              </section>
+            )}
+          >
             <section className="experiment-input-editor__section">
               <h4 className="experiment-input-editor__section-title">Expected products</h4>
               <p className="experiment-input-editor__section-hint">
@@ -383,7 +391,7 @@ class ExperimentOutputEditor extends Component {
                 Cancel
               </button>
             </div>
-          </>
+          </Can>
         )}
 
         {error && <p className="experiment-input-editor__message experiment-input-editor__message--error">{error}</p>}
