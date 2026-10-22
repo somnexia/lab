@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import TaskDetailsModal from './TaskDetailsModal';
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -313,10 +314,12 @@ class TaskList extends Component {
     );
 
     renderPrimaryAction = () => (
-        <Link className="task-button task-button--primary" to="/projects/task-create">
-            <FaPlus />
-            <span>Add new task</span>
-        </Link>
+        <Can perm="showCreateTask">
+            <Link className="task-button task-button--primary" to="/projects/task-create">
+                <FaPlus />
+                <span>Add new task</span>
+            </Link>
+        </Can>
     );
 
     renderLoadingState = () => (

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import MixtureCompositionTable from './MixtureCompositionTable';
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -289,14 +290,16 @@ class MixtureCompositionEditor extends Component {
               components={components}
               emptyMessage="No structured components yet. Use Edit composition to define ingredients."
             />
-            <div className="mixture-composition-editor__toolbar">
-              <button type="button" className="mixture-composition-editor__btn" onClick={this.startEditing}>
-                Edit composition
-              </button>
-              <button type="button" className="mixture-composition-editor__btn mixture-composition-editor__btn--ghost" onClick={this.addRow}>
-                Add component
-              </button>
-            </div>
+            <Can perm="canManageCatalog">
+              <div className="mixture-composition-editor__toolbar">
+                <button type="button" className="mixture-composition-editor__btn" onClick={this.startEditing}>
+                  Edit composition
+                </button>
+                <button type="button" className="mixture-composition-editor__btn mixture-composition-editor__btn--ghost" onClick={this.addRow}>
+                  Add component
+                </button>
+              </div>
+            </Can>
           </>
         ) : (
           <>

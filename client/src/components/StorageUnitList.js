@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import InventoryOffcanvas from "./InventoryOffcanvas";
+import Can from "./Can";
 import { API } from "../config/api";
 import { http } from "../config/http";
 
@@ -126,7 +127,11 @@ class StorageUnitList extends Component {
                                                 <td>{unit.last_maintenance_date || "N/A"}</td>
                                                 <td>{unit.next_maintenance_date || "N/A"}</td>
                                                 <td>
-                                                    <button className="btn btn-danger btn-sm">Удалить</button>
+                                                    <Can perm="canManageStorage">
+                                                        <button type="button" className="btn btn-danger btn-sm">
+                                                            Удалить
+                                                        </button>
+                                                    </Can>
                                                 </td>
                                             </tr>
                                         ))}

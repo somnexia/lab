@@ -179,7 +179,6 @@ student       → только своя laboratory_id
   - student: R researches/tasks; C research → 403; delete task → 403
   - orders list/delete — `CAN_ACCESS_ADMIN_UI`
   - REST: `server/rest-client/authorize-6b.http`
-- [x] Клиент: `navPerms` + роль в профиле / Header; `RequirePerm` на чувствительных URL
-  - `client/src/config/roles.js`, `navPerms.js`, `RequirePerm.js`
-  - AuthContext отдаёт `perms` / `can()`; Aside/Header скрывают пункты по роли
-  - `/management/userlog`, register lot, create research — redirect без права
+- [x] Клиент: `navPerms` + роль в профиле / Header; `RequirePerm` на URL; `Can` на кнопках
+  - `client/src/config/roles.js`, `navPerms.js`, `RequirePerm.js`, `Can.js`
+  - Aside/Header скрывают пункты; чувствительные URL — redirect; мутации на страницах — скрыты без права

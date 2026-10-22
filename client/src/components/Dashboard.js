@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import OverviewCard from './OverviewCard';
+import Can from './Can';
 import { FaFlask } from 'react-icons/fa';
 import { FaMicroscope } from 'react-icons/fa6';
 import { GiArchiveResearch } from 'react-icons/gi';
@@ -82,6 +83,7 @@ class Dashboard extends Component {
         variant: 'success',
         title: 'Register lot',
         to: '/inventory/lots/register',
+        requirePerm: 'showRegisterLot',
       },
     ];
 
@@ -101,19 +103,29 @@ class Dashboard extends Component {
           <section className="lab-dashboard__section">
             <h2 className="lab-dashboard__section-title mb-3">Quick actions</h2>
             <div className="row g-3">
-              {quickActions.map(({ id, Icon, variant, title, to }) => (
-                <div className="col-6 col-md-3" key={id}>
-                  <Link
-                    className={`lab-dashboard__quick-action lab-dashboard__quick-action--${variant}`}
-                    to={to}
-                  >
-                    <span className="lab-dashboard__quick-action-icon">
-                      <Icon size={24} />
-                    </span>
-                    <span className="small fw-semibold">{title}</span>
-                  </Link>
-                </div>
-              ))}
+              {quickActions.map(({ id, Icon, variant, title, to, requirePerm }) => {
+                const card = (
+                  <div className="col-6 col-md-3">
+                    <Link
+                      className={`lab-dashboard__quick-action lab-dashboard__quick-action--${variant}`}
+                      to={to}
+                    >
+                      <span className="lab-dashboard__quick-action-icon">
+                        <Icon size={24} />
+                      </span>
+                      <span className="small fw-semibold">{title}</span>
+                    </Link>
+                  </div>
+                );
+                if (requirePerm) {
+                  return (
+                    <Can perm={requirePerm} key={id}>
+                      {card}
+                    </Can>
+                  );
+                }
+                return <React.Fragment key={id}>{card}</React.Fragment>;
+              })}
             </div>
           </section>
 

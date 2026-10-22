@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -208,26 +209,28 @@ class ExperimentRunPanel extends Component {
         {this.renderConsumptions()}
 
         <div className="experiment-input-editor__toolbar">
-          {canRun && (
-            <button
-              type="button"
-              className="experiment-input-editor__btn experiment-input-editor__btn--primary"
-              onClick={this.handleRun}
-              disabled={running}
-            >
-              {running ? 'Starting…' : 'Run experiment'}
-            </button>
-          )}
-          {canComplete && (
-            <button
-              type="button"
-              className="experiment-input-editor__btn experiment-input-editor__btn--primary"
-              onClick={this.handleComplete}
-              disabled={completing}
-            >
-              {completing ? 'Completing…' : 'Mark completed'}
-            </button>
-          )}
+          <Can perm="canManageResearch">
+            {canRun && (
+              <button
+                type="button"
+                className="experiment-input-editor__btn experiment-input-editor__btn--primary"
+                onClick={this.handleRun}
+                disabled={running}
+              >
+                {running ? 'Starting…' : 'Run experiment'}
+              </button>
+            )}
+            {canComplete && (
+              <button
+                type="button"
+                className="experiment-input-editor__btn experiment-input-editor__btn--primary"
+                onClick={this.handleComplete}
+                disabled={completing}
+              >
+                {completing ? 'Completing…' : 'Mark completed'}
+              </button>
+            )}
+          </Can>
           <button
             type="button"
             className="experiment-input-editor__btn experiment-input-editor__btn--ghost"

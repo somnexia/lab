@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -91,14 +92,16 @@ class ExperimentListPanel extends Component {
             <span className="experiment-list-panel__count">{experiments.length}</span>
           </h5>
           <div className="experiment-list-panel__actions">
-            <button
-              type="button"
-              className="experiment-list-panel__btn"
-              onClick={this.handleCreateExperiment}
-              disabled={creating}
-            >
-              {creating ? 'Creating…' : 'New experiment'}
-            </button>
+            <Can perm="canManageResearch">
+              <button
+                type="button"
+                className="experiment-list-panel__btn"
+                onClick={this.handleCreateExperiment}
+                disabled={creating}
+              >
+                {creating ? 'Creating…' : 'New experiment'}
+              </button>
+            </Can>
             <Link
               to={`/projects/research/${researchId}/experiments`}
               className="experiment-list-panel__link"

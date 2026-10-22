@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import WarehouseChart from './WarehouseChart';
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -74,12 +75,14 @@ const WarehouseList = () => {
                                         <td>{warehouse.current_utilization}</td>
                                         <td>{warehouse.description || 'Нет описания'}</td>
                                         <td>
-                                            <button
-                                                className="btn btn-danger btn-sm"
-                                                onClick={() => handleDelete(warehouse.id)}
-                                            >
-                                                Удалить
-                                            </button>
+                                            <Can perm="canManageStorage">
+                                                <button
+                                                    className="btn btn-danger btn-sm"
+                                                    onClick={() => handleDelete(warehouse.id)}
+                                                >
+                                                    Удалить
+                                                </button>
+                                            </Can>
                                         </td>
                                     </tr>
                                 ))}

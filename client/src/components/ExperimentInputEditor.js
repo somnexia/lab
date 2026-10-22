@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -574,17 +575,19 @@ class ExperimentInputEditor extends Component {
         {!editing ? (
           <>
             {this.renderViewTables()}
-            <div className="experiment-input-editor__toolbar">
-              <button type="button" className="experiment-input-editor__btn" onClick={this.startEditing}>
-                Edit inputs
-              </button>
-              <button type="button" className="experiment-input-editor__btn experiment-input-editor__btn--ghost" onClick={() => this.addRow('reagent')}>
-                Add reagent
-              </button>
-              <button type="button" className="experiment-input-editor__btn experiment-input-editor__btn--ghost" onClick={() => this.addRow('equipment')}>
-                Add equipment
-              </button>
-            </div>
+            <Can perm="canManageResearch">
+              <div className="experiment-input-editor__toolbar">
+                <button type="button" className="experiment-input-editor__btn" onClick={this.startEditing}>
+                  Edit inputs
+                </button>
+                <button type="button" className="experiment-input-editor__btn experiment-input-editor__btn--ghost" onClick={() => this.addRow('reagent')}>
+                  Add reagent
+                </button>
+                <button type="button" className="experiment-input-editor__btn experiment-input-editor__btn--ghost" onClick={() => this.addRow('equipment')}>
+                  Add equipment
+                </button>
+              </div>
+            </Can>
           </>
         ) : (
           <>

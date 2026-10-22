@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { FaSearch, FaPlus, FaChevronRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import ResearchDetailsModal from './ResearchDetailsModal';
+import Can from './Can';
 import { API } from '../config/api';
 import { http } from '../config/http';
 
@@ -110,10 +111,12 @@ class ResearchList extends Component {
                         <span className="me-3">Projects</span>
                         <span className="fw-normal text-body-tertiary">({researches.length})</span>
                     </h2>
-                    <Link className="btn btn-primary px-5 d-flex align-items-center" to="/projects/research-create">
-                        <span className='nav-link-icon'><FaPlus /></span>
-                        <span>Add new research</span>
-                    </Link>
+                    <Can perm="showCreateResearch">
+                        <Link className="btn btn-primary px-5 d-flex align-items-center" to="/projects/research-create">
+                            <span className='nav-link-icon'><FaPlus /></span>
+                            <span>Add new research</span>
+                        </Link>
+                    </Can>
                 </div>
                 <hr />
 

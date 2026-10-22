@@ -11,6 +11,7 @@ import {
     FaTrashAlt,
     FaUser,
 } from "react-icons/fa";
+import Can from './Can';
 
 class TaskDetailsModal extends Component {
     componentDidMount() {
@@ -222,13 +223,15 @@ class TaskDetailsModal extends Component {
                                 onClick: onCancelTask ? () => onCancelTask(task) : undefined,
                                 disabled: !onCancelTask || !canCancel,
                             })}
-                            {this.renderActionButton({
-                                label: "Delete",
-                                icon: <FaTrashAlt />,
-                                tone: "danger",
-                                onClick: onDeleteTask ? () => onDeleteTask(task) : undefined,
-                                disabled: !onDeleteTask,
-                            })}
+                            <Can perm="canManageResearch">
+                                {this.renderActionButton({
+                                    label: "Delete",
+                                    icon: <FaTrashAlt />,
+                                    tone: "danger",
+                                    onClick: onDeleteTask ? () => onDeleteTask(task) : undefined,
+                                    disabled: !onDeleteTask,
+                                })}
+                            </Can>
                         </div>
                     </footer>
                 </section>

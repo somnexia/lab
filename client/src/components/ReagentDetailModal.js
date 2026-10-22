@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import InventoryTable from './InventoryTable';
 import MixtureCompositionEditor from './MixtureCompositionEditor';
+import Can from './Can';
 import { enrichInventoryLots } from '../utils/inventoryEnrichment';
 
 const KIND_LABELS = {
@@ -59,12 +60,14 @@ class ReagentDetailModal extends Component {
           <div className="reagent-detail-modal__composition">
             <div className="reagent-detail-modal__composition-head">
               <h3>Structured composition</h3>
-              <Link
-                to={`/inventory/lots/register?item_type=mixture&reference_id=${reagent.catalogId}&name=${encodeURIComponent(reagent.name)}`}
-                className="reagent-detail-modal__register-lot"
-              >
-                Register lot
-              </Link>
+              <Can perm="showRegisterLot">
+                <Link
+                  to={`/inventory/lots/register?item_type=mixture&reference_id=${reagent.catalogId}&name=${encodeURIComponent(reagent.name)}`}
+                  className="reagent-detail-modal__register-lot"
+                >
+                  Register lot
+                </Link>
+              </Can>
             </div>
             <MixtureCompositionEditor
               mixtureId={reagent.catalogId}
@@ -124,12 +127,14 @@ class ReagentDetailModal extends Component {
                 <div className="reagent-detail-modal__lots-head">
                   <h3>Stock lots</h3>
                   {reagent.kind !== 'mixture' && (
-                    <Link
-                      to={`/inventory/lots/register?item_type=${reagent.kind}&reference_id=${reagent.catalogId}&name=${encodeURIComponent(reagent.name)}`}
-                      className="reagent-detail-modal__register-lot"
-                    >
-                      Register lot
-                    </Link>
+                    <Can perm="showRegisterLot">
+                      <Link
+                        to={`/inventory/lots/register?item_type=${reagent.kind}&reference_id=${reagent.catalogId}&name=${encodeURIComponent(reagent.name)}`}
+                        className="reagent-detail-modal__register-lot"
+                      >
+                        Register lot
+                      </Link>
+                    </Can>
                   )}
                 </div>
                 <p className="reagent-detail-modal__lots-hint">
