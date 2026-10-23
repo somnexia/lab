@@ -2,15 +2,12 @@ const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const routes = require('./routes'); // Импортируем основной файл маршрутов
-const path = require("path")
-const exphbs = require("express-handlebars")
-const db = require("../server/data/db")
+const routes = require('./routes');
 const morgan = require('morgan');
 const app = express();
 
 app.set('trust proxy', ['loopback', 'uniquelocal']);
-app.use(morgan('dev')); // Это будет логировать запросы в консоль
+app.use(morgan('dev'));
 app.use((req, res, next) => {
   try {
     decodeURIComponent(req.path);
@@ -20,11 +17,6 @@ app.use((req, res, next) => {
   }
 });
 
-const hbs = exphbs.create({
-  defaultLayout: "page",
-  extname: "hbs"
-})
-app.use(morgan('dev'));
 // credentials: true — cookie token с клиента :3001 (фаза 4 Cookie + Bearer)
 app.use(cors({
   origin: 'http://localhost:3001',
@@ -33,17 +25,10 @@ app.use(cors({
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(express.json());
-app.engine("hbs", hbs.engine)
-app.set("view engine", "hbs")
-app.set("views", "views")
+app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static(path.join(__dirname, "public")))
-app.use(express.urlencoded({ extended: true }))
-
-// Используем основной файл маршрутов
 app.use('/', routes);
 
-// Запуск сервера с обработкой ошибок
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
