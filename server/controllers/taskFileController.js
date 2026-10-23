@@ -1,74 +1,85 @@
 const taskFileService = require('../services/taskFileService');
+const { isScopeForbidden } = require('../utils/labScope');
 
-// Загрузка файла для задачи
+function sendError(res, error, fallbackStatus = 500) {
+  if (isScopeForbidden(error) || error.code === 'FORBIDDEN') {
+    return res.status(403).json({
+      error: error.message,
+      code: error.code || 'FORBIDDEN',
+    });
+  }
+  if (error.code === 'NOT_FOUND' || /не найден/i.test(error.message || '')) {
+    return res.status(404).json({ error: error.message });
+  }
+  console.error(error);
+  return res.status(fallbackStatus).json({ error: error.message });
+}
+
 const uploadTaskFile = async (req, res) => {
   const { task_id, file_path, file_type, file_size, uploaded_by } = req.body;
 
-  if (!task_id || !file_path || !file_type || !file_size || !uploaded_by) {
-    return res.status(400).json({ error: "Все поля обязательны" });
+  if (!task_id || !file_path || !file_type || !file_size) {
+    return res.status(400).json({ error: 'task_id, file_path, file_type и file_size обязательны' });
   }
 
   try {
-    const taskFile = await taskFileService.uploadTaskFile(task_id, file_path, file_type, file_size, uploaded_by);
+    const taskFile = await taskFileService.uploadTaskFile(
+      task_id,
+      file_path,
+      file_type,
+      file_size,
+      uploaded_by ?? req.user?.id,
+      req.user
+    );
     return res.status(201).json(taskFile);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Получение всех файлов, привязанных к задаче
 const getTaskFiles = async (req, res) => {
   const { taskId } = req.params;
-
   if (!taskId) {
-    return res.status(400).json({ error: "Не указан taskId" });
+    return res.status(400).json({ error: 'Не указан taskId' });
   }
 
   try {
-    const files = await taskFileService.getTaskFiles(taskId);
+    const files = await taskFileService.getTaskFiles(taskId, req.user);
     return res.status(200).json(files);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
+
 const getTaskFilesByResearch = async (req, res) => {
   const { researchId } = req.params;
-
   if (!researchId) {
-    return res.status(400).json({ error: "Не указан researchId" });
+    return res.status(400).json({ error: 'Не указан researchId' });
   }
 
   try {
-    const files = await taskFileService.getTaskFilesByResearch(researchId);
-    // Отсутствие файлов для исследования — штатный случай, а не ошибка.
-    // Возвращаем пустой массив, чтобы UI не попадал в error-flow.
+    const files = await taskFileService.getTaskFilesByResearch(researchId, req.user);
     return res.status(200).json(files);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Получение информации о файле по ID
 const getTaskFileById = async (req, res) => {
-  const { id } = req.params;
-
   try {
-    const file = await taskFileService.getTaskFileById(id);
+    const file = await taskFileService.getTaskFileById(req.params.id, req.user);
     return res.status(200).json(file);
   } catch (error) {
-    return res.status(404).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Удаление файла
 const deleteTaskFile = async (req, res) => {
-  const { id } = req.params;
-
   try {
-    const message = await taskFileService.deleteTaskFile(id);
+    const message = await taskFileService.deleteTaskFile(req.params.id, req.user);
     return res.status(200).json(message);
   } catch (error) {
-    return res.status(404).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
@@ -77,5 +88,5 @@ module.exports = {
   getTaskFiles,
   getTaskFileById,
   deleteTaskFile,
-  getTaskFilesByResearch
+  getTaskFilesByResearch,
 };

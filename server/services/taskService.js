@@ -1,59 +1,69 @@
-const { Task, TaskFile ,User } = require('../models');
+const { Task, TaskFile, User } = require('../models');
+const {
+  scopeTasksWhere,
+  assertCanViewTask,
+  assertCanEditTask,
+  assertCanDeleteTask,
+  prepareTaskCreatePayload,
+  sanitizeTaskUpdatePayload,
+  loadTaskOrThrow,
+} = require('../utils/researchScope');
 
-// Создание новой задачи
-const createTask = async (data) => {
+const createTask = async (data, user) => {
   try {
-
+    const prepared = await prepareTaskCreatePayload(user, data);
     const taskData = {
-      ...data,
-      start_date: data.start_date || null,
-      due_date: data.due_date || null
+      ...prepared,
+      start_date: prepared.start_date || null,
+      due_date: prepared.due_date || null,
     };
-
-    const task = await Task.create(taskData);
-
-    return task;
-
+    return await Task.create(taskData);
   } catch (error) {
     console.error('Ошибка при создании задачи:', error);
     throw error;
   }
 };
-const getTasksByResearch = async (researchId) => {
+
+const getTasksByResearch = async (researchId, user) => {
   try {
-    const tasks = await Task.findAll({
-      where: { research_id: researchId }
+    const where = await scopeTasksWhere(user, {
+      research_id: Number(researchId),
     });
-    return tasks;
+    return await Task.findAll({ where });
   } catch (error) {
-    console.error("Ошибка при получении задач по research_id:", error);
+    console.error('Ошибка при получении задач по research_id:', error);
     throw error;
   }
 };
 
-// Получение всех задач
-const getAllTasks = async () => {
+const getAllTasks = async (user) => {
   try {
+    const where = await scopeTasksWhere(user, {});
     return await Task.findAll({
+      where,
       include: [
         { model: TaskFile, as: 'files' },
-        { model: User, as: 'user' }
-      ]
+        { model: User, as: 'user' },
+      ],
     });
   } catch (error) {
     console.error('Ошибка при получении задач:', error);
     throw error;
   }
 };
-// Получение задачи по ID
-const getTaskById = async (id) => {
+
+const getTaskById = async (id, user) => {
   try {
     const task = await Task.findByPk(id, {
-      include: [{ model: TaskFile, as: 'files' }]
+      include: [{ model: TaskFile, as: 'files' }],
     });
     if (!task) {
-      throw new Error(`Задача с id ${id} не найдена`);
+      throw Object.assign(new Error(`Задача с id ${id} не найдена`), {
+        code: 'NOT_FOUND',
+        status: 404,
+      });
     }
+    await assertCanViewTask(user, task);
     return task;
   } catch (error) {
     console.error('Ошибка при получении задачи по id:', error);
@@ -61,14 +71,12 @@ const getTaskById = async (id) => {
   }
 };
 
-// Обновление задачи по ID
-const updateTask = async (id, data) => {
+const updateTask = async (id, data, user) => {
   try {
-    const task = await Task.findByPk(id);
-    if (!task) {
-      throw new Error(`Задача с id ${id} не найдена`);
-    }
-    await task.update(data);
+    const task = await loadTaskOrThrow(id);
+    await assertCanEditTask(user, task);
+    const payload = sanitizeTaskUpdatePayload(user, data);
+    await task.update(payload);
     return task;
   } catch (error) {
     console.error('Ошибка при обновлении задачи:', error);
@@ -76,13 +84,10 @@ const updateTask = async (id, data) => {
   }
 };
 
-// Удаление задачи по ID
-const deleteTask = async (id) => {
+const deleteTask = async (id, user) => {
   try {
-    const task = await Task.findByPk(id);
-    if (!task) {
-      throw new Error(`Задача с id ${id} не найдена`);
-    }
+    const task = await loadTaskOrThrow(id);
+    await assertCanDeleteTask(user, task);
     await task.destroy();
     return { message: `Задача с id ${id} удалена` };
   } catch (error) {

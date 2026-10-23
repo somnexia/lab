@@ -9,12 +9,11 @@ const {
 } = require('../config/roles');
 
 /**
- * Фаза 6b: authorize на tasks.
- * Чтение — все (CAN_VIEW_TASKS).
- * Create/update — все аутентифицированные с CAN_VIEW_TASKS (student Cˢ — «свои»
- * проверяется позже в сервисе); delete — CAN_MANAGE_RESEARCH (строже).
- *
- * Матрица: student Cˢ R Uˢ; delete обычно admin/researcher.
+ * authorize на tasks (роль).
+ * «Свои» записи — в taskService / researchScope:
+ *   student — только task.user_id === req.user.id
+ *   researcher / lab_admin — research своей lab/команды
+ * Delete — CAN_MANAGE_RESEARCH + тот же scope в сервисе.
  */
 router.post('/', authorize(CAN_VIEW_TASKS), taskController.createTask);
 router.get('/', authorize(CAN_VIEW_TASKS), taskController.getAllTasks);

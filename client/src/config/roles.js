@@ -66,3 +66,11 @@ export function isSystemAdmin(user) {
 export function isLabAdmin(user) {
   return getUserRole(user) === ROLES.LAB_ADMIN;
 }
+
+export function isResearcher(user) {
+  return getUserRole(user) === ROLES.RESEARCHER;
+}
+
+export function isStudent(user) {
+  return getUserRole(user) === ROLES.STUDENT;
+}

@@ -1,17 +1,30 @@
 const researchService = require('../services/researchService');
 const logService = require('../services/logService');
+const { isScopeForbidden } = require('../utils/labScope');
 
-// Создание нового исследования
+function sendError(res, error, fallbackStatus = 500) {
+  if (isScopeForbidden(error) || error.code === 'FORBIDDEN') {
+    return res.status(403).json({
+      error: error.message,
+      code: error.code || 'FORBIDDEN',
+    });
+  }
+  if (error.code === 'NOT_FOUND' || /не найден/i.test(error.message || '')) {
+    return res.status(404).json({ error: error.message });
+  }
+  console.error(error);
+  return res.status(fallbackStatus).json({ error: error.message });
+}
+
 const createResearch = async (req, res) => {
   try {
-    if (Object.values(req.body).some(value => value === null || value === undefined || value === '')) {
-      return res.status(400).json({ error: "Все поля обязательны" });
-      
+    if (Object.values(req.body).some((value) => value === null || value === undefined || value === '')) {
+      return res.status(400).json({ error: 'Все поля обязательны' });
     }
-    const newResearch = await researchService.createResearch(req.body);
+    const newResearch = await researchService.createResearch(req.body, req.user);
     await logService.safeRecordAuditLog({
       action: logService.LOG_ACTIONS.RESEARCH_CREATED,
-      userId: null,
+      userId: req.user?.id ?? null,
       resourceType: 'Research',
       resourceId: newResearch.id,
       description: { title: newResearch.title, type: newResearch.type },
@@ -20,8 +33,7 @@ const createResearch = async (req, res) => {
     });
     return res.status(201).json(newResearch);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
@@ -29,100 +41,102 @@ const createResearchWithParticipants = async (req, res) => {
   try {
     const { researchData, employeeIds } = req.body;
 
-    // Проверка входных данных
-    if (
-      !researchData || typeof researchData !== 'object' ||
-      !employeeIds || !Array.isArray(employeeIds)
-    ) {
-      return res.status(400).json({ error: 'Некорректные данные. Ожидались researchData и employeeIds.' });
+    if (!researchData || typeof researchData !== 'object' || !employeeIds || !Array.isArray(employeeIds)) {
+      return res.status(400).json({
+        error: 'Некорректные данные. Ожидались researchData и employeeIds.',
+      });
     }
 
-    // Проверка на пустые поля
-    if (Object.values(researchData).some(value => value === null || value === undefined || value === '')) {
-      return res.status(400).json({ error: "Все поля исследования обязательны" });
+    if (Object.values(researchData).some((value) => value === null || value === undefined || value === '')) {
+      return res.status(400).json({ error: 'Все поля исследования обязательны' });
     }
 
-    const newResearch = await researchService.createResearchWithParticipants(researchData, employeeIds);
+    const newResearch = await researchService.createResearchWithParticipants(
+      researchData,
+      employeeIds,
+      req.user
+    );
     return res.status(201).json(newResearch);
   } catch (error) {
-    console.error('Ошибка в контроллере при создании исследования с участниками:', error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Получение всех исследований
 const getAllResearches = async (req, res) => {
   try {
     const includeParticipants =
       req.query.includeParticipants === 'true' || req.query.include === 'participants';
-    const researches = await researchService.getAllResearches({ includeParticipants });
+    const researches = await researchService.getAllResearches(
+      { includeParticipants },
+      req.user
+    );
     return res.status(200).json(researches);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Получение исследования по ID
 const getResearchById = async (req, res) => {
-  const { id } = req.params;
   try {
     const includeParticipants =
       req.query.includeParticipants === 'true' || req.query.include === 'participants';
-    const research = await researchService.getResearchById(id, { includeParticipants });
+    const research = await researchService.getResearchById(
+      req.params.id,
+      { includeParticipants },
+      req.user
+    );
     return res.status(200).json(research);
   } catch (error) {
-    console.error(error);
-    return res.status(404).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Обновление исследования по ID
 const updateResearch = async (req, res) => {
-  const { id } = req.params;
   try {
-    const updatedResearch = await researchService.updateResearch(id, req.body);
+    const updatedResearch = await researchService.updateResearch(
+      req.params.id,
+      req.body,
+      req.user
+    );
     return res.status(200).json(updatedResearch);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Удаление исследования по ID
 const deleteResearch = async (req, res) => {
-  const { id } = req.params;
   try {
-    const result = await researchService.deleteResearch(id, req.body);
+    const result = await researchService.deleteResearch(req.params.id, req.user);
     return res.status(200).json(result);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
 const addParticipantsToResearch = async (req, res) => {
   try {
-    const { researchId, employeeIds } = req.body; // Получаем данные из тела запроса
+    const { researchId, employeeIds } = req.body;
     if (!researchId || !employeeIds || !Array.isArray(employeeIds)) {
       return res.status(400).json({ error: 'Invalid data' });
     }
 
-    const response = await researchService.addResearchParticipants(researchId, employeeIds);
-    res.status(200).json(response);
+    const response = await researchService.addResearchParticipants(
+      researchId,
+      employeeIds,
+      req.user
+    );
+    return res.status(200).json(response);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
 const getOngoingResearchCount = async (req, res) => {
   try {
-    const count = await researchService.getOngoingResearchCount();
+    const count = await researchService.getOngoingResearchCount(req.user);
     return res.status(200).json({ count });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 

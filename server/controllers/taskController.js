@@ -1,21 +1,35 @@
 const taskService = require('../services/taskService');
 const logService = require('../services/logService');
+const { isScopeForbidden } = require('../utils/labScope');
 
-// Создание новой задачи
+function sendError(res, error, fallbackStatus = 500) {
+  if (isScopeForbidden(error) || error.code === 'FORBIDDEN') {
+    return res.status(403).json({
+      error: error.message,
+      code: error.code || 'FORBIDDEN',
+    });
+  }
+  if (error.code === 'NOT_FOUND' || /не найден/i.test(error.message || '')) {
+    return res.status(404).json({ error: error.message });
+  }
+  console.error(error);
+  return res.status(fallbackStatus).json({ error: error.message });
+}
+
 const createTask = async (req, res) => {
   const { research_id, title, start_date } = req.body;
 
   if (!research_id || !title || !start_date) {
     return res.status(400).json({
-      error: "research_id, title и start_date обязательны"
+      error: 'research_id, title и start_date обязательны',
     });
   }
 
   try {
-    const task = await taskService.createTask(req.body);
+    const task = await taskService.createTask(req.body, req.user);
     await logService.safeRecordAuditLog({
       action: logService.LOG_ACTIONS.TASK_CREATED,
-      userId: req.body.user_id != null ? Number(req.body.user_id) : null,
+      userId: req.user?.id != null ? Number(req.user.id) : null,
       resourceType: 'Task',
       resourceId: task.id,
       description: { title: task.title, research_id: task.research_id },
@@ -24,70 +38,57 @@ const createTask = async (req, res) => {
     });
     return res.status(201).json(task);
   } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      error: error.message
-    });
+    return sendError(res, error);
   }
 };
 
-// Получение всех задач
-
-
 const getTasksByResearch = async (req, res) => {
-  const { researchId } = req.query; // Получаем researchId из запроса
+  const { researchId } = req.query;
   if (!researchId) {
-    return res.status(400).json({ error: "Не указан researchId" });
+    return res.status(400).json({ error: 'Не указан researchId' });
   }
 
   try {
-    const tasks = await taskService.getTasksByResearch(researchId);
-    res.json(tasks);
+    const tasks = await taskService.getTasksByResearch(researchId, req.user);
+    return res.json(tasks);
   } catch (error) {
-    res.status(500).json({ error: "Ошибка при получении задач исследования" });
+    return sendError(res, error);
   }
 };
 
 const getAllTasks = async (req, res) => {
   try {
-    const tasks = await taskService.getAllTasks();
+    const tasks = await taskService.getAllTasks(req.user);
     return res.status(200).json(tasks);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Получение задачи по ID
 const getTaskById = async (req, res) => {
-  const { id } = req.params;
   try {
-    const task = await taskService.getTaskById(id);
+    const task = await taskService.getTaskById(req.params.id, req.user);
     return res.status(200).json(task);
   } catch (error) {
-    return res.status(404).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Обновление задачи по ID
 const updateTask = async (req, res) => {
-  const { id } = req.params;
   try {
-    const task = await taskService.updateTask(id, req.body);
+    const task = await taskService.updateTask(req.params.id, req.body, req.user);
     return res.status(200).json(task);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Удаление задачи по ID
 const deleteTask = async (req, res) => {
-  const { id } = req.params;
   try {
-    const message = await taskService.deleteTask(id, req.body);
+    const message = await taskService.deleteTask(req.params.id, req.user);
     return res.status(200).json(message);
   } catch (error) {
-    return res.status(404).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
@@ -97,5 +98,5 @@ module.exports = {
   getTaskById,
   updateTask,
   deleteTask,
-  getTasksByResearch
+  getTasksByResearch,
 };

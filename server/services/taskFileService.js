@@ -1,80 +1,95 @@
 const { TaskFile, User, Task } = require('../models');
+const {
+  assertCanViewTask,
+  assertCanEditTask,
+  loadTaskOrThrow,
+  scopeTasksWhere,
+  assertCanViewResearch,
+  loadResearchOrThrow,
+} = require('../utils/researchScope');
 
-// Загрузка файла для задачи
-const uploadTaskFile = async (taskId, filePath, fileType, fileSize, userId) => {
+const uploadTaskFile = async (taskId, filePath, fileType, fileSize, userId, user) => {
   try {
-    const taskFile = await TaskFile.create({
+    const task = await loadTaskOrThrow(taskId);
+    await assertCanEditTask(user, task);
+
+    return await TaskFile.create({
       task_id: taskId,
       file_path: filePath,
       file_type: fileType,
       file_size: fileSize,
-      uploaded_by: userId,
-      updatedAt: new Date()
+      uploaded_by: userId != null ? Number(userId) : Number(user.id),
+      updatedAt: new Date(),
     });
-    return taskFile;
   } catch (error) {
     console.error('Ошибка при загрузке файла:', error);
     throw error;
   }
 };
 
-// Получение всех файлов, привязанных к задаче
-const getTaskFiles = async (taskId) => {
+const getTaskFiles = async (taskId, user) => {
   try {
+    const task = await loadTaskOrThrow(taskId);
+    await assertCanViewTask(user, task);
+
     return await TaskFile.findAll({
       where: { task_id: taskId },
       include: [{ model: User, as: 'uploader', attributes: ['id', 'name', 'email'] }],
-      order: [['updatedAt', 'DESC']]
+      order: [['updatedAt', 'DESC']],
     });
   } catch (error) {
     console.error('Ошибка при получении файлов задачи:', error);
     throw error;
   }
 };
-const getTaskFilesByResearch = async (researchId) => {
+
+const getTaskFilesByResearch = async (researchId, user) => {
   try {
-    // Получаем все задачи, связанные с данным исследованием
+    const research = await loadResearchOrThrow(researchId);
+    await assertCanViewResearch(user, research);
+
+    const where = await scopeTasksWhere(user, {
+      research_id: Number(researchId),
+    });
+
     const tasks = await Task.findAll({
-      where: { research_id: researchId },
+      where,
       include: [
         {
-          model: TaskFile, 
+          model: TaskFile,
           as: 'files',
           include: [
             {
               model: User,
-              as: 'uploader', // Должно совпадать с ассоциацией в модели
-              attributes: ['id', 'name'], // Получаем только нужные поля
+              as: 'uploader',
+              attributes: ['id', 'name'],
             },
           ],
-
-        }]
+        },
+      ],
     });
 
-    if (!tasks.length) {
-      return [];
-    }
-
-    // Собираем все файлы из найденных задач
-    const files = tasks.flatMap(task => task.files);
-    // console.log("files",files);
-    return files;
-  
+    if (!tasks.length) return [];
+    return tasks.flatMap((task) => task.files || []);
   } catch (error) {
     console.error('Ошибка при получении файлов исследования:', error);
     throw error;
   }
 };
 
-// Получение информации о файле по его ID
-const getTaskFileById = async (fileId) => {
+const getTaskFileById = async (fileId, user) => {
   try {
     const file = await TaskFile.findByPk(fileId, {
-      include: [{ model: User, as: 'uploader', attributes: ['id', 'name', 'email'] }]
+      include: [{ model: User, as: 'uploader', attributes: ['id', 'name', 'email'] }],
     });
     if (!file) {
-      throw new Error(`Файл с id ${fileId} не найден`);
+      throw Object.assign(new Error(`Файл с id ${fileId} не найден`), {
+        code: 'NOT_FOUND',
+        status: 404,
+      });
     }
+    const task = await loadTaskOrThrow(file.task_id);
+    await assertCanViewTask(user, task);
     return file;
   } catch (error) {
     console.error('Ошибка при получении файла по ID:', error);
@@ -82,13 +97,17 @@ const getTaskFileById = async (fileId) => {
   }
 };
 
-// Удаление файла
-const deleteTaskFile = async (fileId) => {
+const deleteTaskFile = async (fileId, user) => {
   try {
     const file = await TaskFile.findByPk(fileId);
     if (!file) {
-      throw new Error(`Файл с id ${fileId} не найден`);
+      throw Object.assign(new Error(`Файл с id ${fileId} не найден`), {
+        code: 'NOT_FOUND',
+        status: 404,
+      });
     }
+    const task = await loadTaskOrThrow(file.task_id);
+    await assertCanEditTask(user, task);
     await file.destroy();
     return { message: `Файл с id ${fileId} удален` };
   } catch (error) {
@@ -102,5 +121,5 @@ module.exports = {
   getTaskFiles,
   getTaskFileById,
   deleteTaskFile,
-  getTaskFilesByResearch
+  getTaskFilesByResearch,
 };

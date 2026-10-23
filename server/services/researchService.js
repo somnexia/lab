@@ -1,14 +1,14 @@
 const { Research, ResearchEmployee, Employee } = require('../models');
-// Создание нового исследования
-const createResearch = async (data) => {
-  try {
-    const research = await Research.create(data);
-    return research;
-  } catch (error) {
-    console.error('Ошибка при создании исследования:', error);
-    throw error;
-  }
-};
+const {
+  scopeResearchesWhere,
+  assertCanViewResearch,
+  assertCanEditResearch,
+  ensureActorMembership,
+  assertEmployeesInActorLab,
+  researchBelongsToActorScope,
+} = require('../utils/researchScope');
+const { skipLabScope } = require('../utils/labScope');
+
 const participantInclude = {
   model: ResearchEmployee,
   as: 'participants',
@@ -21,10 +21,21 @@ const participantInclude = {
   ],
 };
 
-// Получение всех исследований
-const getAllResearches = async (options = {}) => {
+const createResearch = async (data, user) => {
   try {
-    const query = { order: [['start_date', 'DESC']] };
+    const research = await Research.create(data);
+    await ensureActorMembership(user, research.id);
+    return research;
+  } catch (error) {
+    console.error('Ошибка при создании исследования:', error);
+    throw error;
+  }
+};
+
+const getAllResearches = async (options = {}, user) => {
+  try {
+    const where = await scopeResearchesWhere(user, {});
+    const query = { where, order: [['start_date', 'DESC']] };
     if (options.includeParticipants) {
       query.include = [participantInclude];
     }
@@ -35,8 +46,7 @@ const getAllResearches = async (options = {}) => {
   }
 };
 
-// Получение исследования по ID
-const getResearchById = async (id, options = {}) => {
+const getResearchById = async (id, options = {}, user) => {
   try {
     const query = {};
     if (options.includeParticipants) {
@@ -44,21 +54,29 @@ const getResearchById = async (id, options = {}) => {
     }
     const research = await Research.findByPk(id, query);
     if (!research) {
-      throw new Error(`Исследование с id ${id} не найдено`);
+      throw Object.assign(new Error(`Исследование с id ${id} не найдено`), {
+        code: 'NOT_FOUND',
+        status: 404,
+      });
     }
+    await assertCanViewResearch(user, research);
     return research;
   } catch (error) {
     console.error('Ошибка при получении исследования по id:', error);
     throw error;
   }
 };
-// Обновление исследования по ID
-const updateResearch = async (id, data) => {
+
+const updateResearch = async (id, data, user) => {
   try {
     const research = await Research.findByPk(id);
     if (!research) {
-      throw new Error(`Исследование с id ${id} не найдено`);
+      throw Object.assign(new Error(`Исследование с id ${id} не найдено`), {
+        code: 'NOT_FOUND',
+        status: 404,
+      });
     }
+    await assertCanEditResearch(user, research);
     await research.update(data);
     return research;
   } catch (error) {
@@ -66,13 +84,17 @@ const updateResearch = async (id, data) => {
     throw error;
   }
 };
-// Удаление исследования по ID
-const deleteResearch = async (id) => {
+
+const deleteResearch = async (id, user) => {
   try {
     const research = await Research.findByPk(id);
     if (!research) {
-      throw new Error(`Исследование с id ${id} не найдено`);
+      throw Object.assign(new Error(`Исследование с id ${id} не найдено`), {
+        code: 'NOT_FOUND',
+        status: 404,
+      });
     }
+    await assertCanEditResearch(user, research);
     await research.destroy();
     return { message: `Исследование с id ${id} удалено` };
   } catch (error) {
@@ -80,16 +102,26 @@ const deleteResearch = async (id) => {
     throw error;
   }
 };
-const createResearchWithParticipants = async (data, employeeIds) => {
-  try {
-    const research = await Research.create(data); // создаём исследование
 
-    if (employeeIds && employeeIds.length > 0) {
-      const participants = employeeIds.map(employeeId => ({
-        research_id: research.id,
-        employee_id: employeeId
-      }));
-      await ResearchEmployee.bulkCreate(participants); // добавляем участников
+const createResearchWithParticipants = async (data, employeeIds, user) => {
+  try {
+    await assertEmployeesInActorLab(user, employeeIds);
+    const research = await Research.create(data);
+
+    const ids = [...new Set((employeeIds || []).map(Number).filter(Boolean))];
+    if (user?.employee_id && !ids.includes(Number(user.employee_id))) {
+      ids.push(Number(user.employee_id));
+    }
+
+    if (ids.length > 0) {
+      await ResearchEmployee.bulkCreate(
+        ids.map((employeeId) => ({
+          research_id: research.id,
+          employee_id: employeeId,
+        }))
+      );
+    } else {
+      await ensureActorMembership(user, research.id);
     }
 
     return research;
@@ -98,33 +130,51 @@ const createResearchWithParticipants = async (data, employeeIds) => {
     throw error;
   }
 };
-const addResearchParticipants = async (researchId, employeeIds) => {
+
+const addResearchParticipants = async (researchId, employeeIds, user) => {
   try {
-    const research = await Research.findByPk(researchId);  // Проверяем, существует ли исследование
+    const research = await Research.findByPk(researchId);
     if (!research) throw new Error('Research not found');
-    // Добавляем сотрудников в таблицу researchEmployee
-    const participants = employeeIds.map(employeeId => ({
+
+    // новое research без участников: system_admin ок; иначе только если уже в scope
+    // или актор только что создал — для add требуем edit
+    if (!skipLabScope(user)) {
+      const inScope = await researchBelongsToActorScope(user, researchId);
+      if (!inScope) {
+        const count = await ResearchEmployee.count({
+          where: { research_id: Number(researchId) },
+        });
+        if (count > 0) {
+          await assertCanEditResearch(user, research);
+        }
+      } else {
+        await assertCanEditResearch(user, research);
+      }
+    }
+
+    await assertEmployeesInActorLab(user, employeeIds);
+    const participants = employeeIds.map((employeeId) => ({
       research_id: researchId,
-      employee_id: employeeId
+      employee_id: employeeId,
     }));
-    await ResearchEmployee.bulkCreate(participants); // Используем bulkCreate для добавления нескольких записей
+    await ResearchEmployee.bulkCreate(participants);
     return { message: 'Participants added successfully' };
   } catch (error) {
     console.error('Error adding participants:', error);
-    throw new Error('Error adding participants');
+    throw error;
   }
 };
-const getOngoingResearchCount = async () => {
+
+const getOngoingResearchCount = async (user) => {
   try {
-    const count = await Research.count({
-      where: { status: 'Ongoing' }
-    });
-    return count;
+    const where = await scopeResearchesWhere(user, { status: 'Ongoing' });
+    return await Research.count({ where });
   } catch (error) {
     console.error('Ошибка при подсчете ongoing-исследований:', error);
     throw error;
   }
 };
+
 module.exports = {
   createResearch,
   getAllResearches,

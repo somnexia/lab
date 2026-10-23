@@ -138,6 +138,14 @@ function isLabAdmin(user) {
   return getUserRole(user) === ROLES.LAB_ADMIN;
 }
 
+function isResearcher(user) {
+  return getUserRole(user) === ROLES.RESEARCHER;
+}
+
+function isStudent(user) {
+  return getUserRole(user) === ROLES.STUDENT;
+}
+
 /** Пропуск tenant-фильтра: только system_admin видит все лаборатории */
 function skipLabScope(user) {
   return isSystemAdmin(user);
@@ -178,6 +186,8 @@ module.exports = {
   hasRole,
   isSystemAdmin,
   isLabAdmin,
+  isResearcher,
+  isStudent,
   skipLabScope,
   can,
 };

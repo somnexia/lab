@@ -8,9 +8,10 @@ const {
 } = require('../config/roles');
 
 /**
- * Фаза 6b: authorize на researches.
- * Tenant / «свои записи» — в сервисах (фаза 5/8); здесь только роль.
- * student: чтение; create/update/delete — CAN_MANAGE_RESEARCH (admin+researcher).
+ * authorize на researches (роль).
+ * Lab/team scope — researchService / researchScope
+ * (research без laboratory_id → через ResearchEmployee → Employee.lab_id).
+ * student: чтение в scope; CUD — CAN_MANAGE_RESEARCH.
  */
 router.post('/', authorize(CAN_MANAGE_RESEARCH), researchController.createResearch);
 router.post(
