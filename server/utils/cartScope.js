@@ -43,7 +43,24 @@ function resolveOwnCartUserId(user, requestedUserId) {
   return actorId;
 }
 
+/**
+ * Body для POST /carts: user_id всегда из актора.
+ * Если клиент прислал чужой user_id — 403 (как у GET/clear).
+ *
+ * @param {object} user — req.user
+ * @param {object} data — req.body
+ * @returns {object} копия data с безопасным user_id
+ */
+function prepareCartCreatePayload(user, data = {}) {
+  const user_id = resolveOwnCartUserId(user, data.user_id);
+  return {
+    ...data,
+    user_id,
+  };
+}
+
 module.exports = {
   actorUserId,
   resolveOwnCartUserId,
+  prepareCartCreatePayload,
 };

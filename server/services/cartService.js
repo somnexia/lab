@@ -1,30 +1,30 @@
 const { Cart, Inventory, User } = require('../models');
-const { resolveOwnCartUserId } = require('../utils/cartScope');
+const {
+  resolveOwnCartUserId,
+  prepareCartCreatePayload,
+} = require('../utils/cartScope');
 
-// Создание нового элемента в корзине
-const createCartItem = async (data) => {
+/**
+ * Добавить позицию в корзину.
+ * user_id берётся из req.user (prepareCartCreatePayload), не из доверия к body.
+ */
+const createCartItem = async (data, user) => {
   try {
-    const { user_id, item_id, quantity } = data;
+    const payload = prepareCartCreatePayload(user, data);
+    const { user_id, item_id, quantity } = payload;
 
-    // Проверяем, есть ли уже этот предмет в корзине пользователя
     let cartItem = await Cart.findOne({
-      where: { user_id, item_id }
+      where: { user_id, item_id },
     });
 
     if (cartItem) {
-      // Если предмет уже есть в корзине, обновляем его количество
       cartItem.quantity += quantity;
       await cartItem.save();
     } else {
-      // Если предмета нет, создаем новый элемент корзины
-      cartItem = await Cart.create(data);
-      console.log('Data received for Cart creation:', data);
-      
+      cartItem = await Cart.create(payload);
     }
-    console.log('CartItem:', cartItem);
-    return cartItem;
-    
 
+    return cartItem;
   } catch (error) {
     console.error('Ошибка при добавлении элемента в корзину:', error);
     throw error;

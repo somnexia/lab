@@ -7,8 +7,8 @@ const { CAN_USE_CART } = require('../config/roles');
 /**
  * Корзина: CAN_USE_CART = все роли.
  * Owner-scope (по частям):
- *   1) GET /:user_id и DELETE /clear/:user_id — только req.user.id (cartScope)
- *   2) POST create — force user_id
+ *   1) GET /:user_id и DELETE /clear/:user_id — только req.user.id ✓
+ *   2) POST / — user_id из req.user (prepareCartCreatePayload) ✓
  *   3) item get/update/delete — владелец строки
  */
 router.post('/', authorize(CAN_USE_CART), cartController.createCartItem);

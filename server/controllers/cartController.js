@@ -13,25 +13,22 @@ function sendError(res, error, fallbackMessage, fallbackStatus = 500) {
   return res.status(fallbackStatus).json({ message: fallbackMessage });
 }
 
-// Создание нового элемента в корзине
+// Создание нового элемента в корзине (user_id только из req.user)
 const createCartItem = async (req, res) => {
   try {
-    console.log('Полученные данные для создания элемента:', req.body);
-    const data = req.body;
-    const cartItem = await cartService.createCartItem(data);
+    const cartItem = await cartService.createCartItem(req.body, req.user);
     await logService.safeRecordAuditLog({
       action: logService.LOG_ACTIONS.CART_ITEM_ADDED,
-      userId: data.user_id != null ? Number(data.user_id) : null,
+      userId: req.user?.id != null ? Number(req.user.id) : null,
       resourceType: 'Cart',
       resourceId: cartItem.id,
-      description: { item_id: data.item_id, quantity: cartItem.quantity },
+      description: { item_id: cartItem.item_id, quantity: cartItem.quantity },
       status: logService.LOG_STATUS.SUCCESS,
       ...logService.mergeMeta({}, req),
     });
-    res.status(201).json(cartItem);
+    return res.status(201).json(cartItem);
   } catch (error) {
-    console.error('Ошибка при создании элемента в корзине:', error);
-    res.status(500).json({ message: 'Ошибка при создании элемента в корзине' });
+    return sendError(res, error, 'Ошибка при создании элемента в корзине');
   }
 };
 
