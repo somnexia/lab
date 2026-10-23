@@ -2,7 +2,16 @@ const { Cart, Inventory, User } = require('../models');
 const {
   resolveOwnCartUserId,
   prepareCartCreatePayload,
+  assertOwnsCartItem,
+  sanitizeCartItemUpdatePayload,
 } = require('../utils/cartScope');
+
+function notFound(message) {
+  const err = new Error(message);
+  err.code = 'NOT_FOUND';
+  err.status = 404;
+  return err;
+}
 
 /**
  * Добавить позицию в корзину.
@@ -47,8 +56,10 @@ const getAllCartItems = async (user, requestedUserId) => {
   }
 };
 
-// Получение элемента корзины по ID
-const getCartItemById = async (id) => {
+/**
+ * Одна позиция по Cart.id — только если cartItem.user_id === req.user.id.
+ */
+const getCartItemById = async (id, user) => {
   try {
     const cartItem = await Cart.findByPk(id, {
       include: [
@@ -57,8 +68,9 @@ const getCartItemById = async (id) => {
       ],
     });
     if (!cartItem) {
-      throw new Error(`Элемент корзины с id ${id} не найден`);
+      throw notFound(`Элемент корзины с id ${id} не найден`);
     }
+    assertOwnsCartItem(user, cartItem);
     return cartItem;
   } catch (error) {
     console.error('Ошибка при получении элемента корзины по id:', error);
@@ -66,14 +78,19 @@ const getCartItemById = async (id) => {
   }
 };
 
-// Обновление элемента корзины по ID
-const updateCartItem = async (id, data) => {
+/**
+ * Обновить количество и т.п. чужой строки нельзя;
+ * body.user_id игнорируется (sanitize).
+ */
+const updateCartItem = async (id, data, user) => {
   try {
     const cartItem = await Cart.findByPk(id);
     if (!cartItem) {
-      throw new Error(`Элемент корзины с id ${id} не найден`);
+      throw notFound(`Элемент корзины с id ${id} не найден`);
     }
-    await cartItem.update(data);
+    assertOwnsCartItem(user, cartItem);
+    const payload = sanitizeCartItemUpdatePayload(data);
+    await cartItem.update(payload);
     return cartItem;
   } catch (error) {
     console.error('Ошибка при обновлении элемента корзины:', error);
@@ -81,13 +98,14 @@ const updateCartItem = async (id, data) => {
   }
 };
 
-// Удаление элемента корзины по ID
-const deleteCartItem = async (id) => {
+/** Удалить позицию — только владелец строки. */
+const deleteCartItem = async (id, user) => {
   try {
     const cartItem = await Cart.findByPk(id);
     if (!cartItem) {
-      throw new Error(`Элемент корзины с id ${id} не найден`);
+      throw notFound(`Элемент корзины с id ${id} не найден`);
     }
+    assertOwnsCartItem(user, cartItem);
     await cartItem.destroy();
     return { message: `Элемент корзины с id ${id} удален` };
   } catch (error) {

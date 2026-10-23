@@ -59,8 +59,37 @@ function prepareCartCreatePayload(user, data = {}) {
   };
 }
 
+/**
+ * Строка корзины (Cart.id) принадлежит актору?
+ * cartItem.user_id — владелец строки в БД.
+ */
+function assertOwnsCartItem(user, cartItem) {
+  const actorId = actorUserId(user);
+  if (actorId == null) {
+    throw forbidden('Требуется авторизация', 'AUTH_REQUIRED');
+  }
+  if (!cartItem) {
+    throw forbidden('Элемент корзины не найден', 'NOT_FOUND');
+  }
+  if (Number(cartItem.user_id) !== actorId) {
+    throw forbidden('Недостаточно прав для доступа к чужой позиции корзины');
+  }
+}
+
+/**
+ * PUT /carts/item/:id — нельзя сменить владельца через body.user_id.
+ */
+function sanitizeCartItemUpdatePayload(data = {}) {
+  const payload = { ...data };
+  delete payload.user_id;
+  delete payload.id;
+  return payload;
+}
+
 module.exports = {
   actorUserId,
   resolveOwnCartUserId,
   prepareCartCreatePayload,
+  assertOwnsCartItem,
+  sanitizeCartItemUpdatePayload,
 };

@@ -9,6 +9,12 @@ function sendError(res, error, fallbackMessage, fallbackStatus = 500) {
       code: error.code || 'FORBIDDEN',
     });
   }
+  if (error.code === 'NOT_FOUND' || /не найден/i.test(error.message || '')) {
+    return res.status(404).json({
+      message: error.message,
+      code: 'NOT_FOUND',
+    });
+  }
   console.error(fallbackMessage, error);
   return res.status(fallbackStatus).json({ message: fallbackMessage });
 }
@@ -42,40 +48,37 @@ const getAllCartItems = async (req, res) => {
   }
 };
 
-// Получение элемента корзины по ID
+// Одна позиция по id строки — только владелец
 const getCartItemById = async (req, res) => {
   try {
-    const cartItemId = req.params.id;
-    const cartItem = await cartService.getCartItemById(cartItemId);
-    res.status(200).json(cartItem);
+    const cartItem = await cartService.getCartItemById(req.params.id, req.user);
+    return res.status(200).json(cartItem);
   } catch (error) {
-    console.error('Ошибка при получении элемента корзины по id:', error);
-    res.status(500).json({ message: 'Ошибка при получении элемента корзины' });
+    return sendError(res, error, 'Ошибка при получении элемента корзины');
   }
 };
 
-// Обновление элемента корзины по ID
+// Обновление позиции — только владелец; user_id в body отбрасывается
 const updateCartItem = async (req, res) => {
   try {
-    const cartItemId = req.params.id;
-    const data = req.body;
-    const updatedCartItem = await cartService.updateCartItem(cartItemId, data);
-    res.status(200).json(updatedCartItem);
+    const updatedCartItem = await cartService.updateCartItem(
+      req.params.id,
+      req.body,
+      req.user
+    );
+    return res.status(200).json(updatedCartItem);
   } catch (error) {
-    console.error('Ошибка при обновлении элемента корзины:', error);
-    res.status(500).json({ message: 'Ошибка при обновлении элемента корзины' });
+    return sendError(res, error, 'Ошибка при обновлении элемента корзины');
   }
 };
 
-// Удаление элемента корзины по ID
+// Удаление позиции — только владелец
 const deleteCartItem = async (req, res) => {
   try {
-    const cartItemId = req.params.id;
-    const result = await cartService.deleteCartItem(cartItemId);
-    res.status(200).json(result);
+    const result = await cartService.deleteCartItem(req.params.id, req.user);
+    return res.status(200).json(result);
   } catch (error) {
-    console.error('Ошибка при удалении элемента корзины:', error);
-    res.status(500).json({ message: 'Ошибка при удалении элемента корзины' });
+    return sendError(res, error, 'Ошибка при удалении элемента корзины');
   }
 };
 
