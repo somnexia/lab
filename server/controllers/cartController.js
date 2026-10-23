@@ -1,5 +1,17 @@
 const cartService = require('../services/cartService');
 const logService = require('../services/logService');
+const { isScopeForbidden } = require('../utils/labScope');
+
+function sendError(res, error, fallbackMessage, fallbackStatus = 500) {
+  if (isScopeForbidden(error) || error.code === 'FORBIDDEN') {
+    return res.status(403).json({
+      message: error.message,
+      code: error.code || 'FORBIDDEN',
+    });
+  }
+  console.error(fallbackMessage, error);
+  return res.status(fallbackStatus).json({ message: fallbackMessage });
+}
 
 // Создание нового элемента в корзине
 const createCartItem = async (req, res) => {
@@ -23,15 +35,13 @@ const createCartItem = async (req, res) => {
   }
 };
 
-// Получение всех элементов корзины для пользователя
+// Получение всех элементов корзины для пользователя (только свои)
 const getAllCartItems = async (req, res) => {
   try {
-    const user_id = req.params.user_id;
-    const cartItems = await cartService.getAllCartItems(user_id);
+    const cartItems = await cartService.getAllCartItems(req.user, req.params.user_id);
     res.status(200).json(cartItems);
   } catch (error) {
-    console.error('Ошибка при получении элементов корзины пользователя:', error);
-    res.status(500).json({ message: 'Ошибка при получении элементов корзины' });
+    return sendError(res, error, 'Ошибка при получении элементов корзины');
   }
 };
 
@@ -72,15 +82,13 @@ const deleteCartItem = async (req, res) => {
   }
 };
 
-// Очистка корзины для пользователя
+// Очистка корзины для пользователя (только свои)
 const clearCart = async (req, res) => {
   try {
-    const user_id = req.params.user_id;
-    const result = await cartService.clearCart(user_id);
+    const result = await cartService.clearCart(req.user, req.params.user_id);
     res.status(200).json(result);
   } catch (error) {
-    console.error('Ошибка при очистке корзины:', error);
-    res.status(500).json({ message: 'Ошибка при очистке корзины' });
+    return sendError(res, error, 'Ошибка при очистке корзины');
   }
 };
 

@@ -5,8 +5,11 @@ const { authorize } = require('../middleware/authMiddleware');
 const { CAN_USE_CART } = require('../config/roles');
 
 /**
- * Фаза 6b: корзина — роль не режет (все CAN_USE_CART = ALL_ROLES).
- * «Только свои» по user_id — в сервисе (фаза 8); authorize фиксирует контракт.
+ * Корзина: CAN_USE_CART = все роли.
+ * Owner-scope (по частям):
+ *   1) GET /:user_id и DELETE /clear/:user_id — только req.user.id (cartScope)
+ *   2) POST create — force user_id
+ *   3) item get/update/delete — владелец строки
  */
 router.post('/', authorize(CAN_USE_CART), cartController.createCartItem);
 router.get('/:user_id', authorize(CAN_USE_CART), cartController.getAllCartItems);

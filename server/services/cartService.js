@@ -1,4 +1,5 @@
 const { Cart, Inventory, User } = require('../models');
+const { resolveOwnCartUserId } = require('../utils/cartScope');
 
 // Создание нового элемента в корзине
 const createCartItem = async (data) => {
@@ -30,21 +31,17 @@ const createCartItem = async (data) => {
   }
 };
 
-// Получение всех элементов корзины для пользователя
-const getAllCartItems = async (user_id) => {
+/**
+ * Список позиций корзины.
+ * user — req.user; requestedUserId — params.user_id (должен совпасть с актором).
+ */
+const getAllCartItems = async (user, requestedUserId) => {
   try {
+    const user_id = resolveOwnCartUserId(user, requestedUserId);
     return await Cart.findAll({
       where: { user_id },
-      // include: [
-      //   { association: 'inventory' }, // Связь с Inventory
-      //   { association: 'user' }, // Связь с User (если нужно)
-      // ],
-
     });
-
-
   } catch (error) {
-    console.log("userId:", user_id);
     console.error('Ошибка при получении элементов корзины пользователя:', error);
     throw error;
   }
@@ -99,9 +96,10 @@ const deleteCartItem = async (id) => {
   }
 };
 
-// Очистка корзины пользователя
-const clearCart = async (user_id) => {
+/** Очистка только своей корзины (см. resolveOwnCartUserId). */
+const clearCart = async (user, requestedUserId) => {
   try {
+    const user_id = resolveOwnCartUserId(user, requestedUserId);
     await Cart.destroy({
       where: { user_id },
     });
