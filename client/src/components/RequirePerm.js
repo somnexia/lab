@@ -1,18 +1,23 @@
 import React, { useContext } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { rememberAccessDenied } from '../utils/accessDenied';
 
 /**
- * Защита маршрута по флагу из navPerms (например canViewLogs).
+ * Защита маршрута по флагу из navPerms.
  *
- * Скрыть пункт в меню недостаточно: URL можно ввести вручную.
- * Этот компонент — второй слой на клиенте; настоящая граница — authorize на API.
+ * Два режима отказа (prop `deny`):
+ *   "redirect" (по умолчанию) — тихий увод на соседнюю страницу
+ *     (register lot → /inventory/lots). Без вспышки секретного UI.
+ *   "page" — только для чувствительных admin-URL → /access-denied
  *
- * @param {string|string[]} perm — ключ(и) в perms; достаточно одного из массива
- * @param {string} [fallback='/'] — куда увести при отказе
- * @param {React.ReactNode} children — страница
+ * Пока loading — не рендерим children (иначе мелькает запрещённая страница).
+ *
+ * @param {string|string[]} perm
+ * @param {string} [fallback='/'] — куда увести в режиме redirect
+ * @param {'redirect'|'page'} [deny='redirect']
  */
-function RequirePerm({ perm, fallback = '/', children }) {
+function RequirePerm({ perm, fallback = '/', deny = 'redirect', children }) {
   const { perms, loading, user } = useContext(AuthContext);
   const location = useLocation();
 
@@ -33,7 +38,37 @@ function RequirePerm({ perm, fallback = '/', children }) {
   const allowed = keys.some((key) => Boolean(perms && perms[key]));
 
   if (!allowed) {
-    return <Navigate to={fallback} replace state={{ deniedPath: location.pathname }} />;
+    if (deny === 'page') {
+      rememberAccessDenied({
+        message: 'Этот раздел доступен только администраторам.',
+        code: 'ROUTE_FORBIDDEN',
+        from: location.pathname,
+        source: 'route',
+        requiredPerms: keys,
+      });
+
+      return (
+        <Navigate
+          to="/access-denied"
+          replace
+          state={{
+            deniedPath: location.pathname,
+            requiredPerms: keys,
+            source: 'route',
+            code: 'ROUTE_FORBIDDEN',
+            message: 'Этот раздел доступен только администраторам.',
+          }}
+        />
+      );
+    }
+
+    return (
+      <Navigate
+        to={fallback || '/'}
+        replace
+        state={{ deniedPath: location.pathname, softDenied: true }}
+      />
+    );
   }
 
   return children;

@@ -31,12 +31,28 @@ import InventoryMaterialsPlaceholder from "../pages/InventoryMaterialsPlaceholde
 import ExperimentDetailPage from "../pages/ExperimentDetailPage";
 import ResearchExperimentsPage from "../pages/ResearchExperimentsPage";
 import RequirePerm from "../components/RequirePerm";
+import AccessDeniedPage from "../pages/AccessDeniedPage";
 
 const LEGACY_STORAGE_INVENTORY_PATHS = ["warehouses", "storage-units", "ladder", "dropdown", "location"];
 
-/** Обёртка: страница только при наличии флага в navPerms */
+/**
+ * gated — обычные «нет права»: тихий redirect на соседний список.
+ * gatedSecret — только admin-секреты: экран /access-denied.
+ */
 function gated(perm, element, fallback = "/") {
-    return <RequirePerm perm={perm} fallback={fallback}>{element}</RequirePerm>;
+    return (
+        <RequirePerm perm={perm} fallback={fallback} deny="redirect">
+            {element}
+        </RequirePerm>
+    );
+}
+
+function gatedSecret(perm, element) {
+    return (
+        <RequirePerm perm={perm} deny="page">
+            {element}
+        </RequirePerm>
+    );
 }
 
 /**
@@ -118,11 +134,13 @@ const MainAppRoutes = () => (
         <Route path="/members-teams/activity-log" element={<MembersTeamsPlaceholder />} />
         <Route path="/members-teams/invitations" element={<MembersTeamsPlaceholder />} />
 
-        {/* ---------- Management ---------- */}
+        {/* ---------- Management (секретные admin-URL) ---------- */}
         <Route
             path="/management/userlog"
-            element={gated("showUserLog", <AdminLogsPage />, "/")}
+            element={gatedSecret("showUserLog", <AdminLogsPage />)}
         />
+
+        <Route path="/access-denied" element={<AccessDeniedPage />} />
     </Routes>
 );
 

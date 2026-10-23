@@ -1,0 +1,125 @@
+.access-denied {
+  display: flex;
+  justify-content: center;
+  padding-block: clamp(1.5rem, 4vw, 3rem);
+}
+
+.access-denied__card {
+  width: min(100%, 34rem);
+  border: 1px solid var(--secondary-border-color);
+  border-radius: 0.75rem;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--link-color) 16%, transparent), transparent 44%),
+    linear-gradient(160deg, var(--card-bg), var(--content-bg));
+  box-shadow: 0 1rem 2.5rem rgba(4, 3, 22, 0.06);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.access-denied__eyebrow {
+  color: var(--link-color);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.65rem;
+  text-transform: uppercase;
+}
+
+.access-denied__title {
+  color: var(--text-color);
+  font-size: clamp(1.45rem, 2.6vw, 1.85rem);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 0.75rem;
+}
+
+.access-denied__lead {
+  color: var(--text-body-secondary);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0 0 1.25rem;
+}
+
+.access-denied__meta {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 1.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--content-border-color);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--lab-body-bg) 70%, transparent);
+}
+
+.access-denied__meta-row {
+  display: grid;
+  gap: 0.15rem;
+
+  @media (min-width: 480px) {
+    grid-template-columns: 8.5rem 1fr;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  dt {
+    color: var(--text-body-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  dd {
+    color: var(--text-color);
+    font-size: 0.9rem;
+    margin: 0;
+    word-break: break-word;
+  }
+}
+
+.access-denied__path {
+  font-size: 0.85rem;
+}
+
+.access-denied__hint {
+  color: var(--text-body-secondary);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  margin: 0 0 1.5rem;
+}
+
+.access-denied__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.access-denied__btn {
+  appearance: none;
+  border: 1px solid var(--secondary-border-color);
+  border-radius: 0.5rem;
+  background: var(--card-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.55rem 0.95rem;
+  text-decoration: none;
+
+  &:hover {
+    border-color: var(--link-color);
+    color: var(--link-color);
+  }
+
+  &--primary {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+
+    &:hover {
+      filter: brightness(1.05);
+      color: #fff;
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+  }
+}

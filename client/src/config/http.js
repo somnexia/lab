@@ -3,6 +3,7 @@ import { API_BASE } from './api';
 
 let authRedirectEnabled = true;
 
+/** Отключить редирект на signin при 401 (тесты / особые экраны). */
 export function setAuthRedirectEnabled(enabled) {
   authRedirectEnabled = enabled;
 }
@@ -10,15 +11,13 @@ export function setAuthRedirectEnabled(enabled) {
 /**
  * Единый HTTP-клиент к REST API (axios-инстанс).
  *
- * API-миграция: Auth, Cart, Projects, Inventory, Research, Storage, Equipment,
- * AdminLogs, ResearchTeams → http + API.*.
+ * Interceptors:
+ *   request  — Authorization: Bearer из localStorage
+ *   response — только 401 → очистка токена + signin
  *
- * Фаза 4 (роли): withCredentials — браузер шлёт cookie `token` вместе с Bearer.
- * Сервер: authenticate читает Cookie || Bearer; authorize(CAN_*) на части роутов.
- *
- * Smoke (Network):
- *   login → Set-Cookie: token=… + JSON.token
- *   GET /api/logs от student → 403; от system_admin → 200
+ * 403 намеренно НЕ редиректит глобально: на Dashboard/корзине/KPI часто
+ * бывают «частичные» отказы по роли — страница должна остаться, а карточку
+ * показать «—». Секретные URL закрывает RequirePerm (soft / denied UI).
  *
  * Использование:
  *   import { http } from '../config/http';
