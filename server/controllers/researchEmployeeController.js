@@ -1,64 +1,73 @@
-const researchEmployeeService = require('../services/researchEmployeeService'); // Подключаем сервис
+const researchEmployeeService = require('../services/researchEmployeeService');
+const { isScopeForbidden } = require('../utils/labScope');
 
-// Создание новой записи ResearchEmployee
+function sendError(res, error, fallbackStatus = 500) {
+  if (isScopeForbidden(error) || error.code === 'FORBIDDEN') {
+    return res.status(403).json({
+      error: error.message,
+      code: error.code || 'FORBIDDEN',
+    });
+  }
+  if (error.code === 'NOT_FOUND' || /не найден/i.test(error.message || '')) {
+    return res.status(404).json({ error: error.message });
+  }
+  console.error(error);
+  return res.status(fallbackStatus).json({ error: error.message });
+}
+
 const createResearchEmployee = async (req, res) => {
   try {
     const newResearchEmployee = await researchEmployeeService.createResearchEmployee(req.body);
     return res.status(201).json(newResearchEmployee);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Получение всех записей ResearchEmployee
+/** Список участников: только researches своей lab/команды */
 const getAllResearchEmployees = async (req, res) => {
   try {
     const { researchId, employeeId } = req.query;
-    const researchEmployees = await researchEmployeeService.getAllResearchEmployees({
-      researchId,
-      employeeId,
-    });
+    const researchEmployees = await researchEmployeeService.getAllResearchEmployees(
+      { researchId, employeeId },
+      req.user
+    );
     return res.status(200).json(researchEmployees);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Получение записи ResearchEmployee по ID
 const getResearchEmployeeById = async (req, res) => {
   const { id } = req.params;
   try {
     const researchEmployee = await researchEmployeeService.getResearchEmployeeById(id);
     return res.status(200).json(researchEmployee);
   } catch (error) {
-    console.error(error);
-    return res.status(404).json({ error: error.message });
+    return sendError(res, error, 404);
   }
 };
 
-// Обновление записи ResearchEmployee по ID
 const updateResearchEmployee = async (req, res) => {
   const { id } = req.params;
   try {
-    const updatedResearchEmployee = await researchEmployeeService.updateResearchEmployee(id, req.body);
+    const updatedResearchEmployee = await researchEmployeeService.updateResearchEmployee(
+      id,
+      req.body
+    );
     return res.status(200).json(updatedResearchEmployee);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// Удаление записи ResearchEmployee по ID
 const deleteResearchEmployee = async (req, res) => {
   const { id } = req.params;
   try {
     const result = await researchEmployeeService.deleteResearchEmployee(id);
     return res.status(200).json(result);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
@@ -67,5 +76,5 @@ module.exports = {
   getAllResearchEmployees,
   getResearchEmployeeById,
   updateResearchEmployee,
-  deleteResearchEmployee
+  deleteResearchEmployee,
 };

@@ -1,4 +1,6 @@
 const { ResearchEmployee, Research, Employee } = require('../models');
+const { scopeMembershipsWhere } = require('../utils/researchScope');
+
 // Создание новой записи ResearchEmployee
 const createResearchEmployee = async (data) => {
   try {
@@ -18,8 +20,12 @@ const membershipInclude = [
   },
 ];
 
-// Получение записей ResearchEmployee (опционально researchId, employeeId)
-const getAllResearchEmployees = async (filters = {}) => {
+/**
+ * Список memberships.
+ * user — req.user: lab/team scope (часть 1).
+ * GET /:id, POST/PUT/DELETE — следующие части.
+ */
+const getAllResearchEmployees = async (filters = {}, user) => {
   try {
     const where = {};
     if (filters.researchId != null) {
@@ -29,8 +35,10 @@ const getAllResearchEmployees = async (filters = {}) => {
       where.employee_id = Number(filters.employeeId);
     }
 
+    const scoped = await scopeMembershipsWhere(user, where);
+
     return await ResearchEmployee.findAll({
-      where,
+      where: scoped,
       include: membershipInclude,
       order: [['id', 'ASC']],
     });
@@ -40,12 +48,12 @@ const getAllResearchEmployees = async (filters = {}) => {
   }
 };
 
-const getByResearchId = async (researchId) => {
-  return getAllResearchEmployees({ researchId });
+const getByResearchId = async (researchId, user) => {
+  return getAllResearchEmployees({ researchId }, user);
 };
 
-const getByEmployeeId = async (employeeId) => {
-  return getAllResearchEmployees({ employeeId });
+const getByEmployeeId = async (employeeId, user) => {
+  return getAllResearchEmployees({ employeeId }, user);
 };
 // Получение записи ResearchEmployee по ID
 const getResearchEmployeeById = async (id) => {

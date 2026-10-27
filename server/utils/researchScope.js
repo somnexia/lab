@@ -347,6 +347,30 @@ async function assertEmployeesInActorLab(user, employeeIds) {
   }
 }
 
+/**
+ * WHERE для списка ResearchEmployee (memberships).
+ * system_admin — без фильтра.
+ * Если задан конкретный research_id вне scope — 403 (не пустой список).
+ * Иначе research_id IN (видимые исследования lab/команды).
+ */
+async function scopeMembershipsWhere(user, where = {}) {
+  const next = { ...where };
+  if (skipLabScope(user)) return next;
+
+  const ids = await resolveVisibleResearchIds(user);
+
+  if (next.research_id != null && typeof next.research_id !== 'object') {
+    const rid = Number(next.research_id);
+    if (!ids.includes(rid)) {
+      throw forbidden('Состав команды относится к чужой лаборатории или исследованию');
+    }
+    return next;
+  }
+
+  next.research_id = { [Op.in]: ids.length ? ids : [-1] };
+  return next;
+}
+
 module.exports = {
   // 1 student
   isOwnTask,
@@ -357,6 +381,7 @@ module.exports = {
   resolveVisibleResearchIds,
   scopeTasksWhere,
   scopeResearchesWhere,
+  scopeMembershipsWhere,
   researchBelongsToActorScope,
   // 3 asserts
   assertCanViewTask,
