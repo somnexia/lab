@@ -8,9 +8,10 @@ const {
 } = require('../config/roles');
 
 /**
- * Фаза 6b: заказы.
- * Создать/читать «свои» — CAN_USE_CART; список всех / delete — admin UI
- * (lab_admin видит заказы своей lab — фильтр в сервисе позже).
+ * Заказы:
+ *   POST / GET|PUT /:id — CAN_USE_CART + orderScope (свой employee_id;
+ *     admin UI может GET/PUT любой id)
+ *   GET / , GET /active/count , DELETE /:id — только CAN_ACCESS_ADMIN_UI
  */
 router.post('/', authorize(CAN_USE_CART), orderController.createOrder);
 router.get('/', authorize(CAN_ACCESS_ADMIN_UI), orderController.getAllOrders);

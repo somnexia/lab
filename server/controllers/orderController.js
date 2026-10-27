@@ -1,62 +1,74 @@
 const orderService = require('../services/orderService');
+const { isScopeForbidden } = require('../utils/labScope');
 
-// CREATE
+function sendError(res, error, fallbackStatus = 500) {
+  if (isScopeForbidden(error) || error.code === 'FORBIDDEN' || error.code === 'LAB_REQUIRED') {
+    return res.status(403).json({
+      error: error.message,
+      code: error.code || 'FORBIDDEN',
+    });
+  }
+  if (error.code === 'NOT_FOUND' || /не найден/i.test(error.message || '')) {
+    return res.status(404).json({
+      error: error.message,
+      code: 'NOT_FOUND',
+    });
+  }
+  console.error(error);
+  return res.status(fallbackStatus).json({ error: error.message });
+}
+
 const createOrder = async (req, res) => {
   try {
-    const order = await orderService.createOrder(req.body);
-    res.status(201).json(order);
+    const order = await orderService.createOrder(req.body, req.user);
+    return res.status(201).json(order);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// READ ALL
 const getAllOrders = async (req, res) => {
   try {
     const orders = await orderService.getAllOrders();
-    res.json(orders);
+    return res.json(orders);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// READ BY ID
 const getOrderById = async (req, res) => {
   try {
-    const order = await orderService.getOrderById(req.params.id);
-    res.json(order);
+    const order = await orderService.getOrderById(req.params.id, req.user);
+    return res.json(order);
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// UPDATE
 const updateOrder = async (req, res) => {
   try {
-    const order = await orderService.updateOrder(req.params.id, req.body);
-    res.json(order);
+    const order = await orderService.updateOrder(req.params.id, req.body, req.user);
+    return res.json(order);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// DELETE
 const deleteOrder = async (req, res) => {
   try {
     const result = await orderService.deleteOrder(req.params.id);
-    res.json(result);
+    return res.json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
-// COUNT ACTIVE
 const getActiveOrderCount = async (req, res) => {
   try {
     const count = await orderService.getActiveOrderCount();
-    res.json({ count });
+    return res.json({ count });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, error);
   }
 };
 
