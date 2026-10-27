@@ -38,7 +38,9 @@ export const API = {
   researchTeams: '/research-teams',
   employees: '/employees',
   users: '/users',
+  /** Корзина: владелец = JWT. GET/clear требуют :user_id == req.user.id */
   carts: '/carts',
+  /** Заказы: владелец = employee_id из JWT; список всех — admin */
   orders: '/orders',
   logs: '/logs',
 };

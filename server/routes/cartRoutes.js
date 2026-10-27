@@ -11,6 +11,7 @@ const { CAN_USE_CART } = require('../config/roles');
  *   2) POST / — user_id из req.user (prepareCartCreatePayload) ✓
  *   3) GET|PUT|DELETE /item/:id — assertOwnsCartItem ✓
  *   4) Orders — orderScope (employee_id) ✓
+ *   5) Клиент не шлёт user_id в POST/PUT/DELETE item (CartContext)
  */
 router.post('/', authorize(CAN_USE_CART), cartController.createCartItem);
 router.get('/:user_id', authorize(CAN_USE_CART), cartController.getAllCartItems);

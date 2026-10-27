@@ -1,6 +1,12 @@
 /**
- * Владелец корзины = req.user.id.
- * Параметр :user_id в URL / body.user_id не доверяем (IDOR).
+ * Владелец корзины = req.user.id (JWT), не URL и не body.
+ *
+ * Клиент (CartContext) может не передавать user_id в POST/PUT:
+ *   prepareCartCreatePayload подставит актора;
+ *   sanitizeCartItemUpdatePayload выкинет user_id из PATCH.
+ *
+ * GET /:user_id и DELETE /clear/:user_id всё ещё принимают id в пути —
+ * он обязан совпасть с актором, иначе 403 (IDOR).
  */
 'use strict';
 

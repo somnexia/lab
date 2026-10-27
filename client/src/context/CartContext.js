@@ -1,33 +1,26 @@
 /**
- * CartContext — корзина покупок (серверная для залогиненных, localStorage для гостей).
+ * CartContext — состояние корзины для всего UI (Header, CartDrawer, таблицы лотов).
  *
- * Что изменилось (пункт 3 миграции):
- *   Было:
- *     import axios from "axios";
- *     const API_BASE = "http://localhost:3000/api";     ← свой локальный хардкод
- *     axios.get(`${API_BASE}/carts/${userId}`)
+ * Два режима:
+ *   - гость: массив в localStorage (ключа "cart"), без API;
+ *   - вошедший: строки в таблице carts на сервере.
  *
- *   Стало:
- *     import { http } from "../config/http";
- *     import { API } from "../config/api";
- *     http.get(`${API.carts}/${userId}`)                ← путь /carts, хост в baseURL
+ * Владелец на сервере — JWT (req.user.id), не поле user_id из React.
+ * Клиент шлёт свой id только там, где URL его требует
+ * (GET /carts/:user_id, DELETE /clear/:user_id) и обязан совпасть с токеном.
+ * В POST/PUT/DELETE item user_id в body не передаём: сервер подставит или отбросит.
  *
- *   - Удалён собственный API_BASE — теперь один источник правды в config/api.js.
- *   - Удалён import axios — все вызовы через http-инстанс.
- *   - Bearer-токен ставит interceptor автоматически.
+ * HTTP: config/http.js (Bearer) + API.carts.
  *
- * Примеры реальных запросов (видно в DevTools → Network):
- *   GET    /api/carts/12                — загрузить корзину пользователя 12
- *   POST   /api/carts        {body}     — добавить позицию
- *   PUT    /api/carts/item/7 {body}     — изменить количество строки 7
- *   DELETE /api/carts/item/7            — удалить строку
- *   DELETE /api/carts/clear/12          — очистить корзину
+ * Network (свой пользователь, id=7):
+ *   GET    /api/carts/7
+ *   POST   /api/carts              { item_id, quantity, … }  — без user_id
+ *   PUT    /api/carts/item/42      { quantity }
+ *   DELETE /api/carts/item/42
+ *   DELETE /api/carts/clear/7
  *
  * Проверить:
- *   1. Войти → открыть Inventory Overview → кнопка «Add to cart» на любом лоте.
- *   2. Открыть CartDrawer (иконка корзины в Header) — позиция появилась.
- *   3. Изменить количество, удалить, очистить.
- *   4. F5 — корзина подтягивается с сервера (GET /api/carts/:userId).
+ *   войти → Add to cart → Drawer → изменить количество / удалить / очистить → F5.
  */
 import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
 import { API } from "../config/api";
@@ -36,14 +29,20 @@ import { AuthContext } from "./AuthContext";
 
 export const CartContext = createContext();
 
-/** Sequelize / API row → plain object for React state */
+/**
+ * Строка Sequelize иногда приходит как { dataValues }.
+ * Для React нужен плоский объект (id, item_id, quantity, …).
+ */
 function normalizeCartRow(row) {
     if (!row) return null;
     if (row.dataValues) return { ...row.dataValues };
     return { ...row };
 }
 
-/** Inventory row id (add-to-cart passes inventory, not cart line) */
+/**
+ * Id лота инвентаря (не id строки корзины).
+ * Кнопка «Add to cart» передаёт объект Inventory, у которого id = лот.
+ */
 function inventoryIdFromItem(item) {
     return item?.id ?? item?.item_id ?? item?.reference_id;
 }
@@ -53,6 +52,10 @@ export const CartProvider = ({ children }) => {
     const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
 
+    /**
+     * Загрузить корзину текущего пользователя.
+     * userId в URL — тот же, что в JWT; чужой id сервер ответит 403.
+     */
     const reloadCart = useCallback(async (userId) => {
         if (!userId) return;
         setLoading(true);
@@ -67,8 +70,8 @@ export const CartProvider = ({ children }) => {
     }, []);
 
     /**
-     * API may return a full cart array, a single cart line, or { message }.
-     * Prefer array; otherwise merge one row or reload from GET.
+     * Ответ мутации: массив, одна строка, или { message } после delete/clear.
+     * Неполный ответ — догружаем GET своей корзины.
      */
     const applyCartMutationResponse = useCallback(
         async (data, userId, options = {}) => {
@@ -119,6 +122,7 @@ export const CartProvider = ({ children }) => {
         [reloadCart]
     );
 
+    /** Вход — серверная корзина; выход — localStorage гостя. */
     useEffect(() => {
         if (user?.id) {
             reloadCart(user.id);
@@ -137,12 +141,16 @@ export const CartProvider = ({ children }) => {
         }
     }, [user, reloadCart]);
 
+    /** Гостевую корзину пишем на диск при каждом изменении. */
     useEffect(() => {
         if (!user) {
             localStorage.setItem("cart", JSON.stringify(cart));
         }
     }, [cart, user]);
 
+    /**
+     * Добавить лот. Сервер сам ставит user_id = req.user.id.
+     */
     const addToCart = async (newItem) => {
         const inventoryId = inventoryIdFromItem(newItem);
         if (inventoryId == null) {
@@ -153,7 +161,6 @@ export const CartProvider = ({ children }) => {
         if (user) {
             try {
                 const itemToAdd = {
-                    user_id: user.id,
                     item_id: inventoryId,
                     item_name: newItem.item_name,
                     quantity: newItem.quantity || 1,
@@ -196,12 +203,13 @@ export const CartProvider = ({ children }) => {
         }
     };
 
+    /**
+     * Удалить строку по Cart.id. Владелец проверяется на сервере по JWT.
+     */
     const removeFromCart = async (cartLineId) => {
         if (user) {
             try {
-                const response = await http.delete(`${API.carts}/item/${cartLineId}`, {
-                    data: { user_id: user.id },
-                });
+                const response = await http.delete(`${API.carts}/item/${cartLineId}`);
                 await applyCartMutationResponse(response.data, user.id, {
                     removedCartLineId: cartLineId,
                 });
@@ -217,11 +225,13 @@ export const CartProvider = ({ children }) => {
         }
     };
 
+    /**
+     * Сменить quantity своей строки. user_id в body не шлём (сервер его отбросит).
+     */
     const updateCartQuantity = async (cartLineId, newQuantity) => {
         if (user) {
             try {
                 const response = await http.put(`${API.carts}/item/${cartLineId}`, {
-                    user_id: user.id,
                     quantity: newQuantity,
                 });
                 await applyCartMutationResponse(response.data, user.id);
@@ -239,6 +249,9 @@ export const CartProvider = ({ children }) => {
         }
     };
 
+    /**
+     * Очистить свою корзину. :user_id в URL = текущий user.id (должен совпасть с JWT).
+     */
     const clearCart = async () => {
         if (user) {
             try {
