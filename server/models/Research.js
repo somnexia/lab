@@ -5,19 +5,23 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Research extends Model {
     static associate(models) {
-      // One research has many participants (ResearchEmployee)
-      Research.hasMany(models.ResearchEmployee, {
-        foreignKey: 'research_id',
-        as: 'participants'
+      Research.belongsTo(models.Laboratory, {
+        foreignKey: 'laboratory_id',
+        as: 'laboratory',
       });
 
-      // Можно также связать через промежуточную таблицу напрямую с Employee:
+      Research.hasMany(models.ResearchEmployee, {
+        foreignKey: 'research_id',
+        as: 'participants',
+      });
+
       Research.belongsToMany(models.Employee, {
         through: models.ResearchEmployee,
         foreignKey: 'research_id',
         otherKey: 'employee_id',
-        as: 'employees'
+        as: 'employees',
       });
+
       Research.hasMany(models.Experiment, {
         foreignKey: 'research_id',
         as: 'experiments',
@@ -25,57 +29,72 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
-
   Research.init({
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false
+      allowNull: false,
     },
     title: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: false,
     },
     type: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: false,
     },
     goal: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: false,
     },
     scope: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: false,
     },
     research_object: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: false,
     },
     funding_source: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: false,
     },
     start_date: {
       type: DataTypes.DATE,
-      allowNull: false
+      allowNull: false,
     },
     end_date: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: null
+      defaultValue: null,
     },
     status: {
       type: DataTypes.ENUM('Completed', 'Ongoing', 'Pending'),
       allowNull: false,
-      defaultValue: 'Pending'
-    }
+      defaultValue: 'Pending',
+    },
+    /**
+     * Владеющая лаборатория (tenant).
+     * Команда участников — отдельно в researchemployees.
+     * Scope по lab: часть 3 researchScope; запись при create — часть 2.
+     */
+    laboratory_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null,
+      references: {
+        model: 'laboratories',
+        key: 'id',
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL',
+    },
   }, {
     sequelize,
     modelName: 'Research',
-    tableName: 'researches',  // Название таблицы в БД
-    timestamps: false  // Отключаем автоматические поля createdAt и updatedAt
+    tableName: 'researches',
+    timestamps: false,
   });
 
   return Research;
