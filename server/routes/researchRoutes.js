@@ -9,9 +9,11 @@ const {
 
 /**
  * authorize на researches (роль).
- * Lab/team scope — researchService / researchScope
- * (research без laboratory_id → через ResearchEmployee → Employee.lab_id).
- * student: чтение в scope; CUD — CAN_MANAGE_RESEARCH.
+ * laboratory_id на researches:
+ *   1) колонка + модели ✓
+ *   2) create/update — lab актора (enforceLabOnCreate) ✓
+ *   3) researchScope по laboratory_id — следующая часть
+ * До п.3 списки ещё могут опираться на memberships.
  */
 router.post('/', authorize(CAN_MANAGE_RESEARCH), researchController.createResearch);
 router.post(

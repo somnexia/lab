@@ -7,7 +7,11 @@ const {
   assertEmployeesInActorLab,
   researchBelongsToActorScope,
 } = require('../utils/researchScope');
-const { skipLabScope } = require('../utils/labScope');
+const {
+  skipLabScope,
+  enforceLabOnCreate,
+  resolveActorLabId,
+} = require('../utils/labScope');
 
 const participantInclude = {
   model: ResearchEmployee,
@@ -21,9 +25,54 @@ const participantInclude = {
   ],
 };
 
+/**
+ * Create payload: laboratory_id только из lab актора
+ * (system_admin может явно указать laboratory_id в body).
+ */
+function prepareResearchCreatePayload(user, data = {}) {
+  const laboratory_id = enforceLabOnCreate(
+    user,
+    data.laboratory_id ?? data.laboratoryId
+  );
+  return {
+    ...data,
+    laboratory_id,
+  };
+}
+
+/**
+ * Update payload: обычные роли не меняют laboratory_id через body.
+ * Если у старой записи laboratory_id ещё null — подставляем lab актора.
+ * system_admin может задать laboratory_id явно.
+ */
+function prepareResearchUpdatePayload(user, research, data = {}) {
+  const payload = { ...data };
+  delete payload.laboratoryId;
+
+  if (skipLabScope(user)) {
+    if (data.laboratory_id !== undefined || data.laboratoryId !== undefined) {
+      const raw = data.laboratory_id ?? data.laboratoryId;
+      payload.laboratory_id = raw == null || raw === '' ? null : Number(raw);
+    }
+    return payload;
+  }
+
+  delete payload.laboratory_id;
+
+  if (research.laboratory_id == null) {
+    const actorLab = resolveActorLabId(user);
+    if (actorLab != null) {
+      payload.laboratory_id = actorLab;
+    }
+  }
+
+  return payload;
+}
+
 const createResearch = async (data, user) => {
   try {
-    const research = await Research.create(data);
+    const payload = prepareResearchCreatePayload(user, data);
+    const research = await Research.create(payload);
     await ensureActorMembership(user, research.id);
     return research;
   } catch (error) {
@@ -77,7 +126,8 @@ const updateResearch = async (id, data, user) => {
       });
     }
     await assertCanEditResearch(user, research);
-    await research.update(data);
+    const payload = prepareResearchUpdatePayload(user, research, data);
+    await research.update(payload);
     return research;
   } catch (error) {
     console.error('Ошибка при обновлении исследования:', error);
@@ -106,7 +156,8 @@ const deleteResearch = async (id, user) => {
 const createResearchWithParticipants = async (data, employeeIds, user) => {
   try {
     await assertEmployeesInActorLab(user, employeeIds);
-    const research = await Research.create(data);
+    const payload = prepareResearchCreatePayload(user, data);
+    const research = await Research.create(payload);
 
     const ids = [...new Set((employeeIds || []).map(Number).filter(Boolean))];
     if (user?.employee_id && !ids.includes(Number(user.employee_id))) {

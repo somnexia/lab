@@ -3,7 +3,11 @@ const logService = require('../services/logService');
 const { isScopeForbidden } = require('../utils/labScope');
 
 function sendError(res, error, fallbackStatus = 500) {
-  if (isScopeForbidden(error) || error.code === 'FORBIDDEN') {
+  if (
+    isScopeForbidden(error) ||
+    error.code === 'FORBIDDEN' ||
+    error.code === 'LAB_REQUIRED'
+  ) {
     return res.status(403).json({
       error: error.message,
       code: error.code || 'FORBIDDEN',
