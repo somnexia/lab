@@ -10,7 +10,6 @@ const {
 const {
   skipLabScope,
   enforceLabOnCreate,
-  resolveActorLabId,
 } = require('../utils/labScope');
 
 const participantInclude = {
@@ -41,9 +40,12 @@ function prepareResearchCreatePayload(user, data = {}) {
 }
 
 /**
- * Update payload: обычные роли не меняют laboratory_id через body.
- * Если у старой записи laboratory_id ещё null — подставляем lab актора.
- * system_admin может задать laboratory_id явно.
+ * Update payload: laboratory_id меняет только system_admin (явный body).
+ *
+ * Обычные роли: laboratory_id из body выкидываем.
+ * Не подставляем lab актора при null — иначе участник чужой lab
+ * мог бы «увести» orphan-проект к себе первым PUT.
+ * Orphan (null) чинит миграция / admin, не heal-on-update.
  */
 function prepareResearchUpdatePayload(user, research, data = {}) {
   const payload = { ...data };
@@ -58,14 +60,6 @@ function prepareResearchUpdatePayload(user, research, data = {}) {
   }
 
   delete payload.laboratory_id;
-
-  if (research.laboratory_id == null) {
-    const actorLab = resolveActorLabId(user);
-    if (actorLab != null) {
-      payload.laboratory_id = actorLab;
-    }
-  }
-
   return payload;
 }
 
