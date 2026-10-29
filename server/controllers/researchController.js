@@ -16,8 +16,14 @@ function sendError(res, error, fallbackStatus = 500) {
   if (error.code === 'NOT_FOUND' || /не найден/i.test(error.message || '')) {
     return res.status(404).json({ error: error.message });
   }
+  if (error.code === 'CONFLICT' || error.status === 409) {
+    return res.status(409).json({
+      error: error.message,
+      code: 'CONFLICT',
+    });
+  }
   console.error(error);
-  return res.status(fallbackStatus).json({ error: error.message });
+  return res.status(error.status || fallbackStatus).json({ error: error.message });
 }
 
 const createResearch = async (req, res) => {

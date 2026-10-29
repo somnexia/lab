@@ -1,11 +1,59 @@
 const { ResearchEmployee, Research, Employee } = require('../models');
 const { scopeMembershipsWhere } = require('../utils/researchScope');
 
-// Создание новой записи ResearchEmployee
-const createResearchEmployee = async (data) => {
+/** Ошибка «уже в команде» → HTTP 409 Conflict */
+function membershipConflictError(researchId, employeeId) {
+  return Object.assign(
+    new Error(
+      `Сотрудник ${employeeId} уже состоит в команде исследования ${researchId}`
+    ),
+    { code: 'CONFLICT', status: 409 }
+  );
+}
+
+/** Sequelize / MySQL: нарушение unique (research_id, employee_id) */
+function isUniqueMembershipError(error) {
+  if (!error) return false;
+  if (error.name === 'SequelizeUniqueConstraintError') return true;
+  const parentCode = error.parent?.code || error.original?.code;
+  return parentCode === 'ER_DUP_ENTRY';
+}
+
+/**
+ * Создаёт membership. Повтор той же пары (research, employee) → 409,
+ * а не сырая ошибка БД. Проверка findOne + ловля unique на гонке.
+ */
+const createResearchEmployee = async (data = {}) => {
   try {
-    const researchEmployee = await ResearchEmployee.create(data);
-    return researchEmployee;
+    const research_id = Number(data.research_id ?? data.researchId);
+    const employee_id = Number(data.employee_id ?? data.employeeId);
+
+    if (!Number.isFinite(research_id) || !Number.isFinite(employee_id)) {
+      throw Object.assign(
+        new Error('research_id и employee_id обязательны'),
+        { code: 'VALIDATION', status: 400 }
+      );
+    }
+
+    const existing = await ResearchEmployee.findOne({
+      where: { research_id, employee_id },
+    });
+    if (existing) {
+      throw membershipConflictError(research_id, employee_id);
+    }
+
+    try {
+      return await ResearchEmployee.create({
+        ...data,
+        research_id,
+        employee_id,
+      });
+    } catch (error) {
+      if (isUniqueMembershipError(error)) {
+        throw membershipConflictError(research_id, employee_id);
+      }
+      throw error;
+    }
   } catch (error) {
     console.error('Ошибка при создании записи ResearchEmployee:', error);
     throw error;
@@ -71,14 +119,61 @@ const getResearchEmployeeById = async (id) => {
     throw error;
   }
 };
-// Обновление записи ResearchEmployee по ID
-const updateResearchEmployee = async (id, data) => {
+/**
+ * Обновляет membership. Смена research_id / employee_id на уже
+ * существующую пару → 409.
+ */
+const updateResearchEmployee = async (id, data = {}) => {
   try {
     const researchEmployee = await ResearchEmployee.findByPk(id);
     if (!researchEmployee) {
-      throw new Error(`Запись ResearchEmployee с id ${id} не найдена`);
+      throw Object.assign(
+        new Error(`Запись ResearchEmployee с id ${id} не найдена`),
+        { code: 'NOT_FOUND', status: 404 }
+      );
     }
-    await researchEmployee.update(data);
+
+    const nextResearchId = Number(
+      data.research_id ?? data.researchId ?? researchEmployee.research_id
+    );
+    const nextEmployeeId = Number(
+      data.employee_id ?? data.employeeId ?? researchEmployee.employee_id
+    );
+
+    const pairChanged =
+      Number(nextResearchId) !== Number(researchEmployee.research_id) ||
+      Number(nextEmployeeId) !== Number(researchEmployee.employee_id);
+
+    if (pairChanged && Number.isFinite(nextResearchId) && Number.isFinite(nextEmployeeId)) {
+      const clash = await ResearchEmployee.findOne({
+        where: {
+          research_id: nextResearchId,
+          employee_id: nextEmployeeId,
+        },
+      });
+      if (clash && Number(clash.id) !== Number(researchEmployee.id)) {
+        throw membershipConflictError(nextResearchId, nextEmployeeId);
+      }
+    }
+
+    const payload = { ...data };
+    if (data.research_id !== undefined || data.researchId !== undefined) {
+      payload.research_id = nextResearchId;
+      delete payload.researchId;
+    }
+    if (data.employee_id !== undefined || data.employeeId !== undefined) {
+      payload.employee_id = nextEmployeeId;
+      delete payload.employeeId;
+    }
+
+    try {
+      await researchEmployee.update(payload);
+    } catch (error) {
+      if (isUniqueMembershipError(error)) {
+        throw membershipConflictError(nextResearchId, nextEmployeeId);
+      }
+      throw error;
+    }
     return researchEmployee;
   } catch (error) {
     console.error('Ошибка при обновлении записи ResearchEmployee:', error);
@@ -107,4 +202,6 @@ module.exports = {
   getResearchEmployeeById,
   updateResearchEmployee,
   deleteResearchEmployee,
+  membershipConflictError,
+  isUniqueMembershipError,
 };

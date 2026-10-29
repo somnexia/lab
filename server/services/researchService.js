@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { Research, ResearchEmployee, Employee } = require('../models');
 const {
   scopeResearchesWhere,
@@ -13,6 +14,9 @@ const {
   resolveActorLabId,
 } = require('../utils/labScope');
 const { isLabAdmin } = require('../config/roles');
+const {
+  isUniqueMembershipError,
+} = require('./researchEmployeeService');
 
 const participantInclude = {
   model: ResearchEmployee,
@@ -223,12 +227,52 @@ const addResearchParticipants = async (researchId, employeeIds, user) => {
     }
 
     await assertEmployeesInActorLab(user, employeeIds);
-    const participants = employeeIds.map((employeeId) => ({
-      research_id: researchId,
-      employee_id: employeeId,
-    }));
-    await ResearchEmployee.bulkCreate(participants);
-    return { message: 'Participants added successfully' };
+
+    // Уникальные id; уже состоящих в команде пропускаем (не 409 на весь batch)
+    const uniqueIds = [
+      ...new Set((employeeIds || []).map(Number).filter(Boolean)),
+    ];
+    const existingRows = uniqueIds.length
+      ? await ResearchEmployee.findAll({
+          where: {
+            research_id: Number(researchId),
+            employee_id: { [Op.in]: uniqueIds },
+          },
+          attributes: ['employee_id'],
+        })
+      : [];
+    const alreadyIn = new Set(
+      existingRows.map((row) => Number(row.employee_id))
+    );
+    const toAdd = uniqueIds.filter((id) => !alreadyIn.has(id));
+    const skipped = uniqueIds.filter((id) => alreadyIn.has(id));
+
+    if (toAdd.length) {
+      try {
+        await ResearchEmployee.bulkCreate(
+          toAdd.map((employeeId) => ({
+            research_id: Number(researchId),
+            employee_id: employeeId,
+          }))
+        );
+      } catch (error) {
+        if (isUniqueMembershipError(error)) {
+          throw Object.assign(
+            new Error(
+              'Не удалось добавить участников: конфликт уникальности membership'
+            ),
+            { code: 'CONFLICT', status: 409 }
+          );
+        }
+        throw error;
+      }
+    }
+
+    return {
+      message: 'Participants added successfully',
+      added: toAdd,
+      skipped,
+    };
   } catch (error) {
     console.error('Error adding participants:', error);
     throw error;

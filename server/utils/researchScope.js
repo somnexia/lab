@@ -397,11 +397,22 @@ async function ensureActorMembership(user, researchId) {
     },
   });
   if (existing) return;
-  await ResearchEmployee.create({
-    research_id: Number(researchId),
-    employee_id: Number(user.employee_id),
-    role: getUserRole(user) === ROLES.RESEARCHER ? 'researcher' : null,
-  });
+  try {
+    await ResearchEmployee.create({
+      research_id: Number(researchId),
+      employee_id: Number(user.employee_id),
+      role: getUserRole(user) === ROLES.RESEARCHER ? 'researcher' : null,
+    });
+  } catch (error) {
+    // Гонка с параллельным запросом: пара уже есть — считаем успехом
+    if (
+      error?.name === 'SequelizeUniqueConstraintError' ||
+      error?.parent?.code === 'ER_DUP_ENTRY'
+    ) {
+      return;
+    }
+    throw error;
+  }
 }
 
 /** Участники research должны быть из lab актора (кроме system_admin) */

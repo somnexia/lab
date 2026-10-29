@@ -11,8 +11,20 @@ function sendError(res, error, fallbackStatus = 500) {
   if (error.code === 'NOT_FOUND' || /не найден/i.test(error.message || '')) {
     return res.status(404).json({ error: error.message });
   }
+  if (error.code === 'CONFLICT' || error.status === 409) {
+    return res.status(409).json({
+      error: error.message,
+      code: 'CONFLICT',
+    });
+  }
+  if (error.code === 'VALIDATION' || error.status === 400) {
+    return res.status(400).json({
+      error: error.message,
+      code: 'VALIDATION',
+    });
+  }
   console.error(error);
-  return res.status(fallbackStatus).json({ error: error.message });
+  return res.status(error.status || fallbackStatus).json({ error: error.message });
 }
 
 const createResearchEmployee = async (req, res) => {
