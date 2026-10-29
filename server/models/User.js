@@ -82,6 +82,14 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'users',
     timestamps: true,
     silent: false,
+    // Один employee — не больше одной учётки (NULL = без привязки)
+    indexes: [
+      {
+        unique: true,
+        fields: ['employee_id'],
+        name: 'users_employee_id_unique',
+      },
+    ],
   });
 
   User.beforeCreate(async (user) => {
