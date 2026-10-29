@@ -10,7 +10,9 @@ const {
 const {
   skipLabScope,
   enforceLabOnCreate,
+  resolveActorLabId,
 } = require('../utils/labScope');
+const { isLabAdmin } = require('../config/roles');
 
 const participantInclude = {
   model: ResearchEmployee,
@@ -40,22 +42,45 @@ function prepareResearchCreatePayload(user, data = {}) {
 }
 
 /**
- * Update payload: laboratory_id меняет только system_admin (явный body).
- *
- * Обычные роли: laboratory_id из body выкидываем.
- * Не подставляем lab актора при null — иначе участник чужой lab
- * мог бы «увести» orphan-проект к себе первым PUT.
- * Orphan (null) чинит миграция / admin, не heal-on-update.
+ * Update payload для laboratory_id:
+ * - system_admin — любой номер (или null) из body;
+ * - lab_admin — только если сейчас null, и только свою lab
+ *   (чужой номер в body → 403; researcher не трогает поле).
+ * Не auto-heal: поле пишется только если его передали в body.
  */
 function prepareResearchUpdatePayload(user, research, data = {}) {
   const payload = { ...data };
   delete payload.laboratoryId;
 
+  const labInBody =
+    data.laboratory_id !== undefined || data.laboratoryId !== undefined;
+  const raw = labInBody ? data.laboratory_id ?? data.laboratoryId : undefined;
+
   if (skipLabScope(user)) {
-    if (data.laboratory_id !== undefined || data.laboratoryId !== undefined) {
-      const raw = data.laboratory_id ?? data.laboratoryId;
+    if (labInBody) {
       payload.laboratory_id = raw == null || raw === '' ? null : Number(raw);
     }
+    return payload;
+  }
+
+  if (isLabAdmin(user) && labInBody && research?.laboratory_id == null) {
+    const actorLab = resolveActorLabId(user);
+    if (actorLab == null) {
+      const err = new Error('Учётная запись не привязана к лаборатории');
+      err.code = 'LAB_REQUIRED';
+      err.status = 403;
+      throw err;
+    }
+    if (raw != null && raw !== '' && Number(raw) !== Number(actorLab)) {
+      const err = new Error(
+        'lab_admin может назначить только свою лабораторию'
+      );
+      err.code = 'FORBIDDEN';
+      err.status = 403;
+      throw err;
+    }
+    // null/пусто в body тоже = «назначить свою» (heal orphan)
+    payload.laboratory_id = actorLab;
     return payload;
   }
 

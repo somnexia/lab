@@ -11,7 +11,8 @@ const {
  * authorize на researches (роль).
  * laboratory_id на researches:
  *   1) колонка + модели ✓
- *   2) create/update — lab актора ✓
+ *   2) create — lab актора; update — system_admin любой /
+ *      lab_admin только heal null → своя lab ✓
  *   3) списки/assert — researchScope по laboratory_id ✓
  *      (orphan без lab — fallback через membership)
  */
