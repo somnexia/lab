@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { User } = require('../models');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -16,7 +17,7 @@ const {
 } = require('../utils/labScope');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
-/** Фаза 3: было 1h; чуть длиннее для удобства REST/UI. Refresh-токен — позже. */
+/** Срок жизни access-токена (REST/UI). Refresh — отдельно, если понадобится. */
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '2h';
 
 /** User → Employee → Laboratory (tenant через employees.lab_id) */
@@ -29,6 +30,71 @@ function toPublicUser(user) {
   const plain = user.get ? user.get({ plain: true }) : { ...user };
   delete plain.password;
   return plain;
+}
+
+/** Нарушение unique users.employee_id (Sequelize / MySQL) */
+function isUniqueEmployeeIdError(error) {
+  if (!error) return false;
+  if (error.name === 'SequelizeUniqueConstraintError') {
+    const fields = error.fields || {};
+    if (Object.prototype.hasOwnProperty.call(fields, 'employee_id')) return true;
+    const paths = (error.errors || []).map((e) => e.path);
+    if (paths.includes('employee_id')) return true;
+    // иногда Sequelize кладёт имя индекса
+    const msg = String(error.message || '');
+    if (/employee_id/i.test(msg) || /users_employee_id_unique/i.test(msg)) {
+      return true;
+    }
+  }
+  const parentCode = error.parent?.code || error.original?.code;
+  if (parentCode === 'ER_DUP_ENTRY') {
+    const msg = String(error.parent?.message || error.message || '');
+    return /employee_id/i.test(msg) || /users_employee_id_unique/i.test(msg);
+  }
+  return false;
+}
+
+/** employee уже привязан к другой учётке → HTTP 409 */
+function employeeLinkConflictError(employeeId, holderUserId) {
+  const suffix =
+    holderUserId != null ? ` (уже у пользователя id=${holderUserId})` : '';
+  return Object.assign(
+    new Error(
+      `Сотрудник ${employeeId} уже привязан к другой учётке${suffix}`
+    ),
+    { code: 'CONFLICT', status: 409 }
+  );
+}
+
+/**
+ * Проверяет, что employee_id свободен (или уже у exceptUserId).
+ * null / '' — отвязка, пропускаем. Иначе положительное целое.
+ * @returns {number|null} нормализованный id или null
+ */
+async function assertEmployeeIdAvailable(employeeId, exceptUserId = null) {
+  if (employeeId === undefined || employeeId === null || employeeId === '') {
+    return null;
+  }
+  const eid = Number(employeeId);
+  if (!Number.isInteger(eid) || eid <= 0) {
+    const err = new Error('employee_id должен быть положительным целым числом');
+    err.code = 'VALIDATION';
+    err.status = 400;
+    throw err;
+  }
+
+  const where = { employee_id: eid };
+  if (exceptUserId != null) {
+    where.id = { [Op.ne]: Number(exceptUserId) };
+  }
+  const holder = await User.findOne({
+    where,
+    attributes: ['id', 'employee_id'],
+  });
+  if (holder) {
+    throw employeeLinkConflictError(eid, holder.id);
+  }
+  return eid;
 }
 
 /**
@@ -88,8 +154,8 @@ function signAccessToken(user) {
 }
 
 /**
- * Фаза 6a: lab_admin не может назначить system_admin;
- * роль должна быть из ROLE_VALUES.
+ * Какую роль можно записать: lab_admin не назначает system_admin;
+ * значение должно быть из ROLE_VALUES.
  */
 function resolveAssignableRole(actor, requestedRole) {
   if (requestedRole == null || requestedRole === '') {
@@ -122,11 +188,12 @@ function assertActorCanManageUser(actor, targetUser, action = 'управлен�
 }
 
 /**
- * Создание пользователя (фаза 1 + 6a).
+ * Создание пользователя.
  *
- * Публичная регистрация: роль всегда student — role из req.body игнорируется.
- * Админ-создание (context.actor + allowPrivilegedRole): можно задать role / employee_id
- * с проверкой, что lab_admin не выдаёт system_admin и не цепляет чужой employee.
+ * Публичная регистрация: роль всегда student — role из body игнорируется.
+ * Админ (context.actor + allowPrivilegedRole): можно задать role / employee_id;
+ * lab_admin не выдаёт system_admin и не цепляет employee чужой lab.
+ * Один employee_id — только у одной учётки (иначе 409).
  *
  * context.forceRole — внутренний обход для сидеров.
  */
@@ -146,11 +213,12 @@ const createUser = async (data, meta, context = {}) => {
       const assigned = resolveAssignableRole(context.actor, data.role);
       role = assigned || DEFAULT_REGISTER_ROLE;
 
-      if (employeeId != null) {
+      if (employeeId != null && employeeId !== '') {
         const { Employee } = require('../models');
         const employee = await Employee.findByPk(employeeId);
         if (!employee) {
           const err = new Error(`Сотрудник с id ${employeeId} не найден`);
+          err.code = 'NOT_FOUND';
           err.status = 404;
           throw err;
         }
@@ -160,15 +228,28 @@ const createUser = async (data, meta, context = {}) => {
           'привязки пользователя к сотруднику'
         );
       }
+    } else {
+      // публичная регистрация не привязывает employee из body
+      employeeId = null;
     }
 
-    const user = await User.create({
-      name: data.name,
-      email: data.email,
-      password: data.password,
-      employee_id: employeeId,
-      role,
-    });
+    employeeId = await assertEmployeeIdAvailable(employeeId);
+
+    let user;
+    try {
+      user = await User.create({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        employee_id: employeeId,
+        role,
+      });
+    } catch (error) {
+      if (isUniqueEmployeeIdError(error)) {
+        throw employeeLinkConflictError(employeeId);
+      }
+      throw error;
+    }
 
     await logService.recordAuditLog({
       action: logService.LOG_ACTIONS.REGISTER,
@@ -196,7 +277,8 @@ const createUser = async (data, meta, context = {}) => {
 };
 
 /**
- * Фаза 6a: system_admin — все; lab_admin — только users с employee.lab_id = своя lab.
+ * Список users: system_admin — все;
+ * lab_admin — только с employee.lab_id = своя lab.
  */
 const getAllUsers = async (actor) => {
   try {
@@ -240,6 +322,10 @@ const getUserById = async (id, actor) => {
   }
 };
 
+/**
+ * Админское обновление user. Смена employee_id: проверка lab + свободен ли id (409).
+ * employee_id: null — отвязка от сотрудника (допустимо).
+ */
 const updateUser = async (id, data, actor) => {
   try {
     const user = await User.findByPk(id, {
@@ -262,18 +348,38 @@ const updateUser = async (id, data, actor) => {
       }
     }
 
-    if (payload.employee_id != null && actor) {
-      const { Employee } = require('../models');
-      const employee = await Employee.findByPk(payload.employee_id);
-      if (!employee) {
-        const err = new Error(`Сотрудник с id ${payload.employee_id} не найден`);
-        err.status = 404;
-        throw err;
+    if (Object.prototype.hasOwnProperty.call(payload, 'employee_id')) {
+      const nextEmployeeId = await assertEmployeeIdAvailable(
+        payload.employee_id,
+        user.id
+      );
+      payload.employee_id = nextEmployeeId;
+
+      if (nextEmployeeId != null && actor) {
+        const { Employee } = require('../models');
+        const employee = await Employee.findByPk(nextEmployeeId);
+        if (!employee) {
+          const err = new Error(`Сотрудник с id ${nextEmployeeId} не найден`);
+          err.code = 'NOT_FOUND';
+          err.status = 404;
+          throw err;
+        }
+        assertLabAccess(
+          actor,
+          employee.lab_id,
+          'привязки пользователя к сотруднику'
+        );
       }
-      assertLabAccess(actor, employee.lab_id, 'привязки пользователя к сотруднику');
     }
 
-    await user.update(payload);
+    try {
+      await user.update(payload);
+    } catch (error) {
+      if (isUniqueEmployeeIdError(error)) {
+        throw employeeLinkConflictError(payload.employee_id);
+      }
+      throw error;
+    }
     return toPublicUser(user);
   } catch (error) {
     console.error('Ошибка при обновлении пользователя:', error);
@@ -301,8 +407,8 @@ const deleteUser = async (id, actor) => {
 };
 
 /**
- * Login (фаза 3): bcrypt → JWT с role + laboratory_id.
- * Не логируем пароль/хеш в консоль.
+ * Вход: bcrypt → JWT с role + laboratory_id + employee_id.
+ * Пароль/хеш в логи не пишем.
  */
 const loginUser = async (email, password, meta = {}) => {
   try {
@@ -469,4 +575,6 @@ module.exports = {
   toAuthUser,
   buildTokenPayload,
   resolveLaboratoryId,
+  assertEmployeeIdAvailable,
+  isUniqueEmployeeIdError,
 };
