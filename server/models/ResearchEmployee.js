@@ -20,23 +20,23 @@ module.exports = (sequelize, DataTypes) => {
     },
     research_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
-        model: 'researches', // Название таблицы Research
-        key: 'id'
+        model: 'researches',
+        key: 'id',
       },
       onUpdate: 'CASCADE',
-      onDelete: 'SET NULL'
+      onDelete: 'CASCADE',
     },
     employee_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
-        model: 'employees', // Название таблицы Employee
-        key: 'id'
+        model: 'employees',
+        key: 'id',
       },
       onUpdate: 'CASCADE',
-      onDelete: 'SET NULL'
+      onDelete: 'CASCADE',
     },
     role: {
       type: DataTypes.STRING(100),
