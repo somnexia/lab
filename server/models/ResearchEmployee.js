@@ -56,8 +56,16 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'ResearchEmployee',
-    tableName: 'researchemployees',  // Название таблицы в БД
-    timestamps: true  // Отключаем автоматические поля createdAt и updatedAt
+    tableName: 'researchemployees',
+    timestamps: true,
+    // Один employee — не больше одной строки membership на research
+    indexes: [
+      {
+        unique: true,
+        fields: ['research_id', 'employee_id'],
+        name: 'researchemployees_research_id_employee_id_unique',
+      },
+    ],
   });
 
   return ResearchEmployee;
