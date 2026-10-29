@@ -11,9 +11,9 @@ const {
  * authorize на researches (роль).
  * laboratory_id на researches:
  *   1) колонка + модели ✓
- *   2) create/update — lab актора (enforceLabOnCreate) ✓
- *   3) researchScope по laboratory_id — следующая часть
- * До п.3 списки ещё могут опираться на memberships.
+ *   2) create/update — lab актора ✓
+ *   3) списки/assert — researchScope по laboratory_id ✓
+ *      (orphan без lab — fallback через membership)
  */
 router.post('/', authorize(CAN_MANAGE_RESEARCH), researchController.createResearch);
 router.post(

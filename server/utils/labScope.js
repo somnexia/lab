@@ -4,7 +4,8 @@
  * 5a: laboratories (field: id)
  * 5b: chemstorages, storageUnits (через storage), employees (lab_id),
  *     experiments (laboratory_id), inventory (storage_id → chemstorage),
- *     research-teams / researches (через employee.lab_id), logs (users своей lab)
+ *     research-teams; researches.laboratory_id (см. researchScope);
+ *     logs (users своей lab)
  *
  * system_admin → skipLabScope → без фильтра.
  */

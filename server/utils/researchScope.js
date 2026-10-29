@@ -1,15 +1,10 @@
 /**
  * «Свои» записи для research / tasks.
  *
- * Три части:
- *   1) Student — только свои tasks (task.user_id === user.id)
- *   2) Researcher (+ lab_admin) — research/tasks своей lab / команды
- *      (команда = researches, где есть участник с employee.lab_id актора,
- *       либо сам актор в ResearchEmployee)
- *   3) Assert-хелперы: assertCanViewTask / assertCanEditTask / …
- *
- * Research в схеме без laboratory_id — lab выводится через
- * ResearchEmployee → Employee.lab_id.
+ * Student — только свои tasks (task.user_id === user.id).
+ * Lab-tenant для research — колонка researches.laboratory_id (части 1–3 схемы).
+ * Membership (ResearchEmployee) — состав команды; для scope lab больше
+ * не основной путь (fallback только если laboratory_id ещё null).
  *
  * system_admin: skipLabScope → без фильтра.
  */
@@ -64,35 +59,33 @@ function ownTasksWhere(user, where = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// 2) Researcher / lab — research & tasks by lab / team
+// 2) Lab tenant — researches.laboratory_id (+ legacy membership fallback)
 // ---------------------------------------------------------------------------
 
 /**
- * ID исследований, видимых в лаборатории (есть участник с lab_id).
+ * Research, у которых владеющая lab = labId (колонка laboratory_id).
  * @returns {Promise<number[]>}
  */
-async function listResearchIdsForLab(labId) {
+async function listResearchIdsForOwningLab(labId) {
   if (labId == null) return [];
-  const { ResearchEmployee, Employee } = require('../models');
-
-  const links = await ResearchEmployee.findAll({
-    attributes: ['research_id'],
-    include: [
-      {
-        model: Employee,
-        as: 'employee',
-        required: true,
-        attributes: [],
-        where: { lab_id: Number(labId) },
-      },
-    ],
+  const { Research } = require('../models');
+  const rows = await Research.findAll({
+    where: { laboratory_id: Number(labId) },
+    attributes: ['id'],
     raw: true,
   });
-
-  return [...new Set(links.map((r) => Number(r.research_id)).filter(Boolean))];
+  return rows.map((r) => Number(r.id)).filter(Boolean);
 }
 
-/** ID исследований, где employee_id актора — участник («своя команда») */
+/**
+ * @deprecated имя оставлено для совместимости экспорта.
+ * Раньше — через участников; теперь — owning laboratory_id.
+ */
+async function listResearchIdsForLab(labId) {
+  return listResearchIdsForOwningLab(labId);
+}
+
+/** ID исследований, где employee_id — участник (команда) */
 async function listResearchIdsForEmployee(employeeId) {
   if (employeeId == null) return [];
   const { ResearchEmployee } = require('../models');
@@ -105,25 +98,45 @@ async function listResearchIdsForEmployee(employeeId) {
 }
 
 /**
+ * Research с laboratory_id IS NULL, где актор в команде (хвост миграции).
+ */
+async function listOrphanResearchIdsForEmployee(employeeId) {
+  if (employeeId == null) return [];
+  const teamIds = await listResearchIdsForEmployee(employeeId);
+  if (!teamIds.length) return [];
+
+  const { Research } = require('../models');
+  const rows = await Research.findAll({
+    where: {
+      id: { [Op.in]: teamIds },
+      laboratory_id: null,
+    },
+    attributes: ['id'],
+    raw: true,
+  });
+  return rows.map((r) => Number(r.id)).filter(Boolean);
+}
+
+/**
  * null = без ограничения (system_admin);
  * [] = пусто; иначе список research_id.
  *
- * lab_admin / researcher / student: lab ∪ личная команда (membership).
+ * Основной путь: researches.laboratory_id = lab актора.
+ * Fallback: membership только для строк ещё без laboratory_id.
  */
 async function resolveVisibleResearchIds(user) {
   if (skipLabScope(user)) return null;
 
   const labId = resolveActorLabId(user);
-  const labIds = await listResearchIdsForLab(labId);
-  const teamIds =
-    user.employee_id != null
-      ? await listResearchIdsForEmployee(user.employee_id)
-      : [];
+  if (labId == null) return [];
 
-  return [...new Set([...labIds, ...teamIds])];
+  const owned = await listResearchIdsForOwningLab(labId);
+  const orphans = await listOrphanResearchIdsForEmployee(user.employee_id);
+
+  return [...new Set([...owned, ...orphans])];
 }
 
-/** where.research_id IN (...) для Task.findAll; student дополнительно сужает ownTasksWhere */
+/** where.research_id IN (...) для Task.findAll; student — ownTasksWhere */
 async function scopeTasksWhere(user, where = {}) {
   let next = { ...where };
 
@@ -140,20 +153,62 @@ async function scopeTasksWhere(user, where = {}) {
   return next;
 }
 
-/** where.id IN (...) для Research.findAll */
+/**
+ * WHERE для Research.findAll.
+ * Предпочитаем laboratory_id = lab; orphan-id через IN (id).
+ */
 async function scopeResearchesWhere(user, where = {}) {
   const next = { ...where };
   if (skipLabScope(user)) return next;
 
-  const ids = await resolveVisibleResearchIds(user);
-  next.id = { [Op.in]: ids.length ? ids : [-1] };
+  const labId = resolveActorLabId(user);
+  if (labId == null) {
+    next.id = -1;
+    return next;
+  }
+
+  const orphans = await listOrphanResearchIdsForEmployee(user.employee_id);
+  if (!orphans.length) {
+    next.laboratory_id = labId;
+    return next;
+  }
+
+  next[Op.or] = [
+    { laboratory_id: labId },
+    { id: { [Op.in]: orphans } },
+  ];
   return next;
 }
 
+/**
+ * Одна research в scope актора?
+ * Сначала колонка laboratory_id; иначе legacy membership при null.
+ */
 async function researchBelongsToActorScope(user, researchId) {
   if (skipLabScope(user)) return true;
-  const ids = await resolveVisibleResearchIds(user);
-  return ids.includes(Number(researchId));
+
+  const labId = resolveActorLabId(user);
+  if (labId == null) return false;
+
+  const { Research } = require('../models');
+  const research = await Research.findByPk(researchId, {
+    attributes: ['id', 'laboratory_id'],
+  });
+  if (!research) return false;
+
+  if (
+    research.laboratory_id != null &&
+    Number(research.laboratory_id) === Number(labId)
+  ) {
+    return true;
+  }
+
+  if (research.laboratory_id == null && user.employee_id != null) {
+    const orphans = await listOrphanResearchIdsForEmployee(user.employee_id);
+    return orphans.includes(Number(researchId));
+  }
+
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -284,9 +339,21 @@ async function assertCanViewResearch(user, research) {
   if (!user) throw forbidden('Требуется авторизация', 'AUTH_REQUIRED');
   if (skipLabScope(user)) return;
 
+  const labId = resolveActorLabId(user);
+  if (labId == null) {
+    throw forbidden('Учётная запись не привязана к лаборатории', 'LAB_REQUIRED');
+  }
+
+  if (
+    research.laboratory_id != null &&
+    Number(research.laboratory_id) === Number(labId)
+  ) {
+    return;
+  }
+
   const ok = await researchBelongsToActorScope(user, research.id);
   if (!ok) {
-    throw forbidden('Исследование вне вашей лаборатории или команды');
+    throw forbidden('Исследование вне вашей лаборатории');
   }
 }
 
@@ -298,9 +365,21 @@ async function assertCanEditResearch(user, research) {
     throw forbidden('Недостаточно прав для изменения исследования');
   }
 
+  const labId = resolveActorLabId(user);
+  if (labId == null) {
+    throw forbidden('Учётная запись не привязана к лаборатории', 'LAB_REQUIRED');
+  }
+
+  if (
+    research.laboratory_id != null &&
+    Number(research.laboratory_id) === Number(labId)
+  ) {
+    return;
+  }
+
   const ok = await researchBelongsToActorScope(user, research.id);
   if (!ok) {
-    throw forbidden('Нельзя изменять исследование чужой лаборатории или команды');
+    throw forbidden('Нельзя изменять исследование чужой лаборатории');
   }
 }
 
@@ -375,9 +454,11 @@ module.exports = {
   // 1 student
   isOwnTask,
   ownTasksWhere,
-  // 2 lab/team
+  // 2 lab via laboratory_id
+  listResearchIdsForOwningLab,
   listResearchIdsForLab,
   listResearchIdsForEmployee,
+  listOrphanResearchIdsForEmployee,
   resolveVisibleResearchIds,
   scopeTasksWhere,
   scopeResearchesWhere,
