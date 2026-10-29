@@ -21,9 +21,7 @@ const membershipInclude = [
 ];
 
 /**
- * Список memberships.
- * user — req.user: lab/team scope (часть 1).
- * GET /:id, POST/PUT/DELETE — следующие части.
+ * Список memberships с фильтром lab/team по req.user.
  */
 const getAllResearchEmployees = async (filters = {}, user) => {
   try {

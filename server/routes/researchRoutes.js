@@ -8,13 +8,10 @@ const {
 } = require('../config/roles');
 
 /**
- * authorize на researches (роль).
- * laboratory_id на researches:
- *   1) колонка + модели ✓
- *   2) create — lab актора; update — system_admin любой /
- *      lab_admin только heal null → своя lab ✓
- *   3) списки/assert — researchScope по laboratory_id ✓
- *      (orphan без lab — fallback через membership)
+ * Роль — authorize; tenant — researches.laboratory_id в сервисе/scope.
+ * Create пишет lab актора; update lab: system_admin любой номер,
+ * lab_admin только если сейчас null → своя lab.
+ * Orphan без lab в списках — fallback через membership.
  */
 router.post('/', authorize(CAN_MANAGE_RESEARCH), researchController.createResearch);
 router.post(

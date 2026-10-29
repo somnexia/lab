@@ -77,7 +77,6 @@ module.exports = (sequelize, DataTypes) => {
     /**
      * Владеющая лаборатория (tenant).
      * Команда участников — отдельно в researchemployees.
-     * Scope по lab: часть 3 researchScope; запись при create — часть 2.
      */
     laboratory_id: {
       type: DataTypes.INTEGER,

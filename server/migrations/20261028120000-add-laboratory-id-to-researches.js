@@ -1,13 +1,10 @@
 'use strict';
 
 /**
- * Part 1: researches.laboratory_id — «владеющая» лаборатория проекта.
- *
+ * Добавляет researches.laboratory_id — владеющая лаборатория проекта.
  * Раньше lab выводили только через researchemployees → employees.lab_id.
- * Колонка nullable: существующие строки без участников могут остаться null
- * до backfill / до части 2 (create всегда пишет lab актора).
- *
- * Backfill: первая lab участника (MIN(lab_id) среди employees команды).
+ * Колонка nullable: строки без участников могут остаться null до backfill.
+ * Backfill: MIN(lab_id) среди employees команды.
  */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {

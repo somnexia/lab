@@ -2,9 +2,9 @@
  * «Свои» записи для research / tasks.
  *
  * Student — только свои tasks (task.user_id === user.id).
- * Lab-tenant для research — колонка researches.laboratory_id (части 1–3 схемы).
- * Membership (ResearchEmployee) — состав команды; для scope lab больше
- * не основной путь (fallback только если laboratory_id ещё null).
+ * Lab-tenant для research — колонка researches.laboratory_id.
+ * Membership (ResearchEmployee) — состав команды; для scope lab
+ * fallback только если laboratory_id ещё null.
  *
  * system_admin: skipLabScope → без фильтра.
  */
