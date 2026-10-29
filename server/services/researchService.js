@@ -16,6 +16,9 @@ const {
 const { isLabAdmin } = require('../config/roles');
 const {
   isUniqueMembershipError,
+  isNotNullMembershipError,
+  requireMembershipId,
+  validationError,
 } = require('./researchEmployeeService');
 
 const participantInclude = {
@@ -178,22 +181,40 @@ const deleteResearch = async (id, user) => {
 
 const createResearchWithParticipants = async (data, employeeIds, user) => {
   try {
-    await assertEmployeesInActorLab(user, employeeIds);
+    const ids = [];
+    const seen = new Set();
+    for (const raw of employeeIds || []) {
+      const eid = requireMembershipId(raw, 'employee_id');
+      if (!seen.has(eid)) {
+        seen.add(eid);
+        ids.push(eid);
+      }
+    }
+    if (user?.employee_id) {
+      const selfId = Number(user.employee_id);
+      if (Number.isInteger(selfId) && selfId > 0 && !seen.has(selfId)) {
+        ids.push(selfId);
+      }
+    }
+
+    await assertEmployeesInActorLab(user, ids);
     const payload = prepareResearchCreatePayload(user, data);
     const research = await Research.create(payload);
 
-    const ids = [...new Set((employeeIds || []).map(Number).filter(Boolean))];
-    if (user?.employee_id && !ids.includes(Number(user.employee_id))) {
-      ids.push(Number(user.employee_id));
-    }
-
     if (ids.length > 0) {
-      await ResearchEmployee.bulkCreate(
-        ids.map((employeeId) => ({
-          research_id: research.id,
-          employee_id: employeeId,
-        }))
-      );
+      try {
+        await ResearchEmployee.bulkCreate(
+          ids.map((employeeId) => ({
+            research_id: research.id,
+            employee_id: employeeId,
+          }))
+        );
+      } catch (error) {
+        if (isNotNullMembershipError(error)) {
+          throw validationError('research_id и employee_id обязательны');
+        }
+        throw error;
+      }
     } else {
       await ensureActorMembership(user, research.id);
     }
@@ -205,18 +226,43 @@ const createResearchWithParticipants = async (data, employeeIds, user) => {
   }
 };
 
+/**
+ * Добавляет участников в research. researchId и каждый employee_id
+ * обязательны (положительные целые); уже состоящих пропускаем.
+ */
 const addResearchParticipants = async (researchId, employeeIds, user) => {
   try {
-    const research = await Research.findByPk(researchId);
-    if (!research) throw new Error('Research not found');
+    const rid = requireMembershipId(researchId, 'researchId');
+
+    if (!Array.isArray(employeeIds) || employeeIds.length === 0) {
+      throw validationError('employeeIds должен быть непустым массивом');
+    }
+
+    const uniqueIds = [];
+    const seen = new Set();
+    for (const raw of employeeIds) {
+      const eid = requireMembershipId(raw, 'employee_id');
+      if (!seen.has(eid)) {
+        seen.add(eid);
+        uniqueIds.push(eid);
+      }
+    }
+
+    const research = await Research.findByPk(rid);
+    if (!research) {
+      throw Object.assign(new Error(`Исследование с id ${rid} не найдено`), {
+        code: 'NOT_FOUND',
+        status: 404,
+      });
+    }
 
     // новое research без участников: system_admin ок; иначе только если уже в scope
     // или актор только что создал — для add требуем edit
     if (!skipLabScope(user)) {
-      const inScope = await researchBelongsToActorScope(user, researchId);
+      const inScope = await researchBelongsToActorScope(user, rid);
       if (!inScope) {
         const count = await ResearchEmployee.count({
-          where: { research_id: Number(researchId) },
+          where: { research_id: rid },
         });
         if (count > 0) {
           await assertCanEditResearch(user, research);
@@ -226,21 +272,15 @@ const addResearchParticipants = async (researchId, employeeIds, user) => {
       }
     }
 
-    await assertEmployeesInActorLab(user, employeeIds);
+    await assertEmployeesInActorLab(user, uniqueIds);
 
-    // Уникальные id; уже состоящих в команде пропускаем (не 409 на весь batch)
-    const uniqueIds = [
-      ...new Set((employeeIds || []).map(Number).filter(Boolean)),
-    ];
-    const existingRows = uniqueIds.length
-      ? await ResearchEmployee.findAll({
-          where: {
-            research_id: Number(researchId),
-            employee_id: { [Op.in]: uniqueIds },
-          },
-          attributes: ['employee_id'],
-        })
-      : [];
+    const existingRows = await ResearchEmployee.findAll({
+      where: {
+        research_id: rid,
+        employee_id: { [Op.in]: uniqueIds },
+      },
+      attributes: ['employee_id'],
+    });
     const alreadyIn = new Set(
       existingRows.map((row) => Number(row.employee_id))
     );
@@ -251,7 +291,7 @@ const addResearchParticipants = async (researchId, employeeIds, user) => {
       try {
         await ResearchEmployee.bulkCreate(
           toAdd.map((employeeId) => ({
-            research_id: Number(researchId),
+            research_id: rid,
             employee_id: employeeId,
           }))
         );
@@ -263,6 +303,9 @@ const addResearchParticipants = async (researchId, employeeIds, user) => {
             ),
             { code: 'CONFLICT', status: 409 }
           );
+        }
+        if (isNotNullMembershipError(error)) {
+          throw validationError('research_id и employee_id обязательны');
         }
         throw error;
       }

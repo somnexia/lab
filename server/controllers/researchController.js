@@ -22,6 +22,12 @@ function sendError(res, error, fallbackStatus = 500) {
       code: 'CONFLICT',
     });
   }
+  if (error.code === 'VALIDATION' || error.status === 400) {
+    return res.status(400).json({
+      error: error.message,
+      code: 'VALIDATION',
+    });
+  }
   console.error(error);
   return res.status(error.status || fallbackStatus).json({ error: error.message });
 }
@@ -126,10 +132,6 @@ const deleteResearch = async (req, res) => {
 const addParticipantsToResearch = async (req, res) => {
   try {
     const { researchId, employeeIds } = req.body;
-    if (!researchId || !employeeIds || !Array.isArray(employeeIds)) {
-      return res.status(400).json({ error: 'Invalid data' });
-    }
-
     const response = await researchService.addResearchParticipants(
       researchId,
       employeeIds,

@@ -1,6 +1,20 @@
 const { ResearchEmployee, Research, Employee } = require('../models');
 const { scopeMembershipsWhere } = require('../utils/researchScope');
 
+function validationError(message) {
+  return Object.assign(new Error(message), {
+    code: 'VALIDATION',
+    status: 400,
+  });
+}
+
+function notFoundError(message) {
+  return Object.assign(new Error(message), {
+    code: 'NOT_FOUND',
+    status: 404,
+  });
+}
+
 /** Ошибка «уже в команде» → HTTP 409 Conflict */
 function membershipConflictError(researchId, employeeId) {
   return Object.assign(
@@ -19,21 +33,66 @@ function isUniqueMembershipError(error) {
   return parentCode === 'ER_DUP_ENTRY';
 }
 
+/** NOT NULL / SequelizeValidation — колонка обязательна */
+function isNotNullMembershipError(error) {
+  if (!error) return false;
+  if (error.name === 'SequelizeValidationError') {
+    return (error.errors || []).some(
+      (e) =>
+        e.path === 'research_id' ||
+        e.path === 'employee_id' ||
+        e.type === 'notNull Violation'
+    );
+  }
+  const parentCode = error.parent?.code || error.original?.code;
+  return parentCode === 'ER_BAD_NULL_ERROR';
+}
+
 /**
- * Создаёт membership. Повтор той же пары (research, employee) → 409,
- * а не сырая ошибка БД. Проверка findOne + ловля unique на гонке.
+ * Положительное целое id. null / '' / мусор → 400.
+ * Нужно: membership без research или employee в БД запрещён.
+ */
+function requireMembershipId(value, fieldName) {
+  if (value === undefined || value === null || value === '') {
+    throw validationError(`${fieldName} обязателен`);
+  }
+  const n = Number(value);
+  if (!Number.isInteger(n) || n <= 0) {
+    throw validationError(
+      `${fieldName} должен быть положительным целым числом`
+    );
+  }
+  return n;
+}
+
+/** Проверяет, что research и employee реально существуют */
+async function assertResearchAndEmployeeExist(researchId, employeeId) {
+  const research = await Research.findByPk(researchId);
+  if (!research) {
+    throw notFoundError(`Исследование с id ${researchId} не найдено`);
+  }
+  const employee = await Employee.findByPk(employeeId);
+  if (!employee) {
+    throw notFoundError(`Сотрудник с id ${employeeId} не найден`);
+  }
+}
+
+/**
+ * Создаёт membership. Оба id обязательны; повтор пары → 409.
+ * Проверка findOne + ловля unique на гонке.
  */
 const createResearchEmployee = async (data = {}) => {
   try {
-    const research_id = Number(data.research_id ?? data.researchId);
-    const employee_id = Number(data.employee_id ?? data.employeeId);
+    const research_id = requireMembershipId(
+      data.research_id ?? data.researchId,
+      'research_id'
+    );
+    const employee_id = requireMembershipId(
+      data.employee_id ?? data.employeeId,
+      'employee_id'
+    );
 
-    if (!Number.isFinite(research_id) || !Number.isFinite(employee_id)) {
-      throw Object.assign(
-        new Error('research_id и employee_id обязательны'),
-        { code: 'VALIDATION', status: 400 }
-      );
-    }
+    await assertResearchAndEmployeeExist(research_id, employee_id);
 
     const existing = await ResearchEmployee.findOne({
       where: { research_id, employee_id },
@@ -51,6 +110,9 @@ const createResearchEmployee = async (data = {}) => {
     } catch (error) {
       if (isUniqueMembershipError(error)) {
         throw membershipConflictError(research_id, employee_id);
+      }
+      if (isNotNullMembershipError(error)) {
+        throw validationError('research_id и employee_id обязательны');
       }
       throw error;
     }
@@ -120,31 +182,34 @@ const getResearchEmployeeById = async (id) => {
   }
 };
 /**
- * Обновляет membership. Смена research_id / employee_id на уже
- * существующую пару → 409.
+ * Обновляет membership. Нельзя обнулить research_id / employee_id.
+ * Смена на уже занятую пару → 409.
  */
 const updateResearchEmployee = async (id, data = {}) => {
   try {
     const researchEmployee = await ResearchEmployee.findByPk(id);
     if (!researchEmployee) {
-      throw Object.assign(
-        new Error(`Запись ResearchEmployee с id ${id} не найдена`),
-        { code: 'NOT_FOUND', status: 404 }
-      );
+      throw notFoundError(`Запись ResearchEmployee с id ${id} не найдена`);
     }
 
-    const nextResearchId = Number(
-      data.research_id ?? data.researchId ?? researchEmployee.research_id
-    );
-    const nextEmployeeId = Number(
-      data.employee_id ?? data.employeeId ?? researchEmployee.employee_id
-    );
+    const touchesResearch =
+      data.research_id !== undefined || data.researchId !== undefined;
+    const touchesEmployee =
+      data.employee_id !== undefined || data.employeeId !== undefined;
+
+    const nextResearchId = touchesResearch
+      ? requireMembershipId(data.research_id ?? data.researchId, 'research_id')
+      : Number(researchEmployee.research_id);
+    const nextEmployeeId = touchesEmployee
+      ? requireMembershipId(data.employee_id ?? data.employeeId, 'employee_id')
+      : Number(researchEmployee.employee_id);
 
     const pairChanged =
-      Number(nextResearchId) !== Number(researchEmployee.research_id) ||
-      Number(nextEmployeeId) !== Number(researchEmployee.employee_id);
+      nextResearchId !== Number(researchEmployee.research_id) ||
+      nextEmployeeId !== Number(researchEmployee.employee_id);
 
-    if (pairChanged && Number.isFinite(nextResearchId) && Number.isFinite(nextEmployeeId)) {
+    if (pairChanged) {
+      await assertResearchAndEmployeeExist(nextResearchId, nextEmployeeId);
       const clash = await ResearchEmployee.findOne({
         where: {
           research_id: nextResearchId,
@@ -157,11 +222,11 @@ const updateResearchEmployee = async (id, data = {}) => {
     }
 
     const payload = { ...data };
-    if (data.research_id !== undefined || data.researchId !== undefined) {
+    if (touchesResearch) {
       payload.research_id = nextResearchId;
       delete payload.researchId;
     }
-    if (data.employee_id !== undefined || data.employeeId !== undefined) {
+    if (touchesEmployee) {
       payload.employee_id = nextEmployeeId;
       delete payload.employeeId;
     }
@@ -171,6 +236,9 @@ const updateResearchEmployee = async (id, data = {}) => {
     } catch (error) {
       if (isUniqueMembershipError(error)) {
         throw membershipConflictError(nextResearchId, nextEmployeeId);
+      }
+      if (isNotNullMembershipError(error)) {
+        throw validationError('research_id и employee_id обязательны');
       }
       throw error;
     }
@@ -204,4 +272,7 @@ module.exports = {
   deleteResearchEmployee,
   membershipConflictError,
   isUniqueMembershipError,
+  isNotNullMembershipError,
+  requireMembershipId,
+  validationError,
 };
