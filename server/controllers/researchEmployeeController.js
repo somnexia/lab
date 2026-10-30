@@ -29,7 +29,10 @@ function sendError(res, error, fallbackStatus = 500) {
 
 const createResearchEmployee = async (req, res) => {
   try {
-    const newResearchEmployee = await researchEmployeeService.createResearchEmployee(req.body);
+    const newResearchEmployee = await researchEmployeeService.createResearchEmployee(
+      req.body,
+      req.user
+    );
     return res.status(201).json(newResearchEmployee);
   } catch (error) {
     return sendError(res, error);
@@ -53,10 +56,13 @@ const getAllResearchEmployees = async (req, res) => {
 const getResearchEmployeeById = async (req, res) => {
   const { id } = req.params;
   try {
-    const researchEmployee = await researchEmployeeService.getResearchEmployeeById(id);
+    const researchEmployee = await researchEmployeeService.getResearchEmployeeById(
+      id,
+      req.user
+    );
     return res.status(200).json(researchEmployee);
   } catch (error) {
-    return sendError(res, error, 404);
+    return sendError(res, error);
   }
 };
 

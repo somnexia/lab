@@ -461,6 +461,67 @@ async function scopeMembershipsWhere(user, where = {}) {
   return next;
 }
 
+/**
+ * Загружает строку membership  по id с research и employee (+ laboratory). или 404.
+ * @returns {Promise<import('sequelize').Model>}
+ */
+async function loadMembershipOrThrow(membershipId) {
+  const { ResearchEmployee, Research, Employee } = require('../models');
+  const row = await ResearchEmployee.findByPk(membershipId, {
+    include: [
+      { model: Research, as: 'research' },
+      {
+        model: Employee,
+        as: 'employee',
+        include: [{ association: 'laboratory', required: false }],
+      },
+    ],
+  });
+  if (!row) {
+    throw notFound(`Запись ResearchEmployee с id ${membershipId} не найдена`);
+  }
+  return row;
+}
+
+/**Нет user → 403.
+ * Можно ли смотреть одну строку команды.
+ * Правило то же, что у research: своя lab / orphan-команда / system_admin.
+ * Сама строка не «чья-то» по user_id — доступ через research_id.
+ */
+async function assertCanViewMembership(user, membership) {
+  if (!user) throw forbidden('Требуется авторизация', 'AUTH_REQUIRED');
+  if (skipLabScope(user)) return;
+
+  if (!membership?.research_id) {
+    throw forbidden('У записи команды нет исследования');
+  }
+
+  let research = membership.research;
+  if (!research) {
+    research = await loadResearchOrThrow(membership.research_id);
+  }
+  await assertCanViewResearch(user, research);
+}
+
+/**
+ * Можно ли менять состав команды (добавить / править / удалить строку).
+ * Нужна роль CAN_MANAGE_RESEARCH и research в scope (assertCanEditResearch).
+ */
+async function assertCanEditMembership(user, membership) {
+  if (!user) throw forbidden('Требуется авторизация', 'AUTH_REQUIRED');
+  if (skipLabScope(user)) return;
+
+  if (!membership?.research_id) {
+    throw forbidden('У записи команды нет исследования');
+  }
+
+  let research = membership.research;
+  if (!research) {
+    research = await loadResearchOrThrow(membership.research_id);
+  }
+  await assertCanEditResearch(user, research);
+}
+
 module.exports = {
   // 1 student
   isOwnTask,
@@ -484,10 +545,13 @@ module.exports = {
   sanitizeTaskUpdatePayload,
   assertCanViewResearch,
   assertCanEditResearch,
+  assertCanViewMembership,
+  assertCanEditMembership,
   ensureActorMembership,
   assertEmployeesInActorLab,
   loadTaskOrThrow,
   loadResearchOrThrow,
+  loadMembershipOrThrow,
   isScopeForbidden,
   isStudent,
   isResearcher,

@@ -1,5 +1,11 @@
 const { ResearchEmployee, Research, Employee } = require('../models');
-const { scopeMembershipsWhere } = require('../utils/researchScope');
+const {
+  scopeMembershipsWhere,
+  loadMembershipOrThrow,
+  assertCanViewMembership,
+  assertCanEditResearch,
+  assertEmployeesInActorLab,
+} = require('../utils/researchScope');
 
 function validationError(message) {
   return Object.assign(new Error(message), {
@@ -78,10 +84,12 @@ async function assertResearchAndEmployeeExist(researchId, employeeId) {
 }
 
 /**
- * Создаёт membership. Оба id обязательны; повтор пары → 409.
- * Проверка findOne + ловля unique на гонке.
+ * Создаёт membership.
+ * user — req.user: research должен быть в scope на правку;
+ * employee — из lab актора (system_admin без tenant-фильтра).
+ * Оба id обязательны; повтор пары → 409.
  */
-const createResearchEmployee = async (data = {}) => {
+const createResearchEmployee = async (data = {}, user) => {
   try {
     const research_id = requireMembershipId(
       data.research_id ?? data.researchId,
@@ -93,6 +101,10 @@ const createResearchEmployee = async (data = {}) => {
     );
 
     await assertResearchAndEmployeeExist(research_id, employee_id);
+
+    const research = await Research.findByPk(research_id);
+    await assertCanEditResearch(user, research);
+    await assertEmployeesInActorLab(user, [employee_id]);
 
     const existing = await ResearchEmployee.findOne({
       where: { research_id, employee_id },
@@ -163,18 +175,14 @@ const getByResearchId = async (researchId, user) => {
 const getByEmployeeId = async (employeeId, user) => {
   return getAllResearchEmployees({ employeeId }, user);
 };
-// Получение записи ResearchEmployee по ID
-const getResearchEmployeeById = async (id) => {
+/**
+ * Одна строка membership по id.
+ * user — req.user: чужой research → 403 (не отдаём данные).
+ */
+const getResearchEmployeeById = async (id, user) => {
   try {
-    const researchEmployee = await ResearchEmployee.findByPk(id, {
-      include: [
-        { model: Research, as: 'research' },
-        { model: Employee, as: 'employee' }
-      ]
-    });
-    if (!researchEmployee) {
-      throw new Error(`Запись ResearchEmployee с id ${id} не найдена`);
-    }
+    const researchEmployee = await loadMembershipOrThrow(id);
+    await assertCanViewMembership(user, researchEmployee);
     return researchEmployee;
   } catch (error) {
     console.error('Ошибка при получении записи ResearchEmployee по id:', error);
