@@ -71,7 +71,8 @@ const updateResearchEmployee = async (req, res) => {
   try {
     const updatedResearchEmployee = await researchEmployeeService.updateResearchEmployee(
       id,
-      req.body
+      req.body,
+      req.user
     );
     return res.status(200).json(updatedResearchEmployee);
   } catch (error) {
@@ -82,7 +83,10 @@ const updateResearchEmployee = async (req, res) => {
 const deleteResearchEmployee = async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await researchEmployeeService.deleteResearchEmployee(id);
+    const result = await researchEmployeeService.deleteResearchEmployee(
+      id,
+      req.user
+    );
     return res.status(200).json(result);
   } catch (error) {
     return sendError(res, error);

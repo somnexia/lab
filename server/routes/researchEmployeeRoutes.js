@@ -10,9 +10,8 @@ const {
 /**
  * Состав команд (ResearchEmployee = кто в каком research).
  * Роль: чтение CAN_VIEW_RESEARCH; мутации CAN_MANAGE_RESEARCH.
- * Tenant: список, GET /:id, POST — research своей lab/команды;
- * POST дополнительно: employee только из lab актора.
- * PUT/DELETE /:id — следующий шаг.
+ * Tenant: список, GET/POST/PUT/DELETE — research своей lab/команды;
+ * POST/PUT при смене employee — только из lab актора.
  */
 router.get('/', authorize(CAN_VIEW_RESEARCH), researchEmployeeController.getAllResearchEmployees);
 router.get(

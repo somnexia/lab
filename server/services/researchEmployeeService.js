@@ -3,6 +3,7 @@ const {
   scopeMembershipsWhere,
   loadMembershipOrThrow,
   assertCanViewMembership,
+  assertCanEditMembership,
   assertCanEditResearch,
   assertEmployeesInActorLab,
 } = require('../utils/researchScope');
@@ -190,15 +191,15 @@ const getResearchEmployeeById = async (id, user) => {
   }
 };
 /**
- * Обновляет membership. Нельзя обнулить research_id / employee_id.
- * Смена на уже занятую пару → 409.
+ * Обновляет membership.
+ * user — req.user: текущая строка и (если меняется) новый research
+ * должны быть доступны на правку; новый employee — из lab актора.
+ * Нельзя обнулить research_id / employee_id; занятая пара → 409.
  */
-const updateResearchEmployee = async (id, data = {}) => {
+const updateResearchEmployee = async (id, data = {}, user) => {
   try {
-    const researchEmployee = await ResearchEmployee.findByPk(id);
-    if (!researchEmployee) {
-      throw notFoundError(`Запись ResearchEmployee с id ${id} не найдена`);
-    }
+    const researchEmployee = await loadMembershipOrThrow(id);
+    await assertCanEditMembership(user, researchEmployee);
 
     const touchesResearch =
       data.research_id !== undefined || data.researchId !== undefined;
@@ -218,6 +219,15 @@ const updateResearchEmployee = async (id, data = {}) => {
 
     if (pairChanged) {
       await assertResearchAndEmployeeExist(nextResearchId, nextEmployeeId);
+
+      if (nextResearchId !== Number(researchEmployee.research_id)) {
+        const nextResearch = await Research.findByPk(nextResearchId);
+        await assertCanEditResearch(user, nextResearch);
+      }
+      if (nextEmployeeId !== Number(researchEmployee.employee_id)) {
+        await assertEmployeesInActorLab(user, [nextEmployeeId]);
+      }
+
       const clash = await ResearchEmployee.findOne({
         where: {
           research_id: nextResearchId,
@@ -256,13 +266,15 @@ const updateResearchEmployee = async (id, data = {}) => {
     throw error;
   }
 };
-// Удаление записи ResearchEmployee по ID
-const deleteResearchEmployee = async (id) => {
+
+/**
+ * Удаляет membership.
+ * user — req.user: только если research строки в scope на правку.
+ */
+const deleteResearchEmployee = async (id, user) => {
   try {
-    const researchEmployee = await ResearchEmployee.findByPk(id);
-    if (!researchEmployee) {
-      throw new Error(`Запись ResearchEmployee с id ${id} не найдена`);
-    }
+    const researchEmployee = await loadMembershipOrThrow(id);
+    await assertCanEditMembership(user, researchEmployee);
     await researchEmployee.destroy();
     return { message: `Запись ResearchEmployee с id ${id} удалена` };
   } catch (error) {
