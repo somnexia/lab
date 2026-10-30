@@ -390,6 +390,50 @@ function sanitizeTaskUpdatePayload(user, data) {
   return payload;
 }
 
+/**
+ * Готовит payload обновления задачи.
+ * Student: user_id / research_id выкидываются.
+ * Если меняется research_id — новый research должен быть в scope актора.
+ * Если меняется research_id или user_id — итоговый владелец
+ * обязан быть в команде целевого research.
+ */
+async function prepareTaskUpdatePayload(user, task, data = {}) {
+  const payload = sanitizeTaskUpdatePayload(user, data);
+
+  const touchesResearch = payload.research_id !== undefined;
+  const touchesUser = payload.user_id !== undefined;
+
+  const nextResearchId = touchesResearch
+    ? Number(payload.research_id)
+    : Number(task.research_id);
+  const nextUserId = touchesUser
+    ? Number(payload.user_id)
+    : Number(task.user_id);
+
+  const researchChanged =
+    touchesResearch && nextResearchId !== Number(task.research_id);
+  const userChanged = touchesUser && nextUserId !== Number(task.user_id);
+
+  if (researchChanged) {
+    if (!Number.isInteger(nextResearchId) || nextResearchId <= 0) {
+      throw forbidden('research_id должен быть положительным целым', 'VALIDATION');
+    }
+    await assertCanCreateTaskOnResearch(user, nextResearchId);
+  }
+
+  if (userChanged) {
+    if (!Number.isInteger(nextUserId) || nextUserId <= 0) {
+      throw forbidden('user_id должен быть положительным целым', 'VALIDATION');
+    }
+  }
+
+  if ((researchChanged || userChanged) && !skipLabScope(user)) {
+    await assertUserInResearchTeam(nextUserId, nextResearchId);
+  }
+
+  return payload;
+}
+
 async function assertCanViewResearch(user, research) {
   if (!user) throw forbidden('Требуется авторизация', 'AUTH_REQUIRED');
   if (skipLabScope(user)) return;
@@ -598,6 +642,7 @@ module.exports = {
   assertCanCreateTaskOnResearch,
   prepareTaskCreatePayload,
   sanitizeTaskUpdatePayload,
+  prepareTaskUpdatePayload,
   assertCanViewResearch,
   assertCanEditResearch,
   assertCanViewMembership,

@@ -13,8 +13,9 @@ const {
  * «Свои» записи — в taskService / researchScope:
  *   student — только task.user_id === req.user.id
  *   researcher / lab_admin — research своей lab/команды
- * Create: владелец задачи (user_id) должен быть в researchemployees
- * этого research (через users.employee_id).
+ * Create/Update: владелец (user_id) должен быть в researchemployees
+ * целевого research (через users.employee_id); смена research_id /
+ * user_id на PUT проходит ту же проверку.
  * Delete — CAN_MANAGE_RESEARCH + тот же scope в сервисе.
  */
 router.post('/', authorize(CAN_VIEW_TASKS), taskController.createTask);

@@ -5,7 +5,7 @@ const {
   assertCanEditTask,
   assertCanDeleteTask,
   prepareTaskCreatePayload,
-  sanitizeTaskUpdatePayload,
+  prepareTaskUpdatePayload,
   loadTaskOrThrow,
 } = require('../utils/researchScope');
 
@@ -75,7 +75,7 @@ const updateTask = async (id, data, user) => {
   try {
     const task = await loadTaskOrThrow(id);
     await assertCanEditTask(user, task);
-    const payload = sanitizeTaskUpdatePayload(user, data);
+    const payload = await prepareTaskUpdatePayload(user, task, data);
     await task.update(payload);
     return task;
   } catch (error) {
