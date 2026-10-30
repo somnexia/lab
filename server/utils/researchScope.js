@@ -97,6 +97,55 @@ async function listResearchIdsForEmployee(employeeId) {
   return [...new Set(links.map((r) => Number(r.research_id)).filter(Boolean))];
 }
 
+/** Есть ли employee в команде research (строка researchemployees). */
+async function isEmployeeInResearchTeam(employeeId, researchId) {
+  if (employeeId == null || researchId == null) return false;
+  const { ResearchEmployee } = require('../models');
+  const row = await ResearchEmployee.findOne({
+    where: {
+      employee_id: Number(employeeId),
+      research_id: Number(researchId),
+    },
+    attributes: ['id'],
+  });
+  return Boolean(row);
+}
+
+/**
+ * Владелец задачи (User) должен быть привязан к Employee,
+ * а этот Employee — состоять в команде research.
+ * Иначе два канала (tasks.user_id и researchemployees) расходятся.
+ */
+async function assertUserInResearchTeam(userId, researchId) {
+  if (userId == null || researchId == null) {
+    throw forbidden('user_id и research_id обязательны для проверки команды', 'VALIDATION');
+  }
+
+  const { User } = require('../models');
+  const owner = await User.findByPk(Number(userId), {
+    attributes: ['id', 'employee_id'],
+  });
+  if (!owner) {
+    throw notFound(`Пользователь с id ${userId} не найден`);
+  }
+  if (owner.employee_id == null) {
+    throw forbidden(
+      'У владельца задачи нет привязки к сотруднику (employee_id)',
+      'LAB_REQUIRED'
+    );
+  }
+
+  const inTeam = await isEmployeeInResearchTeam(
+    owner.employee_id,
+    researchId
+  );
+  if (!inTeam) {
+    throw forbidden(
+      'Владелец задачи должен состоять в команде исследования'
+    );
+  }
+}
+
 /**
  * Research с laboratory_id IS NULL, где актор в команде (хвост миграции).
  */
@@ -310,6 +359,8 @@ async function assertCanCreateTaskOnResearch(user, researchId) {
 /**
  * Готовит payload создания: student/researcher всегда владельцы (user_id = actor).
  * lab_admin может указать user_id; иначе — сам.
+ * Владелец (итоговый user_id) обязан быть в команде research
+ * через users.employee_id → researchemployees.
  */
 async function prepareTaskCreatePayload(user, data) {
   const payload = { ...data };
@@ -318,8 +369,12 @@ async function prepareTaskCreatePayload(user, data) {
   if (isStudent(user) || isResearcher(user) || payload.user_id == null) {
     payload.user_id = Number(user.id);
   } else if (!skipLabScope(user)) {
-    // lab_admin: чужой user_id только если тот же lab (грубая проверка через employee)
+    // lab_admin: чужой user_id; членство в команде — ниже
     payload.user_id = Number(payload.user_id);
+  }
+
+  if (!skipLabScope(user)) {
+    await assertUserInResearchTeam(payload.user_id, payload.research_id);
   }
 
   return payload;
@@ -549,6 +604,8 @@ module.exports = {
   assertCanEditMembership,
   ensureActorMembership,
   assertEmployeesInActorLab,
+  isEmployeeInResearchTeam,
+  assertUserInResearchTeam,
   loadTaskOrThrow,
   loadResearchOrThrow,
   loadMembershipOrThrow,
