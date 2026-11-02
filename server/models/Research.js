@@ -75,19 +75,19 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'Pending',
     },
     /**
-     * Владеющая лаборатория (tenant).
+     * Владеющая лаборатория (tenant), обязательна.
      * Команда участников — отдельно в researchemployees.
+     * Удалить lab нельзя, пока на неё ссылаются researches (RESTRICT).
      */
     laboratory_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: null,
+      allowNull: false,
       references: {
         model: 'laboratories',
         key: 'id',
       },
       onUpdate: 'CASCADE',
-      onDelete: 'SET NULL',
+      onDelete: 'RESTRICT',
     },
   }, {
     sequelize,

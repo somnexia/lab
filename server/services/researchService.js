@@ -34,14 +34,22 @@ const participantInclude = {
 };
 
 /**
- * Create payload: laboratory_id только из lab актора
- * (system_admin может явно указать laboratory_id в body).
+ * Create payload: laboratory_id обязателен.
+ * Обычные роли — lab актора; system_admin должен указать номер в body.
  */
 function prepareResearchCreatePayload(user, data = {}) {
   const laboratory_id = enforceLabOnCreate(
     user,
     data.laboratory_id ?? data.laboratoryId
   );
+  if (laboratory_id == null) {
+    const err = new Error(
+      'laboratory_id обязателен при создании исследования'
+    );
+    err.code = 'VALIDATION';
+    err.status = 400;
+    throw err;
+  }
   return {
     ...data,
     laboratory_id,
@@ -49,11 +57,10 @@ function prepareResearchCreatePayload(user, data = {}) {
 }
 
 /**
- * Update payload для laboratory_id:
- * - system_admin — любой номер (или null) из body;
- * - lab_admin — только если сейчас null, и только свою lab
- *   (чужой номер в body → 403; researcher не трогает поле).
- * Не auto-heal: поле пишется только если его передали в body.
+ * Update payload для laboratory_id (поле обязательное в БД):
+ * - system_admin — может сменить на другой существующий номер (не null);
+ * - lab_admin — только если вдруг ещё null (хвост до migrate), свою lab;
+ * - researcher — поле из body выкидываем.
  */
 function prepareResearchUpdatePayload(user, research, data = {}) {
   const payload = { ...data };
@@ -65,7 +72,14 @@ function prepareResearchUpdatePayload(user, research, data = {}) {
 
   if (skipLabScope(user)) {
     if (labInBody) {
-      payload.laboratory_id = raw == null || raw === '' ? null : Number(raw);
+      const next = Number(raw);
+      if (raw == null || raw === '' || !Number.isInteger(next) || next <= 0) {
+        const err = new Error('laboratory_id обязателен и должен быть положительным целым');
+        err.code = 'VALIDATION';
+        err.status = 400;
+        throw err;
+      }
+      payload.laboratory_id = next;
     }
     return payload;
   }
@@ -86,7 +100,6 @@ function prepareResearchUpdatePayload(user, research, data = {}) {
       err.status = 403;
       throw err;
     }
-    // null/пусто в body тоже = «назначить свою» (heal orphan)
     payload.laboratory_id = actorLab;
     return payload;
   }
