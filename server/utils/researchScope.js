@@ -331,36 +331,85 @@ async function assertCanDeleteTask(user, task) {
   await assertCanEditTask(user, task);
 }
 
-/** Можно ли вешать новую задачу на research_id */
+/**
+ * Можно ли актору вешать задачу на research_id.
+ * - system_admin: без ограничений;
+ * - student / researcher: только если сами в команде research
+ *   (недостаточно «той же lab» без membership);
+ * - lab_admin: должен мочь править research (своя lab / orphan-команда),
+ *   личное членство в команде не обязательно — назначает участникам.
+ */
 async function assertCanCreateTaskOnResearch(user, researchId) {
   if (!user) throw forbidden('Требуется авторизация', 'AUTH_REQUIRED');
   if (researchId == null) {
     throw forbidden('research_id обязателен', 'VALIDATION');
   }
-  await loadResearchOrThrow(researchId);
+  const research = await loadResearchOrThrow(researchId);
 
   if (skipLabScope(user)) return;
 
-  if (isStudent(user)) {
-    // студент создаёт «свою» задачу в исследовании своей lab/команды
-    const ok = await researchBelongsToActorScope(user, researchId);
-    if (!ok) {
-      throw forbidden('Нельзя создать задачу в исследовании вне вашей лаборатории');
-    }
+  if (isStudent(user) || isResearcher(user)) {
+    await assertUserInResearchTeam(user.id, researchId);
     return;
   }
 
-  const ok = await researchBelongsToActorScope(user, researchId);
-  if (!ok) {
-    throw forbidden('Нельзя создать задачу в чужом исследовании');
+  if (isLabAdmin(user) || hasRole(user, CAN_MANAGE_RESEARCH)) {
+    await assertCanEditResearch(user, research);
+    return;
+  }
+
+  throw forbidden('Недостаточно прав для создания задачи в исследовании');
+}
+
+/**
+ * Владелец задачи (User) должен быть из lab актора
+ * (через users.employee_id → employees.lab_id).
+ * Нужно, чтобы lab_admin не назначал задачи людям чужой lab.
+ */
+async function assertTaskAssigneeInActorLab(actor, assigneeUserId) {
+  if (!actor || skipLabScope(actor)) return;
+  if (assigneeUserId == null) {
+    throw forbidden('user_id обязателен', 'VALIDATION');
+  }
+
+  const actorLab = resolveActorLabId(actor);
+  if (actorLab == null) {
+    throw forbidden('Учётная запись не привязана к лаборатории', 'LAB_REQUIRED');
+  }
+
+  const { User, Employee } = require('../models');
+  const owner = await User.findByPk(Number(assigneeUserId), {
+    attributes: ['id', 'employee_id'],
+    include: [
+      {
+        model: Employee,
+        as: 'employee',
+        attributes: ['id', 'lab_id'],
+        required: false,
+      },
+    ],
+  });
+  if (!owner) {
+    throw notFound(`Пользователь с id ${assigneeUserId} не найден`);
+  }
+  if (owner.employee_id == null || !owner.employee) {
+    throw forbidden(
+      'У владельца задачи нет привязки к сотруднику (employee_id)',
+      'LAB_REQUIRED'
+    );
+  }
+  if (Number(owner.employee.lab_id) !== Number(actorLab)) {
+    throw forbidden(
+      'Нельзя назначить задачу сотруднику чужой лаборатории'
+    );
   }
 }
 
 /**
  * Готовит payload создания: student/researcher всегда владельцы (user_id = actor).
  * lab_admin может указать user_id; иначе — сам.
- * Владелец (итоговый user_id) обязан быть в команде research
- * через users.employee_id → researchemployees.
+ * Правила: актор может создавать на research; владелец — в команде;
+ * владелец — из lab актора (для lab_admin при чужом user_id).
  */
 async function prepareTaskCreatePayload(user, data) {
   const payload = { ...data };
@@ -369,11 +418,13 @@ async function prepareTaskCreatePayload(user, data) {
   if (isStudent(user) || isResearcher(user) || payload.user_id == null) {
     payload.user_id = Number(user.id);
   } else if (!skipLabScope(user)) {
-    // lab_admin: чужой user_id; членство в команде — ниже
     payload.user_id = Number(payload.user_id);
   }
 
   if (!skipLabScope(user)) {
+    if (Number(payload.user_id) !== Number(user.id)) {
+      await assertTaskAssigneeInActorLab(user, payload.user_id);
+    }
     await assertUserInResearchTeam(payload.user_id, payload.research_id);
   }
 
@@ -393,9 +444,9 @@ function sanitizeTaskUpdatePayload(user, data) {
 /**
  * Готовит payload обновления задачи.
  * Student: user_id / research_id выкидываются.
- * Если меняется research_id — новый research должен быть в scope актора.
- * Если меняется research_id или user_id — итоговый владелец
- * обязан быть в команде целевого research.
+ * Смена research_id — те же правила актора, что при create.
+ * Смена research_id / user_id — владелец в команде; чужой user_id —
+ * ещё и из lab актора.
  */
 async function prepareTaskUpdatePayload(user, task, data = {}) {
   const payload = sanitizeTaskUpdatePayload(user, data);
@@ -428,6 +479,9 @@ async function prepareTaskUpdatePayload(user, task, data = {}) {
   }
 
   if ((researchChanged || userChanged) && !skipLabScope(user)) {
+    if (Number(nextUserId) !== Number(user.id)) {
+      await assertTaskAssigneeInActorLab(user, nextUserId);
+    }
     await assertUserInResearchTeam(nextUserId, nextResearchId);
   }
 
@@ -651,6 +705,7 @@ module.exports = {
   assertEmployeesInActorLab,
   isEmployeeInResearchTeam,
   assertUserInResearchTeam,
+  assertTaskAssigneeInActorLab,
   loadTaskOrThrow,
   loadResearchOrThrow,
   loadMembershipOrThrow,
