@@ -9,9 +9,10 @@ const {
 
 /**
  * Роль — authorize; tenant — researches.laboratory_id в сервисе/scope.
- * Create пишет lab актора; update lab: system_admin любой номер,
- * lab_admin только если сейчас null → своя lab.
- * Orphan без lab в списках — fallback через membership.
+ * Видимость: owning lab актора ИЛИ членство в researchemployees
+ * (коллаборация из другой lab). laboratory_id обязателен.
+ * Create пишет lab актора; update lab: system_admin — другой номер;
+ * lab_admin heal только если вдруг ещё null → своя lab.
  */
 router.post('/', authorize(CAN_MANAGE_RESEARCH), researchController.createResearch);
 router.post(

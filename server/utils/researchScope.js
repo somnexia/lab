@@ -2,9 +2,10 @@
  * «Свои» записи для research / tasks.
  *
  * Student — только свои tasks (task.user_id === user.id).
- * Lab-tenant для research — колонка researches.laboratory_id.
- * Membership (ResearchEmployee) — состав команды; для scope lab
- * fallback только если laboratory_id ещё null.
+ * Research виден, если:
+ *   - researches.laboratory_id = lab актора (владеющая lab), ИЛИ
+ *   - актор в команде (researchemployees) — коллаборация из другой lab.
+ * laboratory_id обязателен; orphan-fallback по NULL больше не используется.
  *
  * system_admin: skipLabScope → без фильтра.
  */
@@ -147,31 +148,11 @@ async function assertUserInResearchTeam(userId, researchId) {
 }
 
 /**
- * Research с laboratory_id IS NULL, где актор в команде (хвост миграции).
- */
-async function listOrphanResearchIdsForEmployee(employeeId) {
-  if (employeeId == null) return [];
-  const teamIds = await listResearchIdsForEmployee(employeeId);
-  if (!teamIds.length) return [];
-
-  const { Research } = require('../models');
-  const rows = await Research.findAll({
-    where: {
-      id: { [Op.in]: teamIds },
-      laboratory_id: null,
-    },
-    attributes: ['id'],
-    raw: true,
-  });
-  return rows.map((r) => Number(r.id)).filter(Boolean);
-}
-
-/**
  * null = без ограничения (system_admin);
  * [] = пусто; иначе список research_id.
  *
- * Основной путь: researches.laboratory_id = lab актора.
- * Fallback: membership только для строк ещё без laboratory_id.
+ * Видимость: owning lab актора ИЛИ membership в команде
+ * (коллаборация из другой lab).
  */
 async function resolveVisibleResearchIds(user) {
   if (skipLabScope(user)) return null;
@@ -180,9 +161,9 @@ async function resolveVisibleResearchIds(user) {
   if (labId == null) return [];
 
   const owned = await listResearchIdsForOwningLab(labId);
-  const orphans = await listOrphanResearchIdsForEmployee(user.employee_id);
+  const asMember = await listResearchIdsForEmployee(user.employee_id);
 
-  return [...new Set([...owned, ...orphans])];
+  return [...new Set([...owned, ...asMember])];
 }
 
 /** where.research_id IN (...) для Task.findAll; student — ownTasksWhere */
@@ -204,7 +185,7 @@ async function scopeTasksWhere(user, where = {}) {
 
 /**
  * WHERE для Research.findAll.
- * Предпочитаем laboratory_id = lab; orphan-id через IN (id).
+ * Своя owning lab ИЛИ id исследований, где актор в команде.
  */
 async function scopeResearchesWhere(user, where = {}) {
   const next = { ...where };
@@ -216,22 +197,22 @@ async function scopeResearchesWhere(user, where = {}) {
     return next;
   }
 
-  const orphans = await listOrphanResearchIdsForEmployee(user.employee_id);
-  if (!orphans.length) {
+  const asMember = await listResearchIdsForEmployee(user.employee_id);
+  if (!asMember.length) {
     next.laboratory_id = labId;
     return next;
   }
 
   next[Op.or] = [
     { laboratory_id: labId },
-    { id: { [Op.in]: orphans } },
+    { id: { [Op.in]: asMember } },
   ];
   return next;
 }
 
 /**
  * Одна research в scope актора?
- * Сначала колонка laboratory_id; иначе legacy membership при null.
+ * Owning lab совпала ИЛИ employee актора в researchemployees.
  */
 async function researchBelongsToActorScope(user, researchId) {
   if (skipLabScope(user)) return true;
@@ -252,12 +233,8 @@ async function researchBelongsToActorScope(user, researchId) {
     return true;
   }
 
-  if (research.laboratory_id == null && user.employee_id != null) {
-    const orphans = await listOrphanResearchIdsForEmployee(user.employee_id);
-    return orphans.includes(Number(researchId));
-  }
-
-  return false;
+  if (user.employee_id == null) return false;
+  return isEmployeeInResearchTeam(user.employee_id, researchId);
 }
 
 // ---------------------------------------------------------------------------
@@ -336,8 +313,8 @@ async function assertCanDeleteTask(user, task) {
  * - system_admin: без ограничений;
  * - student / researcher: только если сами в команде research
  *   (недостаточно «той же lab» без membership);
- * - lab_admin: должен мочь править research (своя lab / orphan-команда),
- *   личное членство в команде не обязательно — назначает участникам.
+ * - lab_admin: должен мочь править research (своя lab или член команды),
+ *   личное членство не обязательно, если owning lab своя.
  */
 async function assertCanCreateTaskOnResearch(user, researchId) {
   if (!user) throw forbidden('Требуется авторизация', 'AUTH_REQUIRED');
@@ -506,7 +483,9 @@ async function assertCanViewResearch(user, research) {
 
   const ok = await researchBelongsToActorScope(user, research.id);
   if (!ok) {
-    throw forbidden('Исследование вне вашей лаборатории');
+    throw forbidden(
+      'Исследование вне вашей лаборатории или команды'
+    );
   }
 }
 
@@ -530,9 +509,11 @@ async function assertCanEditResearch(user, research) {
     return;
   }
 
-  const ok = await researchBelongsToActorScope(user, research.id);
+  const ok = await researchBelongfsToActorScope(user, research.id);
   if (!ok) {
-    throw forbidden('Нельзя изменять исследование чужой лаборатории');
+    throw forbidden(
+      'Нельзя изменять исследование вне вашей лаборатории или команды'
+    );
   }
 }
 
@@ -636,10 +617,9 @@ async function loadMembershipOrThrow(membershipId) {
   return row;
 }
 
-/**Нет user → 403.
+/**
  * Можно ли смотреть одну строку команды.
- * Правило то же, что у research: своя lab / orphan-команда / system_admin.
- * Сама строка не «чья-то» по user_id — доступ через research_id.
+ * То же, что у research: своя owning lab или член команды.
  */
 async function assertCanViewMembership(user, membership) {
   if (!user) throw forbidden('Требуется авторизация', 'AUTH_REQUIRED');
@@ -683,7 +663,6 @@ module.exports = {
   listResearchIdsForOwningLab,
   listResearchIdsForLab,
   listResearchIdsForEmployee,
-  listOrphanResearchIdsForEmployee,
   resolveVisibleResearchIds,
   scopeTasksWhere,
   scopeResearchesWhere,
