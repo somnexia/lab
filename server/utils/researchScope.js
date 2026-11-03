@@ -509,7 +509,7 @@ async function assertCanEditResearch(user, research) {
     return;
   }
 
-  const ok = await researchBelongfsToActorScope(user, research.id);
+  const ok = await researchBelongsToActorScope(user, research.id);
   if (!ok) {
     throw forbidden(
       'Нельзя изменять исследование вне вашей лаборатории или команды'

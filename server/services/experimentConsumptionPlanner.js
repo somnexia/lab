@@ -1,5 +1,6 @@
 'use strict';
 
+const { Op } = require('sequelize');
 const { Inventory } = require('../models');
 const { UnitConversionError, convertQuantity, formatQuantity } = require('./unitNormalizationService');
 
@@ -22,24 +23,57 @@ const resolveCatalogLabel = (input) =>
   || input.catalog_name
   || `${input.itemType || input.item_type} #${input.referenceId ?? input.reference_id}`;
 
-const loadCatalogLots = async (itemType, referenceId, transaction) =>
-  Inventory.findAll({
-    where: {
-      item_type: itemType,
-      reference_id: Number(referenceId),
-    },
+/**
+ * Разрешён ли лот для списания: storage_id входит в склады lab эксперимента.
+ * storageIds === null — без фильтра (только явный обход, обычно не используется).
+ */
+function isLotInAllowedStorages(lot, storageIds) {
+  if (!lot) return false;
+  if (storageIds === null) return true;
+  if (!Array.isArray(storageIds) || !storageIds.length) return false;
+  if (lot.storage_id == null) return false;
+  return storageIds.map(Number).includes(Number(lot.storage_id));
+}
+
+/**
+ * Лоты каталога (item_type + reference_id), ограниченные складами lab.
+ * @param {string} itemType
+ * @param {number} referenceId
+ * @param {{ storageIds?: number[]|null, transaction?: object }} [options]
+ *   storageIds — id chemstorages lab эксперимента;
+ *   null = все склады (не для обычного run);
+ *   [] = ни одного лота.
+ */
+const loadCatalogLots = async (itemType, referenceId, options = {}) => {
+  const { storageIds = null, transaction = null } = options;
+  const where = {
+    item_type: itemType,
+    reference_id: Number(referenceId),
+  };
+
+  if (storageIds !== null) {
+    where.storage_id = {
+      [Op.in]: storageIds.length ? storageIds.map(Number) : [-1],
+    };
+  }
+
+  return Inventory.findAll({
+    where,
     order: [
       ['expiration_date', 'ASC'],
       ['id', 'ASC'],
     ],
     transaction,
   });
+};
 
 /**
- * Simulates reagent consumption in input order with shared lot balances.
- * Multiple inputs on the same lot share one remaining balance.
+ * Симуляция расхода реагентов.
+ * options.storageIds — склады владеющей lab эксперимента (обязательно
+ * для tenant-safe run): без них брались бы лоты всех лабораторий.
  */
-const planReagentConsumption = async (inputs, { transaction = null } = {}) => {
+const planReagentConsumption = async (inputs, options = {}) => {
+  const { transaction = null, storageIds = null } = options;
   const lotRemaining = new Map();
   const lotCache = new Map();
   const catalogLotsCache = new Map();
@@ -96,22 +130,36 @@ const planReagentConsumption = async (inputs, { transaction = null } = {}) => {
     let remainingInInputUnit = quantity;
     let blockReason = null;
 
-    const lotsToUse = inventoryId
-      ? [await getLot(Number(inventoryId))].filter(Boolean)
-      : await (async () => {
-        const key = `${input.itemType || input.item_type}:${input.referenceId ?? input.reference_id}`;
-        if (!catalogLotsCache.has(key)) {
-          catalogLotsCache.set(
-            key,
-            await loadCatalogLots(
-              input.itemType || input.item_type,
-              input.referenceId ?? input.reference_id,
-              transaction
-            )
-          );
-        }
-        return catalogLotsCache.get(key);
-      })();
+    let lotsToUse = [];
+    if (inventoryId) {
+      const lot = await getLot(Number(inventoryId));
+      if (lot && isLotInAllowedStorages(lot, storageIds)) {
+        lotsToUse = [lot];
+      } else if (lot && !isLotInAllowedStorages(lot, storageIds)) {
+        checks.push({
+          inputId: input.id,
+          catalogName,
+          requested: quantity,
+          unitMeasure,
+          status: 'insufficient',
+          reason: `Lot #${inventoryId} is outside this experiment's laboratory storages`,
+        });
+        continue;
+      }
+    } else {
+      const key = `${input.itemType || input.item_type}:${input.referenceId ?? input.reference_id}`;
+      if (!catalogLotsCache.has(key)) {
+        catalogLotsCache.set(
+          key,
+          await loadCatalogLots(
+            input.itemType || input.item_type,
+            input.referenceId ?? input.reference_id,
+            { storageIds, transaction }
+          )
+        );
+      }
+      lotsToUse = catalogLotsCache.get(key);
+    }
 
     if (inventoryId && !lotsToUse.length) {
       checks.push({
@@ -159,7 +207,7 @@ const planReagentConsumption = async (inputs, { transaction = null } = {}) => {
 
     const source = inventoryId
       ? (lotsToUse[0] ? formatLotLabel(lotsToUse[0]) : `Lot #${inventoryId}`)
-      : 'All lots (aggregate)';
+      : 'Lab storages (aggregate)';
 
     if (blockReason) {
       checks.push({
@@ -215,6 +263,8 @@ const planReagentConsumption = async (inputs, { transaction = null } = {}) => {
 
 module.exports = {
   planReagentConsumption,
+  loadCatalogLots,
+  isLotInAllowedStorages,
   getLotOnHand,
   formatLotLabel,
 };

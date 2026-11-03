@@ -101,21 +101,31 @@ function enforceLabOnCreate(user, requestedLabId) {
 }
 
 /**
- * ID складов (chemstorages) своей lab.
+ * ID складов (chemstorages) конкретной лаборатории.
+ * [] если labId пустой или складов нет.
+ */
+async function listChemStorageIdsForLab(labId) {
+  if (labId == null || labId === '') return [];
+
+  const { ChemStorage } = require('../models');
+  const rows = await ChemStorage.findAll({
+    where: { laboratory_id: Number(labId) },
+    attributes: ['id'],
+  });
+  return rows.map((r) => Number(r.id)).filter(Boolean);
+}
+
+/**
+ * ID складов своей lab.
  * @returns {Promise<number[]|null>} null = все (system_admin); [] = ничего
  */
 async function listChemStorageIdsForUser(user) {
   if (skipLabScope(user)) return null;
 
-  const { ChemStorage } = require('../models');
   const labId = resolveActorLabId(user);
   if (labId == null) return [];
 
-  const rows = await ChemStorage.findAll({
-    where: { laboratory_id: labId },
-    attributes: ['id'],
-  });
-  return rows.map((r) => r.id);
+  return listChemStorageIdsForLab(labId);
 }
 
 /**
@@ -141,6 +151,7 @@ module.exports = {
   scopeByLab,
   assertLabAccess,
   enforceLabOnCreate,
+  listChemStorageIdsForLab,
   listChemStorageIdsForUser,
   scopeByStorageIds,
   isScopeForbidden,

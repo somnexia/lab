@@ -20,6 +20,7 @@ const {
   scopeByLab,
   assertLabAccess,
   enforceLabOnCreate,
+  listChemStorageIdsForLab,
 } = require('../utils/labScope');
 
 const EXPERIMENT_STATUSES = Object.freeze(['Completed', 'Ongoing', 'Pending']);
@@ -525,6 +526,23 @@ const revertExperimentConsumptions = async (experimentId, transaction) => {
   return true;
 };
 
+/**
+ * Склады lab эксперимента — только с них списываем реагенты
+ * (не «все лоты каталога в мире»).
+ */
+const resolveStorageIdsForExperiment = async (experimentId, transaction = null) => {
+  const experiment = await Experiment.findByPk(experimentId, {
+    attributes: ['id', 'laboratory_id'],
+    transaction,
+  });
+  if (!experiment?.laboratory_id) {
+    throw new ExperimentValidationError(
+      'Experiment has no laboratory_id — cannot resolve stock storages'
+    );
+  }
+  return listChemStorageIdsForLab(experiment.laboratory_id);
+};
+
 const applyExperimentConsumptions = async (experimentId, phase, transaction) => {
   const existingCount = await ExperimentConsumption.count({
     where: { experiment_id: experimentId },
@@ -542,7 +560,8 @@ const applyExperimentConsumptions = async (experimentId, phase, transaction) => 
   });
 
   const reagentInputs = await enrichInputs(rawInputs.filter((row) => row.input_role === 'reagent'));
-  const plan = await planReagentConsumption(reagentInputs, { transaction });
+  const storageIds = await resolveStorageIdsForExperiment(experimentId, transaction);
+  const plan = await planReagentConsumption(reagentInputs, { transaction, storageIds });
 
   if (plan.blocking.length) {
     const firstBlock = plan.blocking[0];
@@ -598,7 +617,8 @@ const checkExperimentStock = async (experimentId, { forRun = false, user } = {})
     };
   }
 
-  const plan = await planReagentConsumption(reagentInputs);
+  const storageIds = await resolveStorageIdsForExperiment(experimentId);
+  const plan = await planReagentConsumption(reagentInputs, { storageIds });
   const { checks, blocking, warnings } = plan;
   const ready = blocking.length === 0 && (!forRun || warnings.length === 0);
 
