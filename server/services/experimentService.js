@@ -15,7 +15,10 @@ const {
   isReagentItemType,
   resolveCatalogDisplayName,
 } = require('./catalogReferenceService');
-const { planReagentConsumption } = require('./experimentConsumptionPlanner');
+const {
+  planReagentConsumption,
+  isLotInAllowedStorages,
+} = require('./experimentConsumptionPlanner');
 const {
   scopeByLab,
   assertLabAccess,
@@ -102,7 +105,20 @@ const mapConsumptionRow = (row, catalog = null, inventoryLot = null) => ({
   inventoryLotLabel: inventoryLot ? formatLotLabel(inventoryLot) : `Lot #${row.inventory_id}`,
 });
 
-const assertInventoryLotForInput = async (inventoryId, itemType, referenceId) => {
+/**
+ * Лот для input: существует, совпадает с каталогом и лежит
+ * на складе lab эксперимента (не чужой tenant).
+ * @param {number|string} inventoryId
+ * @param {string} itemType
+ * @param {number} referenceId
+ * @param {number|null} experimentLaboratoryId — experiments.laboratory_id
+ */
+const assertInventoryLotForInput = async (
+  inventoryId,
+  itemType,
+  referenceId,
+  experimentLaboratoryId
+) => {
   if (inventoryId == null || inventoryId === '') return null;
 
   const lot = await Inventory.findByPk(Number(inventoryId));
@@ -114,6 +130,21 @@ const assertInventoryLotForInput = async (inventoryId, itemType, referenceId) =>
     throw new ExperimentValidationError(
       `Inventory lot ${inventoryId} does not match catalog item (${itemType} #${referenceId})`,
       { inventoryId, itemType, referenceId }
+    );
+  }
+
+  if (experimentLaboratoryId == null) {
+    throw new ExperimentValidationError(
+      'Experiment has no laboratory_id — cannot bind inventory lot',
+      { inventoryId }
+    );
+  }
+
+  const storageIds = await listChemStorageIdsForLab(experimentLaboratoryId);
+  if (!isLotInAllowedStorages(lot, storageIds)) {
+    throw new ExperimentValidationError(
+      `Inventory lot ${inventoryId} is outside this experiment's laboratory storages`,
+      { inventoryId, laboratoryId: Number(experimentLaboratoryId) }
     );
   }
 
@@ -358,7 +389,12 @@ const replaceExperimentInputs = async (experimentId, incoming = [], user) => {
   for (const row of normalized) {
     await assertCatalogReference(row.item_type, row.reference_id);
     if (row.inventory_id) {
-      await assertInventoryLotForInput(row.inventory_id, row.item_type, row.reference_id);
+      await assertInventoryLotForInput(
+        row.inventory_id,
+        row.item_type,
+        row.reference_id,
+        experiment.laboratory_id
+      );
     }
   }
 
