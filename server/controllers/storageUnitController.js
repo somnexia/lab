@@ -76,8 +76,10 @@ const getInventoriesByStorageUnitId = async (req, res) => {
     if (!storageunit_id) {
       return res.status(400).json({ error: 'storageunit_id is required' });
     }
-    await storageUnitService.getStorageUnitById(storageunit_id, req.user);
-    const inventories = await getInventoriesWithLocation(storageunit_id);
+    const inventories = await getInventoriesWithLocation(
+      storageunit_id,
+      req.user
+    );
     res.json(inventories);
   } catch (error) {
     return sendError(res, error);

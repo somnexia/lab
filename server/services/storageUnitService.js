@@ -147,5 +147,6 @@ module.exports = {
   updateStorageUnit,
   deleteStorageUnit,
   buildLocationChain,
+  assertUnitLabAccess,
   listChemStorageIdsForUser,
 };

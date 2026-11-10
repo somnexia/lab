@@ -5,8 +5,9 @@ const { authorize } = require('../middleware/authMiddleware');
 const { CAN_VIEW_INVENTORY } = require('../config/roles');
 
 /**
- * Фаза 6a: чтение лотов по storage unit.
- * Tenant по storage unit уже на /api/storageUnits; здесь — роль.
+ * Чтение лотов по storage unit.
+ * Роль CAN_VIEW_INVENTORY; tenant — assertUnitLabAccess
+ * (storage unit → chemstorage.laboratory_id).
  */
 router.get(
   '/:id/inventories',
