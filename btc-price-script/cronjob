@@ -1,0 +1,1 @@
+*/1 * * * * cd /btc-price-script && /usr/local/bin/python3 src/main.py >> /var/log/cron.log 2>&1
